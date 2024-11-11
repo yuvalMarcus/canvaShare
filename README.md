@@ -1,2 +1,2 @@
-# canvasShare
+# canvaShare
 canvas share
