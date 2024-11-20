@@ -124,7 +124,6 @@ def save_json_data(con, username, canvas_path, data):
         raise_http_exception(con, error_code, error_msg)
 
 
-# Debug. remove before production
 def create_tables():
     con = sqlite3.connect(DB)
     cur = con.cursor()
@@ -139,7 +138,12 @@ def create_tables():
             pass
 
 # Debug. remove before production
-def delete_tables():
+def delete_tables_and_folders():
+    import shutil
+    try:
+        shutil.rmtree('canvases/')
+    except Exception:
+        pass
     con = sqlite3.connect(DB)
     cur = con.cursor()
     for table in ("users", "canvases", "permissions", "likes"):
@@ -149,9 +153,9 @@ def delete_tables():
             pass
 
 # Debug. remove before production
-#delete_tables()
-#create_tables()
+#delete_tables_and_folders()
 
+create_tables()
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
