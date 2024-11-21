@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
 from uuid import UUID, uuid4
+import random
 import json
 import uvicorn
 import sqlite3
@@ -17,11 +18,25 @@ class Canvas(BaseModel):
     id: Optional[UUID] = None
     username: Optional[str] = None
     name: str
-    tags: Optional[str] = None
-    is_public: bool = False,
-    create_date: Optional[int] = None,
-    edit_date: Optional[int] = None,
+    tags: Optional[List[str]] = None
+    is_public: bool = False
+    create_date: Optional[int] = None
+    edit_date: Optional[int] = None
     data: str
+    likes: Optional[int] = None
+
+class User(BaseModel):
+    username: str
+    password: Optional[str] = None
+    email: Optional[str] = None
+    tags: Optional[List[str]] = None
+    is_blocked: Optional[bool] = False
+    is_deleted: Optional[bool] = False
+    is_admin: Optional[bool] = False
+    is_super_admin: Optional[bool] = False
+    photo: Optional[str] = None
+    about: Optional[str] = None
+    #token: Optional[str] = None
 
 
 
@@ -34,8 +49,9 @@ async def get_canvas(canvas_id: UUID):
     if res is None:
         return []
     canvas = dict()
-    canvas["id"], canvas["username"], canvas["name"], canvas["tags"], canvas["is_public"], canvas["create_date"], canvas["edit_date"] = res
-
+    (canvas["id"], canvas["username"], canvas["name"], tags, canvas["is_public"],
+     canvas["create_date"], canvas["edit_date"], canvas["likes"]) = res
+    canvas["tags"] = tags.split(",") if tags else []
     if canvas["is_public"] == 0:
         ###### need to validate jwt and check if the username in jwt have permission to edit or if username is admin.
         ###### if not raise error 401
@@ -52,11 +68,51 @@ async def get_canvas(canvas_id: UUID):
         raise HTTPException(status_code=500, detail="Internal Server Error")
     return [canvas]
 
+@app.get("/canvas", response_model=List[Canvas])
+async def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
+                       tags: Optional[str] = None, order: Optional[str] = None, page_num: Optional[int] = None):
+    ####### get username from jwt
+    jwt_username = 'yarinl0'  # debug
+    all_results = set()
+    if page_num is None or page_num < 1 or os.path.isfile(f'canvases/{jwt_username}/explore.json') is False:
+        page_num = 1
+
+    if page_num == 1:
+        con = sqlite3.connect(DB)
+        cur = con.cursor()
+        if username is not None:
+            # request from artist page
+            all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE username=?", (username,)).fetchall()))
+        if canvas_name is not None:
+            # request from search page
+            all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE name LIKE ?", (f'%{canvas_name}%',)).fetchall()))
+        if tags is not None:
+            # request from explore page
+            tags = tags.split(",")
+            for tag in tags:
+                all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE tags=? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?",
+                                                  (tag, f'{tag},%', f'%,{tag},%', f'%,{tag}')).fetchall()))
+        if len(all_results) == 0:
+            all_results = all_results.union(set(cur.execute(f"SELECT * from canvases").fetchall()))
+        con.close()
+        all_results = list(all_results)
+        if order == 'likes':
+            # sort canvases by likes from high to low
+            all_results.sort(key=lambda x: x[-1], reverse=True)
+        else:
+            random.shuffle(all_results)
+        explore_json = save_explore_json(all_results, jwt_username)
+    else:
+        explore_json = json.loads(open(f'canvases/{jwt_username}/explore.json', 'r').read())
+    return explore_json[page_num*50-50:page_num*50]
+
+
 @app.put("/canvas/{canvas_id}", status_code=201)
 async def update_canvas(canvas_id: UUID, canvas: Canvas):
     ###### need to validate jwt and check if the username in jwt exist and not blocked and have permission to edit.
     ###### if not raise 401 error
 
+    validate_tags(canvas.tags)
     con = sqlite3.connect(DB)
     cur = con.cursor()
     res = cur.execute(f"SELECT username from canvases WHERE canvas_id=?",(str(canvas_id),)).fetchone()
@@ -67,13 +123,14 @@ async def update_canvas(canvas_id: UUID, canvas: Canvas):
     save_json_data(con, canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
 
     cur.execute(f"UPDATE canvases SET name=?, tags=?, is_public=?, edit_date={int(time.time())} WHERE canvas_id=?",
-                (str(canvas.name), str(canvas.tags), canvas.is_public, str(canvas_id))).fetchone()
+                (str(canvas.name), str(','.join(canvas.tags)), canvas.is_public, str(canvas_id)))
     con.commit()
     con.close()
     return dict()
 
 @app.post("/canvas/", status_code=201)
 async def create_canvas(canvas: Canvas):
+    validate_tags(canvas.tags)
     con = sqlite3.connect(DB)
     cur = con.cursor()
 
@@ -91,12 +148,40 @@ async def create_canvas(canvas: Canvas):
     # Saves canvas in json file
     save_json_data(con, canvas_username, f'canvases/{canvas_username}/{canvas.id}.json', canvas.data)
 
-    cur.execute("INSERT INTO canvases VALUES (?,?,?,?,?,?,?)",(str(canvas.id), str(canvas_username),
-                                                               str(canvas.name), str(canvas.tags), canvas.is_public,
-                                                               int(time.time()), 0))
+    cur.execute("INSERT INTO canvases VALUES (?,?,?,?,?,?,?,?)",(str(canvas.id), str(canvas_username),
+                                                               str(canvas.name), str(','.join(canvas.tags)), canvas.is_public,
+                                                               int(time.time()), 0, 0))
     con.commit()
     con.close()
     return dict()
+
+@app.delete("/canvas/{canvas_id}", status_code=200)
+async def delete_canvas(canvas_id: UUID):
+    ###### need to validate jwt and check if the username in jwt exist and not blocked and have permission to delete (creator or admin).
+    ###### if not raise 401 error
+    con = sqlite3.connect(DB)
+    cur = con.cursor()
+    res = cur.execute("SELECT username FROM canvases WHERE canvas_id=?", (str(canvas_id),)).fetchone()
+    if res is None:
+        raise_http_exception(con, 404, "Canvas not found")
+    username = res[0]
+    cur.execute("DELETE FROM canvases WHERE canvas_id=?", (str(canvas_id),))
+    cur.execute("DELETE FROM permissions WHERE canvas_id=?", (str(canvas_id),))
+    cur.execute("DELETE FROM likes WHERE canvas_id=?", (str(canvas_id),))
+    con.commit()
+    con.close()
+    try:
+        os.remove(f'canvases/{username}/{canvas_id}.json')
+    except Exception:
+        pass
+    return dict()
+
+
+def validate_tags(tags):
+    if tags is not None and type(tags) is list:
+        for tag in tags:
+            if ',' in tag:
+                raise HTTPException(status_code=400, detail=f"A tag cannot contain a comma")
 
 
 def raise_http_exception(con, code, message):
@@ -124,11 +209,29 @@ def save_json_data(con, username, canvas_path, data):
         raise_http_exception(con, error_code, error_msg)
 
 
+def save_explore_json(all_results, username):
+    canvases = []
+    Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True)  # maybe in windows needs to add '/' prefix
+    for result in all_results:
+        canvas = dict()
+        (canvas['id'], canvas['username'], canvas['name'], canvas['tags'], canvas['is_public'], canvas['create_date'],
+         canvas['edit_date'], canvas['likes']) = result
+        canvas['tags'] = canvas['tags'].split(',')
+        with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
+            canvas['data'] = str(json.loads(fd.read()))
+        canvases.append(canvas)
+    # save the list of canvases as json file
+    with open(f'canvases/{username}/explore.json', 'w', encoding='utf-8') as fd:
+        json.dump(canvases, fd, ensure_ascii=False, indent=4)
+    return canvases
+
+
 def create_tables():
     con = sqlite3.connect(DB)
     cur = con.cursor()
     create_commands = ["CREATE TABLE users(username TEXT PRIMARY KEY, password TEXT, is_blocked INTEGER)",
-                       "CREATE TABLE canvases(canvas_id TEXT PRIMARY KEY, username TEXT, name TEXT, tags TEXT, is_public INTEGER, create_date INTEGER, edit_date INTEGER)",
+                       "CREATE TABLE canvases(canvas_id TEXT PRIMARY KEY, username TEXT, name TEXT, tags TEXT, "
+                       "is_public INTEGER, create_date INTEGER, edit_date INTEGER, likes INTEGER)",
                        "CREATE TABLE permissions(canvas_id TEXT, username TEXT, type_of_permission TEXT, PRIMARY KEY (canvas_id, username))",
                        "CREATE TABLE likes(canvas_id TEXT, username TEXT, like INTEGER, PRIMARY KEY (canvas_id, username))"]
     for command in create_commands:
@@ -164,7 +267,6 @@ if __name__ == "__main__":
 #updated_task = task.copy(update=task_update.dict(exclude_unset=True))
 
 # Notes for myself:
-# in table "canvases": dates saved as integer timestamp
 # in table "permissions": type_of_permission can be "view" / "edit"
 # no need to save path of canvas.json in table because the path is canvases/{username}/{canvas_id}.json
 # later need to add option to get canvas if you have permission and not only for creator
