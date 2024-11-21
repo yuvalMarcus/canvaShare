@@ -1,10 +1,13 @@
-import React from "react";
+import {Canvas} from "fabric";
+import React, {MutableRefObject} from "react";
 import {Box, FormControl, MenuItem, Select, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import {RgbaColor, RgbaColorPicker} from "react-colorful";
+import {HexColorPicker} from "react-colorful";
 import {grey} from "@mui/material/colors";
 import useBrush from "../../../../hooks/painter/useBrush.ts";
-const Brushes = () => {
+import {setBrushColor, setBrushSize} from "./brushes.utils.ts";
+
+const Brushes = ({canvas}: {canvas: MutableRefObject<Canvas | null>}) => {
     const { brush, size, color, setBrush, setSize, setColor } = useBrush();
 
     return (
@@ -13,23 +16,35 @@ const Brushes = () => {
                 <Typography color={grey[800]} fontSize={18} mb={1}>Type</Typography>
                 <FormControl variant="standard" fullWidth>
                     <Select
-                        value={brush ?? "brush"}
+                        value={brush ?? "pencil"}
                         onChange={({target}) => setBrush(target.value)}
                     >
-                        <MenuItem value="brush">Brush</MenuItem>
                         <MenuItem value="pencil">Pencil</MenuItem>
+                        <MenuItem value="brush">Brush</MenuItem>
                         <MenuItem value="spray">Spray</MenuItem>
                     </Select>
                 </FormControl>
             </Box>
             <Box>
-                <Typography color={grey[800]} fontSize={18} mb={1}>Size</Typography>
-                <Slider defaultValue={30} value={size || 30} onChange={({ target }) => setSize(target.value)} />
+                <Stack flexDirection="row" alignItems="center" gap={1} mb={1}>
+                    <Typography color={grey[800]} fontSize={18}>Size:</Typography>
+                    <Typography color={grey[600]} fontSize={14} component="span" mt={0.5}>{size}px</Typography>
+                </Stack>
+                <Slider min={1} max={100} value={size} onChange={({ target }) => {
+                    setSize(target.value);
+                    setBrushSize(canvas.current, target.value);
+                }} />
             </Box>
             <Box>
-                <Typography color={grey[800]} fontSize={18} mb={2}>Color Picker</Typography>
+                <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
+                    <Typography color={grey[800]} fontSize={18}>Color:</Typography>
+                    <Box width={15} height={15} boxShadow={1} sx={{ backgroundColor: color }} />
+                </Stack>
                 <Box px={1}>
-                    <RgbaColorPicker color={color ?? ({a: null, b: 0, g: 0, r: 0} as RgbaColor)} onChange={setColor} />
+                    <HexColorPicker color={color} onChange={(value) => {
+                        setColor(value);
+                        setBrushColor(canvas.current, value);
+                    }} />
                 </Box>
             </Box>
         </Stack>
