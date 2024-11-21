@@ -10,7 +10,7 @@ import {grey} from "@mui/material/colors";
 import Search from "../Search/Search.tsx";
 import * as S from './Header.style.ts';
 
-const pages = ['Explore'];
+const pages = [];
 
 const Header = () => {
     return (

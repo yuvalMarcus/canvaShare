@@ -8,6 +8,7 @@ import Painter from "./feature/Painter/Painter.tsx";
 import Register from "./feature/Register/Register.tsx";
 import Login from "./feature/Login/Login.tsx";
 import Artist from "./feature/Artist/Artist.tsx";
+import Search from "./feature/Search/Search.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -16,7 +17,7 @@ const routers = createBrowserRouter([
       children: [
           {
               index: true,
-              element: <Home />
+              element: <Explore />
           },
           {
               path: 'register',
@@ -27,8 +28,8 @@ const routers = createBrowserRouter([
               element: <Login />
           },
           {
-              path: 'explore',
-              element: <Explore />
+              path: 'search',
+              element: <Search />
           },
           {
               path: 'artist',

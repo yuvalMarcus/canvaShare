@@ -1,24 +1,37 @@
-import {Autocomplete, Box, Container, FormControl, MenuItem, Select, Stack, TextField} from "@mui/material";
+import {
+    Autocomplete,
+    Box,
+    Container,
+    FormControl,
+    IconButton, InputBase,
+    MenuItem,
+    Select,
+    Stack,
+    TextField
+} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import CanvasList from "../../components/CanvasList/CanvasList.tsx";
 import {grey} from "@mui/material/colors";
-import ArtistsList from "../../components/ArtistsList/ArtistsList.tsx";
 import {top100Films} from "../../mook.ts";
-
-const Explore = () => {
+import CanvasList from "../../components/CanvasList/CanvasList.tsx";
+import SearchIcon from '@mui/icons-material/Search';
+const Search = () => {
     return (
         <Container>
             <Stack gap={4} py={2}>
                 <Box>
                     <Typography variant="h4" color={grey[600]} textTransform="capitalize" mb={4}>
-                        popular artists
+                        search
                     </Typography>
-                    <ArtistsList />
-                </Box>
-                <Box>
-                    <Typography variant="h4" color={grey[600]} textTransform="capitalize" mb={4}>
-                        popular arts
-                    </Typography>
+                    <Stack flexDirection="row" border={2} borderColor={grey[400]} mb={2} sx={{  backgroundColor: grey[100] }}>
+                        <InputBase
+                            sx={{ ml: 1, flex: 1 }}
+                            placeholder="Search Arts"
+                            inputProps={{ 'aria-label': 'search' }}
+                        />
+                        <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+                            <SearchIcon />
+                        </IconButton>
+                    </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={4} mb={4}>
                         <Stack flex={1}>
                             <Autocomplete
@@ -60,4 +73,4 @@ const Explore = () => {
     )
 }
 
-export default Explore;
+export default Search;
