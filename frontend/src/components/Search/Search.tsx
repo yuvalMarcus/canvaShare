@@ -1,11 +1,18 @@
-import React from "react";
+import React, {useState} from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import {useNavigate} from "react-router-dom";
-import {FormControl, MenuItem, Select} from "@mui/material";
+import {
+    FormControlLabel,
+    IconButton,
+    InputBase,
+    Radio,
+    RadioGroup,
+    Stack
+} from "@mui/material";
 import {grey} from "@mui/material/colors";
-import * as S from './Search.style.ts';
 
 const Search = () => {
+    const [type, setType] = useState<string>("arts");
 
     const navigate = useNavigate();
 
@@ -17,32 +24,26 @@ const Search = () => {
     }
 
     return (
-        <>
-            <S.Container onKeyDown={handleClickKey}>
-                <S.IconWrapper>
-                    <SearchIcon />
-                </S.IconWrapper>
-                <S.Input
-                    placeholder="Search…"
+        <Stack flexDirection="row" gap={2}>
+            <Stack flexDirection="row" alignItems="center" border={2} borderColor={grey[900]} sx={{  backgroundColor: grey[800] }} onKeyDown={handleClickKey}>
+                <InputBase
+                    sx={{ ml: 1, flex: 1, color: grey[100] }}
+                    placeholder="Search Arts"
                     inputProps={{ 'aria-label': 'search' }}
                 />
-            </S.Container>
-            <FormControl variant="standard">
-                <Select
-                    value={'arts'}
-                    onChange={() => {}}
-                    sx={{
-                        color: grey[100],
-                        '.MuiSelect-icon': {
-                            color: grey[100]
-                        }
-                    }}
-                >
-                    <MenuItem value={'arts'}>Arts</MenuItem>
-                    <MenuItem value={'artists'}>Artists</MenuItem>
-                </Select>
-            </FormControl>
-        </>
+                <IconButton type="button" aria-label="search" onClick={() => navigate('/search')}>
+                    <SearchIcon sx={{ color: grey[100] }} />
+                </IconButton>
+            </Stack>
+            <RadioGroup
+                row
+                aria-labelledby="search-type-label"
+                name="search-type-buttons-group"
+            >
+                <FormControlLabel value="arts" control={<Radio sx={{ color: grey[100] }} />} checked={type === 'arts'} onChange={() => setType('arts')} label="Arts" />
+                <FormControlLabel value="artists" control={<Radio sx={{ color: grey[100] }} />} checked={type === 'artists'} onChange={() => setType('artists')} label="Artists" />
+            </RadioGroup>
+        </Stack>
     )
 }
 
