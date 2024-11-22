@@ -45,13 +45,14 @@ async def get_canvas(canvas_id: UUID):
     con = sqlite3.connect(DB)
     cur = con.cursor()
     res = cur.execute("SELECT * FROM canvases WHERE canvas_id=?", (str(canvas_id),)).fetchone()
+    tags = cur.execute("SELECT tags.tag_name FROM tags, tags_of_canvases WHERE canvas_id=? AND tags.tag_id=tags_of_canvases.tag_id", (str(canvas_id),)).fetchall()
     con.close()
     if res is None:
         return []
     canvas = dict()
-    (canvas["id"], canvas["username"], canvas["name"], tags, canvas["is_public"],
-     canvas["create_date"], canvas["edit_date"], canvas["likes"]) = res
-    canvas["tags"] = tags.split(",") if tags else []
+    (canvas["id"], canvas["username"], canvas["name"] , canvas["is_public"], canvas["create_date"],
+     canvas["edit_date"], canvas["likes"]) = res
+    canvas["tags"] = tags
     if canvas["is_public"] == 0:
         ###### need to validate jwt and check if the username in jwt have permission to edit or if username is admin.
         ###### if not raise error 401
@@ -88,20 +89,24 @@ async def get_canvases(username: Optional[str] = None, canvas_name: Optional[str
             all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE name LIKE ?", (f'%{canvas_name}%',)).fetchall()))
         if tags is not None:
             # request from explore page
-            tags = tags.split(",")
-            for tag in tags:
-                all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE tags=? OR tags LIKE ? OR tags LIKE ? OR tags LIKE ?",
-                                                  (tag, f'{tag},%', f'%,{tag},%', f'%,{tag}')).fetchall()))
+            for tag in tags.split(','):
+                all_results = all_results.union(set(cur.execute(f"SELECT canvases.canvas_id, username, name, is_public, "
+                                                                f"create_date, edit_date, likes "
+                                                                f"FROM canvases, tags_of_canvases, tags "
+                                                                f"WHERE tags.tag_name=? "
+                                                                f"AND canvases.canvas_id=tags_of_canvases.canvas_id "
+                                                                f"AND tags.tag_id=tags_of_canvases.tag_id",
+                                                                (tag.strip(), )).fetchall()))
         if len(all_results) == 0:
             all_results = all_results.union(set(cur.execute(f"SELECT * from canvases").fetchall()))
-        con.close()
         all_results = list(all_results)
         if order == 'likes':
             # sort canvases by likes from high to low
             all_results.sort(key=lambda x: x[-1], reverse=True)
         else:
             random.shuffle(all_results)
-        explore_json = save_explore_json(all_results, jwt_username)
+        explore_json = save_explore_json(all_results, jwt_username, cur)
+        con.close()
     else:
         explore_json = json.loads(open(f'canvases/{jwt_username}/explore.json', 'r').read())
     return explore_json[page_num*50-50:page_num*50]
@@ -111,8 +116,6 @@ async def get_canvases(username: Optional[str] = None, canvas_name: Optional[str
 async def update_canvas(canvas_id: UUID, canvas: Canvas):
     ###### need to validate jwt and check if the username in jwt exist and not blocked and have permission to edit.
     ###### if not raise 401 error
-
-    validate_tags(canvas.tags)
     con = sqlite3.connect(DB)
     cur = con.cursor()
     res = cur.execute(f"SELECT username from canvases WHERE canvas_id=?",(str(canvas_id),)).fetchone()
@@ -122,15 +125,19 @@ async def update_canvas(canvas_id: UUID, canvas: Canvas):
         raise_http_exception(con, 404, "Canvas not found")
     save_json_data(con, canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
 
-    cur.execute(f"UPDATE canvases SET name=?, tags=?, is_public=?, edit_date={int(time.time())} WHERE canvas_id=?",
-                (str(canvas.name), str(','.join(canvas.tags)), canvas.is_public, str(canvas_id)))
+    cur.execute(f"UPDATE canvases SET name=?, is_public=?, edit_date={int(time.time())} WHERE canvas_id=?",
+                (str(canvas.name), canvas.is_public, str(canvas_id)))
+    # remove old tags
+    cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id=?", (str(canvas_id),))
+    # insert new tags
+    insert_tags_to_db(cur, canvas, canvas_id)
     con.commit()
     con.close()
     return dict()
 
+
 @app.post("/canvas/", status_code=201)
 async def create_canvas(canvas: Canvas):
-    validate_tags(canvas.tags)
     con = sqlite3.connect(DB)
     cur = con.cursor()
 
@@ -148,9 +155,9 @@ async def create_canvas(canvas: Canvas):
     # Saves canvas in json file
     save_json_data(con, canvas_username, f'canvases/{canvas_username}/{canvas.id}.json', canvas.data)
 
-    cur.execute("INSERT INTO canvases VALUES (?,?,?,?,?,?,?,?)",(str(canvas.id), str(canvas_username),
-                                                               str(canvas.name), str(','.join(canvas.tags)), canvas.is_public,
-                                                               int(time.time()), 0, 0))
+    cur.execute("INSERT INTO canvases VALUES (?,?,?,?,?,?,?)",(str(canvas.id), str(canvas_username),
+                                                               str(canvas.name), canvas.is_public, int(time.time()), 0, 0))
+    insert_tags_to_db(cur, canvas, canvas.id)
     con.commit()
     con.close()
     return dict()
@@ -168,6 +175,7 @@ async def delete_canvas(canvas_id: UUID):
     cur.execute("DELETE FROM canvases WHERE canvas_id=?", (str(canvas_id),))
     cur.execute("DELETE FROM permissions WHERE canvas_id=?", (str(canvas_id),))
     cur.execute("DELETE FROM likes WHERE canvas_id=?", (str(canvas_id),))
+    cur.execute("DELETE FROM tags_of_canvases WHERE canvas_id=?", (str(canvas_id),))
     con.commit()
     con.close()
     try:
@@ -177,11 +185,19 @@ async def delete_canvas(canvas_id: UUID):
     return dict()
 
 
-def validate_tags(tags):
-    if tags is not None and type(tags) is list:
-        for tag in tags:
-            if ',' in tag:
-                raise HTTPException(status_code=400, detail=f"A tag cannot contain a comma")
+def insert_tags_to_db(cur, canvas, canvas_id):
+    for tag in canvas.tags:
+        if ',' in tag:
+            # invalid tag name. not saved in db
+            continue
+        # checks if tag exist in db. if not create new tag and then add this tag to canvas.
+        res = cur.execute(f"SELECT tag_id FROM tags WHERE tag_name=?", (tag,)).fetchone()
+        if res is None:
+            # create new tag in db
+            cur.execute(f"INSERT INTO tags (tag_name) VALUES (?)", (tag,))
+            res = cur.execute(f"SELECT tag_id FROM tags WHERE tag_name=?", (tag,)).fetchone()
+        tag_id = res[0]
+        cur.execute(f"INSERT INTO tags_of_canvases VALUES (?,?)", (str(canvas_id), tag_id))
 
 
 def raise_http_exception(con, code, message):
@@ -209,14 +225,17 @@ def save_json_data(con, username, canvas_path, data):
         raise_http_exception(con, error_code, error_msg)
 
 
-def save_explore_json(all_results, username):
+def save_explore_json(all_results, username, cur):
     canvases = []
     Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True)  # maybe in windows needs to add '/' prefix
     for result in all_results:
         canvas = dict()
-        (canvas['id'], canvas['username'], canvas['name'], canvas['tags'], canvas['is_public'], canvas['create_date'],
+        (canvas['id'], canvas['username'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes']) = result
-        canvas['tags'] = canvas['tags'].split(',')
+        canvas['tags'] = cur.execute("SELECT tags.tag_name FROM tags, tags_of_canvases "
+                                     "WHERE tags.tag_id=tags_of_canvases.tag_id "
+                                     "AND tags_of_canvases.canvas_id=?", (canvas['id'],)).fetchall()
+        canvas['tags'] = [i[0] for i in canvas['tags']]
         with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
             canvas['data'] = str(json.loads(fd.read()))
         canvases.append(canvas)
@@ -230,10 +249,12 @@ def create_tables():
     con = sqlite3.connect(DB)
     cur = con.cursor()
     create_commands = ["CREATE TABLE users(username TEXT PRIMARY KEY, password TEXT, is_blocked INTEGER)",
-                       "CREATE TABLE canvases(canvas_id TEXT PRIMARY KEY, username TEXT, name TEXT, tags TEXT, "
-                       "is_public INTEGER, create_date INTEGER, edit_date INTEGER, likes INTEGER)",
+                       "CREATE TABLE canvases(canvas_id TEXT PRIMARY KEY, username TEXT, name TEXT, is_public INTEGER, "
+                       "create_date INTEGER, edit_date INTEGER, likes INTEGER)",
+                       "CREATE TABLE tags_of_canvases(canvas_id TEXT, tag_id INTEGER, PRIMARY KEY (canvas_id, tag_id))",
+                       "CREATE TABLE tags(tag_id INTEGER PRIMARY KEY AUTOINCREMENT, tag_name TEXT)",
                        "CREATE TABLE permissions(canvas_id TEXT, username TEXT, type_of_permission TEXT, PRIMARY KEY (canvas_id, username))",
-                       "CREATE TABLE likes(canvas_id TEXT, username TEXT, like INTEGER, PRIMARY KEY (canvas_id, username))"]
+                       "CREATE TABLE likes(canvas_id TEXT, username TEXT, PRIMARY KEY (canvas_id, username))"]
     for command in create_commands:
         try:
             cur.execute(command)
@@ -249,14 +270,14 @@ def delete_tables_and_folders():
         pass
     con = sqlite3.connect(DB)
     cur = con.cursor()
-    for table in ("users", "canvases", "permissions", "likes"):
+    for table in ("users", "canvases", "tags_of_canvases", "tags", "permissions", "likes"):
         try:
             cur.execute(f"DROP TABLE {table}")
         except Exception:
             pass
 
 # Debug. remove before production
-#delete_tables_and_folders()
+# delete_tables_and_folders()
 
 create_tables()
 if __name__ == "__main__":

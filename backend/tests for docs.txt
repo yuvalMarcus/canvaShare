@@ -2,7 +2,7 @@ Create canvas:
 POST /canvas/
 {
   "name": "My first canvas",
-  "tags": "tag1",
+  "tags": ["tag1"],
   "is_public": true,
   "data": "{'glossary': {'title': 'example glossary', 'GlossDiv': {'title': 'S', 'GlossList': {'GlossEntry': {'ID': 'SGML', 'SortAs': 'SGML', 'GlossTerm': 'Standard Generalized Markup Language', 'Acronym': 'SGML', 'Abbrev': 'ISO 8879:1986', 'GlossDef': {'para': 'A meta-markup language, used to create markup languages such as DocBook.', 'GlossSeeAlso': ['GML', 'XML']}, 'GlossSee': 'markup'}}}}}"
 }
@@ -14,7 +14,7 @@ PUT /canvas/
 canvas_id = 7381cfc7-57b6-44b7-8d6b-3d8b77d1acd4
  {
     "name": "My first canvas 2",
-    "tags": "tag1, tag2",
+    "tags": ["tag1", "tag2"],
     "is_public": true,
     "data": "{'glossary': {'title': 'example glossary 2', 'GlossDiv': {'title': 'S', 'GlossList': {'GlossEntry': {'ID': 'SGML', 'SortAs': 'SGML', 'GlossTerm': 'Standard Generalized Markup Language', 'Acronym': 'SGML', 'Abbrev': 'ISO 8879:1986', 'GlossDef': {'para': 'A meta-markup language, used to create markup languages such as DocBook.', 'GlossSeeAlso': ['GML', 'XML']}, 'GlossSee': 'markup'}}}}}"
   }
