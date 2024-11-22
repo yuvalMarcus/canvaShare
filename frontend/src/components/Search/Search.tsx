@@ -35,14 +35,6 @@ const Search = () => {
                     <SearchIcon sx={{ color: grey[100] }} />
                 </IconButton>
             </Stack>
-            <RadioGroup
-                row
-                aria-labelledby="search-type-label"
-                name="search-type-buttons-group"
-            >
-                <FormControlLabel value="arts" control={<Radio sx={{ color: grey[100] }} />} checked={type === 'arts'} onChange={() => setType('arts')} label="Arts" />
-                <FormControlLabel value="artists" control={<Radio sx={{ color: grey[100] }} />} checked={type === 'artists'} onChange={() => setType('artists')} label="Artists" />
-            </RadioGroup>
         </Stack>
     )
 }
