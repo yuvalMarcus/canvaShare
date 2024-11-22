@@ -1,14 +1,15 @@
 import {Canvas} from "fabric";
-import React, {MutableRefObject} from "react";
+import React, {MutableRefObject, useState} from "react";
 import {Box, FormControl, MenuItem, Select, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {HexColorPicker} from "react-colorful";
 import {grey} from "@mui/material/colors";
-import useBrush from "../../../../hooks/painter/useBrush.ts";
 import {setBrushColor, setBrushSize} from "./brushes.utils.ts";
 
 const Brushes = ({canvas}: {canvas: MutableRefObject<Canvas | null>}) => {
-    const { brush, size, color, setBrush, setSize, setColor } = useBrush();
+    const [brush, setBrush] = useState<'pencil' | 'brush' | 'spray'>('pencil');
+    const [size, setSize] = useState<number>(1);
+    const [color, setColor] = useState<string>('#000000');
 
     return (
         <Stack gap={2} pb={2}>
