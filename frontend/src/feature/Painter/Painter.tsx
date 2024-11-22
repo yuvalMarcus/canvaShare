@@ -62,7 +62,7 @@ const Painter = () => {
                 <Stack gap={2} minWidth={30} p={1} sx={{ backgroundColor: grey[900]}}>
                     <Button sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, textTransform: 'capitalize' }}>
                         <BrushIcon fontSize={'medium'} sx={{ color: grey[100] }} />
-                        <Typography sx={{ color: grey[100] }}>brush</Typography>
+                        <Typography sx={{ color: grey[100] }}>draw</Typography>
                     </Button>
                     <Button sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, textTransform: 'capitalize' }}>
                         <TextFormatIcon fontSize={'large'} sx={{ color: grey[100] }} />
