@@ -18,3 +18,20 @@ canvas_id = 7381cfc7-57b6-44b7-8d6b-3d8b77d1acd4
     "is_public": true,
     "data": "{'glossary': {'title': 'example glossary 2', 'GlossDiv': {'title': 'S', 'GlossList': {'GlossEntry': {'ID': 'SGML', 'SortAs': 'SGML', 'GlossTerm': 'Standard Generalized Markup Language', 'Acronym': 'SGML', 'Abbrev': 'ISO 8879:1986', 'GlossDef': {'para': 'A meta-markup language, used to create markup languages such as DocBook.', 'GlossSeeAlso': ['GML', 'XML']}, 'GlossSee': 'markup'}}}}}"
   }
+
+ ##############################
+ Add new user:
+ POST /register
+ {
+  "username": "yarinl0",
+  "password": "sa#asda2sAd",
+  "email": "aaa@aaa.com"
+}
+
+ Add new user with tags (only tags that already exist):
+  {
+  "username": "yarinl0",
+  "password": "sa#asda2sAd",
+  "email": "aaa@aaa.com",
+  "tags": ["tag1", "tag2"]
+}
