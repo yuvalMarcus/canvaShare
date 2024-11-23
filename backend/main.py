@@ -8,6 +8,7 @@ import json
 import uvicorn
 import sqlite3
 import time
+import re
 import os
 
 DB = "database.db"
@@ -48,6 +49,10 @@ tags_metadata = [
     {
         "name": "report",
         "description": "Report a canvas or artist."
+    },
+    {
+        "name": "register",
+        "description": "Register a new user."
     }
 
 ]
@@ -85,7 +90,7 @@ class Report(BaseModel):
     description: str
 
 @app.get("/canvas/{canvas_id}", response_model=List[Canvas], tags=["get_canvas_by_id"])
-async def get_canvas(canvas_id: UUID):
+def get_canvas(canvas_id: UUID):
     con = sqlite3.connect(DB)
     cur = con.cursor()
     canvas = dict()
@@ -111,7 +116,7 @@ async def get_canvas(canvas_id: UUID):
     return [canvas]
 
 @app.post("/canvas", tags=["create_canvas"])
-async def create_canvas(canvas: Canvas):
+def create_canvas(canvas: Canvas):
     con = sqlite3.connect(DB)
     cur = con.cursor()
 
@@ -137,7 +142,7 @@ async def create_canvas(canvas: Canvas):
     return dict()
 
 @app.put("/canvas/{canvas_id}", tags=["edit_canvas"])
-async def update_canvas(canvas_id: UUID, canvas: Canvas):
+def update_canvas(canvas_id: UUID, canvas: Canvas):
     ###### need to validate jwt and check if the username in jwt exist and not blocked and have permission to edit.
     ###### if not raise 401 error
     con = sqlite3.connect(DB)
@@ -156,7 +161,7 @@ async def update_canvas(canvas_id: UUID, canvas: Canvas):
     return dict()
 
 @app.delete("/canvas/{canvas_id}", tags=["delete_canvas"])
-async def delete_canvas(canvas_id: UUID):
+def delete_canvas(canvas_id: UUID):
     ###### need to validate jwt and check if the username in jwt exist and not blocked and have permission to delete (creator or admin).
     ###### if not raise 401 error
     con = sqlite3.connect(DB)
@@ -175,7 +180,7 @@ async def delete_canvas(canvas_id: UUID):
     return dict()
 
 @app.get("/canvas", response_model=List[Canvas], tags=["get_canvases_by_filters"])
-async def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
+def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
                        tags: Optional[str] = None, order: Optional[str] = None, page_num: Optional[int] = None):
     ####### get username from jwt
     jwt_username = 'yarinl0'  # debug
@@ -217,7 +222,7 @@ async def get_canvases(username: Optional[str] = None, canvas_name: Optional[str
     return explore_json[page_num*50-50:page_num*50]
 
 @app.put('/canvas/like/{canvas_id}', tags=["like_canvas"])
-async def like_canvas(canvas_id: UUID):
+def like_canvas(canvas_id: UUID):
     ##### get username from jwt. check if username exist in db and not blocked.
     username = 'yarinl0' # debug
     con = sqlite3.connect(DB)
@@ -249,12 +254,12 @@ def get_canvas_likes_number(canvas_id: UUID):
 
 @app.post('/report', tags=["report"])
 def create_report(report: Report):
-    if report.description == '':
-        raise HTTPException(status_code=400, detail="Report description cannot be empty")
+    if not (1 <= len(report.description) <= 100):
+        raise HTTPException(status_code=400, detail="Report description must be between 1 and 100 characters.")
     con = sqlite3.connect(DB)
     cur = con.cursor()
     if report.type == 'artist' and report.username is not None:
-        if cur.execute("SELECT * FROM users WHERE username=?", (report.username,)).fetchone() is None:
+        if is_user_exist(report.username) is False:
             raise_http_exception(con, 404, "User not found")
         report.canvas_id = None
     elif report.type == 'canvas' and report.canvas_id is not None:
@@ -268,7 +273,67 @@ def create_report(report: Report):
     con.close()
     return dict()
         
-    
+@app.post('/register', tags=["register"])
+def register(user: User):
+    if is_valid_username(user.username) and is_valid_password(user.password) and is_valid_email(user.email):
+        user.username = user.username.lower()
+        encrypted_password = encrypt_password(user.password)
+        tags_id = get_tags_id(user.tags)
+        con = sqlite3.connect(DB)
+        cur = con.cursor()
+        cur.execute("INSERT INTO users (username, password, email, is_blocked, is_deleted, photo, about) VALUES (?,?,?,?,?,?,?)",
+                    (user.username, encrypted_password,user.email, 0, 0, None, None))
+        for tag_id in tags_id:
+            cur.execute("INSERT INTO favorite_tags (username, tag_id) VALUES (?,?)", (user.username, tag_id))
+        con.commit()
+        con.close()
+        return {}
+
+def get_tags_id(tags):
+    con = sqlite3.connect(DB)
+    cur = con.cursor()
+    tags_id = []
+    if tags is None:
+        return tags_id
+    for tag in set(tags):
+        res = cur.execute("SELECT tag_id FROM tags WHERE tag_name=?", (tag,)).fetchone()
+        if res is None:
+            raise_http_exception(con, 404, f"Tag {tag} not found")
+        tags_id.append(res[0])
+    con.close()
+    return tags_id
+
+def is_valid_password(password):
+    if (password is not None and 6 <= len(password) <= 50 and re.search(r'[0-9]', password)
+            and re.search(r'[A-Z]', password) and re.search(r'[a-z]', password)
+            and re.search(r'[!@#$%^&*_+\-=]', password)):
+        return True
+    raise HTTPException(status_code=400, detail="Invalid password")
+
+def is_valid_username(username):
+    if is_user_exist(username) is True:
+        raise HTTPException(status_code=400, detail=f"User {username} already exists")
+    if 3 <= len(username) <= 20 and username.isalnum():
+        return True
+    raise HTTPException(status_code=400, detail="Invalid username")
+
+def is_valid_email(email):
+    if email is not None and re.search(r"^\S+@\S+\.\S+$", email):
+        return True
+    raise HTTPException(status_code=400, detail="Invalid email")
+
+def encrypt_password(password):
+    ######### need to build this function
+    return '1234'
+
+def is_user_exist(username: str) -> bool:
+    con = sqlite3.connect(DB)
+    cur = con.cursor()
+    if cur.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone() is None:
+        return False
+    con.close()
+    return True
+
 def insert_tags_to_db(cur, canvas, canvas_id):
     for tag in canvas.tags:
         if ',' in tag:
@@ -288,7 +353,6 @@ def raise_http_exception(con, code, message):
     raise HTTPException(status_code=code, detail=message)
 
 def save_json_data(con, username, canvas_path, data):
-    error_code, error_msg = None, None
     Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
     try:
         data = data.replace('\'', '\"')
@@ -330,12 +394,14 @@ def get_canvas_from_db(con, cur, canvas_id):
 def create_tables():
     con = sqlite3.connect(DB)
     cur = con.cursor()
-    create_commands = ["CREATE TABLE users(username TEXT PRIMARY KEY, password TEXT, is_blocked INTEGER)",
+    create_commands = ["CREATE TABLE users(username TEXT PRIMARY KEY, password TEXT, email TEXT, is_blocked INTEGER,"
+                       " is_deleted INTEGER, photo TEXT, about TEXT)",
                        "CREATE TABLE canvases(canvas_id TEXT PRIMARY KEY, username TEXT, name TEXT, is_public INTEGER, "
                        "create_date INTEGER, edit_date INTEGER, likes INTEGER)",
                        "CREATE TABLE permissions(canvas_id TEXT, username TEXT, type_of_permission TEXT, PRIMARY KEY (canvas_id, username))",
                        "CREATE TABLE tags(tag_id INTEGER PRIMARY KEY AUTOINCREMENT, tag_name TEXT)",
                        "CREATE TABLE tags_of_canvases(canvas_id TEXT, tag_id INTEGER, PRIMARY KEY (canvas_id, tag_id))",
+                       "CREATE TABLE favorite_tags(username TEXT, tag_id INTEGER, PRIMARY KEY (username, tag_id))",
                        "CREATE TABLE likes(canvas_id TEXT, username TEXT, PRIMARY KEY (canvas_id, username))",
                        "CREATE TABLE reports(report_id INTEGER PRIMARY KEY AUTOINCREMENT, report_date INTEGER, type TEXT,"
                        " canvas_id TEXT, username TEXT, description TEXT)",
@@ -355,7 +421,7 @@ def delete_tables_and_folders():
         pass
     con = sqlite3.connect(DB)
     cur = con.cursor()
-    for table in ("users", "canvases", "permissions", "tags", "tags_of_canvases",
+    for table in ("users", "canvases", "permissions", "tags", "tags_of_canvases", "favorite_tags",
                   "likes", "reports", "admins", "super_admins"):
         try:
             cur.execute(f"DROP TABLE {table}")
