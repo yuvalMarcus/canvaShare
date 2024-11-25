@@ -146,8 +146,14 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
         (str(canvas_id),)).fetchall()
     canvas["tags"] = [tag[0] for tag in db_tags]
     con.close()
+    is_jwt_admin = is_admin(jwt_username)
+    if is_jwt_admin is False:
+        # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
+        # Only administrators can see blocked canvases.
+        raise_error_if_blocked(canvas["username"])
+
     # If canvas is private (draft), only creator, editors and admins should get it
-    if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_username) is False and is_admin(jwt_username) is False:
+    if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_username) is False and is_jwt_admin is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     try:
         with open(f'canvases/{canvas["username"]}/{canvas["id"]}.json', 'r', encoding='utf-8') as fd:
@@ -164,7 +170,6 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
 def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
-    
     con = sqlite3.connect(DB)
     cur = con.cursor()
     # Generate unique id for canvas
@@ -186,6 +191,8 @@ def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_use
 def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
+    raise_error_if_blocked(canvas.username) # Cannot edit a blocked creator's canvas
+
     if is_canvas_editor(canvas_id, jwt_username) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     con = sqlite3.connect(DB)
@@ -273,7 +280,12 @@ def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_user
     raise_error_if_blocked(jwt_username)
     con = sqlite3.connect(DB)
     cur = con.cursor()
-    get_canvas_from_db(con, cur, canvas_id) # checks if canvas exist
+    canvas_username = get_canvas_from_db(con, cur, canvas_id)[1]
+    try:
+        raise_error_if_blocked(canvas_username) # Cannot like a blocked creator's canvas.
+    except Exception as e:
+        con.close()
+        raise e
     res = cur.execute("SELECT * from likes WHERE canvas_id=? AND username=?",
                       (str(canvas_id), jwt_username)).fetchone()
     if res is None:
