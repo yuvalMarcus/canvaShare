@@ -1,11 +1,29 @@
-Create canvas:
-POST /canvas/
-{
-  "name": "My first canvas",
-  "tags": ["tag1"],
-  "is_public": true,
-  "data": "{'glossary': {'title': 'example glossary', 'GlossDiv': {'title': 'S', 'GlossList': {'GlossEntry': {'ID': 'SGML', 'SortAs': 'SGML', 'GlossTerm': 'Standard Generalized Markup Language', 'Acronym': 'SGML', 'Abbrev': 'ISO 8879:1986', 'GlossDef': {'para': 'A meta-markup language, used to create markup languages such as DocBook.', 'GlossSeeAlso': ['GML', 'XML']}, 'GlossSee': 'markup'}}}}}"
+ Add new user:
+ POST /register
+ {
+  "username": "yarinl3",
+  "password": "sa#asda2sAd",
+  "email": "aaa@aaa.com"
 }
+
+
+Create canvas:
+await fetch("http://0.0.0.0:8000/canvas", {
+    "credentials": "omit",
+    "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:132.0) Gecko/20100101 Firefox/132.0",
+        "Accept": "application/json",
+        "Accept-Language": "he,en-US;q=0.7,en;q=0.3",
+		"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InlhcmlubDMiLCJleHAiOjE3MzI5Mjc5Nzl9.xNJiFoduCxmIR-wtAXdOCyc8WajWcRlgFoaHPoMFlCo",
+        "Content-Type": "application/json",
+        "Sec-GPC": "1",
+        "Priority": "u=0"
+    },
+    "referrer": "http://0.0.0.0:8000/docs",
+    "body": "{\n  \"name\": \"My first canvas\",\n  \"tags\": [\"tag1\"],\n  \"is_public\": true,\n  \"data\": \"{'glossary': {'title': 'example glossary', 'GlossDiv': {'title': 'S', 'GlossList': {'GlossEntry': {'ID': 'SGML', 'SortAs': 'SGML', 'GlossTerm': 'Standard Generalized Markup Language', 'Acronym': 'SGML', 'Abbrev': 'ISO 8879:1986', 'GlossDef': {'para': 'A meta-markup language, used to create markup languages such as DocBook.', 'GlossSeeAlso': ['GML', 'XML']}, 'GlossSee': 'markup'}}}}}\"\n}",
+    "method": "POST",
+    "mode": "cors"
+});
 
 #############################
 
@@ -20,13 +38,6 @@ canvas_id = 7381cfc7-57b6-44b7-8d6b-3d8b77d1acd4
   }
 
  ##############################
- Add new user:
- POST /register
- {
-  "username": "yarinl0",
-  "password": "sa#asda2sAd",
-  "email": "aaa@aaa.com"
-}
 
  Add new user with tags (only tags that already exist):
   {
