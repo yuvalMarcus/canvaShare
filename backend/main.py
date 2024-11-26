@@ -352,8 +352,10 @@ def login(user: User):
     if is_user_exist(user.username) and user.password:
         con = sqlite3.connect(DB)
         cur = con.cursor()
-        hashed_password = cur.execute("SELECT hashed_password FROM users WHERE username=?", (user.username,)).fetchone()[0]
-        if verify_password(user.password, hashed_password):
+        res = cur.execute("SELECT hashed_password FROM users WHERE username=? and is_blocked=0", (user.username,)).fetchone()
+        if res is None:
+            raise HTTPException(status_code=401, detail="User is blocked")
+        if verify_password(user.password, hashed_password=res[0]):
             cur.execute("UPDATE users SET disabled=? WHERE username=?", (False, user.username))
             con.commit()
             con.close()
