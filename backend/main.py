@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import FastAPI, HTTPException, status, Depends , File , UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, UTC
 from pydantic import BaseModel
@@ -16,6 +16,9 @@ import sqlite3
 import time
 import re
 import os
+import shutil
+
+
 
 load_dotenv()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -555,7 +558,6 @@ def create_tables():
             pass
 
 def delete_tables_and_folders():
-    import shutil
     try:
         shutil.rmtree('canvases/')
     except Exception:
@@ -578,8 +580,18 @@ def generate_token(username: str | None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+UPLOAD_DIR = "uploaded_files"
+
+@app.post("/upload/", tags=["upload"])
+def upload_picture(file: UploadFile = File(...)):
+    UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
+    file_path = UPLOAD_DIR / file.filename
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer) 
+    return {"filename": file.filename, "message": "Upload successful!"}
+
 #delete_tables_and_folders()
 create_tables()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
