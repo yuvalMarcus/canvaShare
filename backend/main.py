@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, status, Depends , File , UploadFile
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, UTC
 from pydantic import BaseModel
@@ -19,13 +20,13 @@ import os
 import shutil
 
 
-
 load_dotenv()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 API_KEY = os.getenv('API_KEY')
 DB = os.getenv('DB')
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = "HS256"
+UPLOAD_DIR = "uploaded_files"
 
 
 tags_metadata = [
@@ -110,6 +111,10 @@ class Report(BaseModel):
     canvas_id: Optional[UUID] = None
     username: Optional[str] = None
     description: str
+
+class Photo(BaseModel):
+    id: Optional[UUID] = None
+    file: UploadFile = File(...)
 
 def get_jwt_username(token: str | None = Depends(oauth2_scheme)):
     # jwt authentication, checks if user exist and not disabled
@@ -396,6 +401,26 @@ def search_photos(category: str, jwt_username: str | None = Depends(get_jwt_user
     except Exception:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Rate Limit Exceeded (50 per hour). Try again later.")
 
+@app.post("/upload", tags=["upload"])
+def upload_picture(file: UploadFile = File(...)):
+    try:
+        file_id = uuid4()
+        Path(UPLOAD_DIR).mkdir(exist_ok=True, parents=True)
+        file_extension = file.filename.split('.')[-1]
+        file_path = f"{UPLOAD_DIR}/{file_id}.{file_extension}"
+        with Path(file_path).open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        return {"file_path": file_path}
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+
+@app.get("/uploaded_files/{file_id}", tags=["get_uploaded_files"])
+async def uploaded_files(file_id: str):
+    file_path = Path(f'{UPLOAD_DIR}/{file_id}')
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File not found.")
+    return FileResponse(file_path)
+
 def get_tags_id(tags):
     con = sqlite3.connect(DB)
     cur = con.cursor()
@@ -581,16 +606,6 @@ def generate_token(username: str | None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
-UPLOAD_DIR = "uploaded_files"
-
-@app.post("/upload/", tags=["upload"])
-def upload_picture(file: UploadFile = File(...)):
-    UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
-    file_path = UPLOAD_DIR / file.filename
-    with file_path.open("wb") as buffer:
-        shutil.copyfileobj(file.file, buffer) 
-    return {"filename": file.filename, "message": "Upload successful!"}
 
 #delete_tables_and_folders()
 create_tables()
