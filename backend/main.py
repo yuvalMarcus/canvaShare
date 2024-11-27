@@ -39,6 +39,7 @@ tags_metadata = [
 
 app = FastAPI(openapi_tags=tags_metadata)
 app.include_router(canvas.router)
+app.include_router(user.router)
 
 @app.post('/report', response_model=Token, tags=["report"])
 def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_username)):
