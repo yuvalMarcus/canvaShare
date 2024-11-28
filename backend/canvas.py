@@ -38,6 +38,10 @@ class Canvas(BaseModel):
     data: str
     likes: Optional[int] = None
 
+class CanvasResponse(BaseModel):
+    canvas: Canvas
+    token: Optional[str] = None
+
 class CanvasesResponse(BaseModel):
     canvases: List[Canvas]
     token: Optional[str] = None
@@ -47,7 +51,7 @@ class LikesResponse(BaseModel):
     token: Optional[str] = None
     
     
-@router.get("/{canvas_id}", response_model=CanvasesResponse)
+@router.get("/{canvas_id}", response_model=CanvasResponse)
 def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
     canvas_id = str(canvas_id)
@@ -74,9 +78,9 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     except json.decoder.JSONDecodeError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
     
-    return {"canvases": [canvas], "token": generate_token(jwt_username) if jwt_username else None}
+    return {"canvas": canvas, "token": generate_token(jwt_username) if jwt_username else None}
 
-@router.post("/", response_model=Token)
+@router.post("", response_model=CanvasResponse)
 def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
@@ -87,7 +91,7 @@ def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_use
     insert_canvas_to_db(canvas_id=canvas.id, username=jwt_username, canvas_name=canvas.name,
                         is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0)
     insert_tags(canvas, canvas.id)
-    return {"token": generate_token(jwt_username) if jwt_username else None}
+    return get_canvas(canvas.id, jwt_username)
 
 @router.put("/{canvas_id}", response_model=Token)
 def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
@@ -121,7 +125,7 @@ def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_us
         pass
     return {"token": generate_token(jwt_username) if jwt_username else None}
 
-@router.get("/", response_model=CanvasesResponse, tags=["get_canvases_by_filters"])
+@router.get("", response_model=CanvasesResponse, tags=["get_canvases_by_filters"])
 def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
                  tags: Optional[str] = None, order: Optional[str] = None, page_num: Optional[int] = None,
                  jwt_username: str | None = Depends(get_jwt_username)):

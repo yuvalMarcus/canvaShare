@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, UTC
-from db_utlls import user_disabled_status
+from db_utlls import get_disabled_status
 from passlib.context import CryptContext
 from db_utlls import is_user_exist
 from dotenv import load_dotenv

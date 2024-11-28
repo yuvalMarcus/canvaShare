@@ -73,6 +73,7 @@ def register(user: User):
                           email=user.email, is_blocked=0, is_deleted=0, profile_photo=None, cover_photo=None,
                           about=None, disabled=True)
         insert_favorite_tags_to_db(user.username, tags_id)
+        connect_user(user.username)
         return {"token": generate_token(user.username)}
 
 @app.post('/login', response_model=Token)
