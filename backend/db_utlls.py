@@ -115,7 +115,7 @@ def get_canvas_from_db(canvas_id):
     res = cur.execute(f"SELECT * from canvases WHERE canvas_id=?", (canvas_id,)).fetchone()
     con.close()
     if res is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Canvas {canvas_id} not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Canvas not found")
     return res
 
 def get_canvas_username(canvas_id):
@@ -224,7 +224,10 @@ def is_canvas_editor(canvas_id, username):
         return False
     con = sqlite3.connect(DB)
     cur = con.cursor()
-    creator = cur.execute("SELECT username FROM canvases WHERE canvas_id=?", (canvas_id,)).fetchone()[0]
+    res = cur.execute("SELECT username FROM canvases WHERE canvas_id=?", (canvas_id,)).fetchone()
+    if res is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Canvas not found.")
+    creator = res[0]
     if creator == username or cur.execute("SELECT * FROM canvas_editors WHERE canvas_id=? AND username=?",
                                              (canvas_id, username)).fetchone() is not None:
         con.close()

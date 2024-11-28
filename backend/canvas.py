@@ -9,20 +9,7 @@ import random
 import time
 import json
 
-tags_metadata = [
-    {
-        "name": "get_canvases_by_filters",
-        "description": "Get list of canvases by filters.<br>"
-                       "The filters can be username, canvas name, tags.<br>"
-                       "The results can be sorted by likes.<br>"
-                       "In every request (page) the maximum results is 50.<br>"
-                       "To get the rest of results you need to request specific page."
-    },
-    {
-        "name": "like_canvas",
-        "description": "Like a canvas or remove like from canvas."
-    }
-]
+CANVASES_PER_PAGE = 50
 
 router = APIRouter(prefix="/canvas",tags=["canvas"])
 
@@ -93,7 +80,7 @@ def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_use
     insert_tags(canvas, canvas.id)
     return get_canvas(canvas.id, jwt_username)
 
-@router.put("/{canvas_id}", response_model=Token)
+@router.put("/{canvas_id}", response_model=CanvasResponse)
 def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
@@ -101,13 +88,12 @@ def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = De
     canvas_id = str(canvas_id)
     if is_canvas_editor(canvas_id, jwt_username) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
     canvas.username = get_canvas_username(canvas_id)
     save_json_data(canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
     update_canvas_in_db(canvas_id, canvas.name, canvas.is_public)
     remove_all_tags(canvas_id)
     insert_tags(canvas, canvas_id)
-    return {"token": generate_token(jwt_username) if jwt_username else None}
+    return get_canvas(canvas_id, jwt_username)
 
 @router.delete("/{canvas_id}", response_model=Token)
 def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
@@ -137,17 +123,17 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
         page_num = 1
 
     if page_num == 1:
-        if username is not None:
+        if username:
             # request from artist page
             all_results = all_results.union(set(get_canvases_by_username(username)))
-        if canvas_name is not None:
+        if canvas_name:
             # request from search page
             all_results = all_results.union(set(get_canvases_by_name(canvas_name)))
-        if tags is not None:
+        if tags:
             # request from explore page
             for tag in tags.split(','):
                 all_results = all_results.union(set(get_canvases_by_tag(tag)))
-        if len(all_results) == 0:
+        if username is None and canvas_name is None and tags is None:
             all_results = all_results.union(set(get_all_canvases()))
         all_results = list(all_results)
         if order == 'likes':
@@ -158,7 +144,7 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
         explore_json = save_explore_json(all_results, jwt_username)
     else:
         explore_json = json.loads(open(f'canvases/{jwt_username}/explore.json', 'r').read())
-    return {"canvases": explore_json[page_num*50-50:page_num*50],
+    return {"canvases": explore_json[page_num*CANVASES_PER_PAGE-CANVASES_PER_PAGE : page_num*CANVASES_PER_PAGE],
             "token": generate_token(jwt_username) if jwt_username else None}
 
 @router.put('/like/{canvas_id}', response_model=LikesResponse, tags=["like_canvas"])

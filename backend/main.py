@@ -2,7 +2,7 @@ from auth import Token, API_KEY, get_jwt_username, generate_token, get_password_
 from validation import is_valid_email, is_valid_username, is_valid_password
 from fastapi import FastAPI, File , UploadFile, Depends
 from user import User, router as user_router
-from canvas import router as canvas_router
+from canvas import router as canvas_router, CANVASES_PER_PAGE
 from fastapi.responses import FileResponse
 from typing import Dict, Optional
 from pydantic import BaseModel
@@ -25,6 +25,18 @@ tags_metadata = [
     {
         "name": "search_photos_api",
         "description": "Search photos in https://unsplash.com API"
+    },
+    {
+        "name": "get_canvases_by_filters",
+        "description": "Get list of canvases by filters.<br>"
+                       "The filters can be username, canvas name, tags.<br>"
+                       "The results can be sorted by likes.<br>"
+                       f"In every request (page) the maximum results is {CANVASES_PER_PAGE}.<br>"
+                       "To get the rest of results you need to request specific page."
+    },
+    {
+        "name": "like_canvas",
+        "description": "Like a canvas or remove like from canvas."
     }
 ]
 
@@ -57,8 +69,9 @@ def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_use
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Username not found.")
         report.canvas_id = None
     elif report.type == 'canvas' and report.canvas_id is not None:
+        report.canvas_id = str(report.canvas_id)
         get_canvas_from_db(report.canvas_id) # checks if canvas exist
-        report.canvas_id, report.username = str(report.canvas_id), None
+        report.canvas_id, report.username = report.canvas_id, None
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Report type must be 'artist' or 'canvas' and their fields cannot be empty")
@@ -106,15 +119,18 @@ def logout_username(username: str, jwt_username: str | None = Depends(get_jwt_us
 def search_photos(category: str, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
-    try:
-        api_results = requests.get(f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()
-        return {"api_results": api_results, "token": generate_token(jwt_username) if jwt_username else None}
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                            detail=f"Rate Limit Exceeded (50 per hour). Try again later.")
-
+    if category:
+        try:
+            api_results = requests.get(f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()
+            return {"api_results": api_results, "token": generate_token(jwt_username) if jwt_username else None}
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                detail=f"Rate Limit Exceeded (50 per hour). Try again later.")
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 @app.post("/upload")
 def upload_picture(file: UploadFile = File(...)):
+    if file.size == 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     try:
         file_id = uuid4()
         Path(UPLOAD_DIR).mkdir(exist_ok=True, parents=True)

@@ -2,10 +2,6 @@ from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import APIRouter
 
-tags_metadata = [
-
-]
-
 router = APIRouter(prefix="/user",tags=["user"])
 
 class User(BaseModel):

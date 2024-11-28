@@ -39,9 +39,9 @@ def get_jwt_username(token: str | None = Depends(oauth2_scheme)):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    if is_user_exist(username):
-        if get_disabled_status(username) == 0:
-            return username
+    # checks if the user exist and connected
+    if is_user_exist(username) and get_disabled_status(username) == 0:
+        return username
     raise credentials_exception
 
 def verify_password(plain_password, hashed_password):
