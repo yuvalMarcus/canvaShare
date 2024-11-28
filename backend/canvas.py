@@ -1,4 +1,28 @@
-from imports import *
+from auth import get_jwt_username, generate_token, Token
+from fastapi import APIRouter, Depends
+from typing import Optional, List
+from pydantic import BaseModel
+from pathlib import Path
+from db_utlls import *
+from uuid import UUID
+import random
+import time
+import json
+
+tags_metadata = [
+    {
+        "name": "get_canvases_by_filters",
+        "description": "Get list of canvases by filters.<br>"
+                       "The filters can be username, canvas name, tags.<br>"
+                       "The results can be sorted by likes.<br>"
+                       "In every request (page) the maximum results is 50.<br>"
+                       "To get the rest of results you need to request specific page."
+    },
+    {
+        "name": "like_canvas",
+        "description": "Like a canvas or remove like from canvas."
+    }
+]
 
 router = APIRouter(prefix="/canvas",tags=["canvas"])
 
@@ -23,19 +47,15 @@ class LikesResponse(BaseModel):
     token: Optional[str] = None
     
     
-@router.get("/{canvas_id}", response_model=CanvasesResponse, tags=["get_canvas_by_id"])
+@router.get("/{canvas_id}", response_model=CanvasesResponse)
 def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
+    canvas_id = str(canvas_id)
     canvas = dict()
     (canvas["id"], canvas["username"], canvas["name"] , canvas["is_public"], canvas["create_date"],
-     canvas["edit_date"], canvas["likes"]) = get_canvas_from_db(con, cur, canvas_id)
-    db_tags = cur.execute(
-        "SELECT tags.tag_name FROM tags, tags_of_canvases WHERE canvas_id=? AND tags.tag_id=tags_of_canvases.tag_id",
-        (str(canvas_id),)).fetchall()
-    canvas["tags"] = [tag[0] for tag in db_tags]
-    con.close()
+     canvas["edit_date"], canvas["likes"]) = get_canvas_from_db(canvas_id)
+    canvas["tags"] = get_tags(canvas_id)
+
     is_jwt_admin = is_admin(jwt_username)
     if is_jwt_admin is False:
         # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
@@ -56,74 +76,55 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     
     return {"canvases": [canvas], "token": generate_token(jwt_username) if jwt_username else None}
 
-@router.post("/", response_model=Token, tags=["create_canvas"])
+@router.post("/", response_model=Token)
 def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
-    # Generate unique id for canvas
-    canvas.id = uuid4()
-    while cur.execute(f"SELECT * FROM canvases WHERE canvas_id=?", (str(canvas.id),)).fetchall():
-        canvas.id = uuid4()
 
+    canvas.id = generate_canvas_id()
     # Saves canvas in json file
-    save_json_data(con, jwt_username, f'canvases/{jwt_username}/{canvas.id}.json', canvas.data)
-
-    cur.execute("INSERT INTO canvases VALUES (?,?,?,?,?,?,?)",(str(canvas.id), str(jwt_username),
-                                                               str(canvas.name), canvas.is_public, int(time.time()), 0, 0))
-    insert_tags_to_db(cur, canvas, canvas.id)
-    con.commit()
-    con.close()
+    save_json_data(jwt_username, f'canvases/{jwt_username}/{canvas.id}.json', canvas.data)
+    insert_canvas_to_db(canvas_id=canvas.id, username=jwt_username, canvas_name=canvas.name,
+                        is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0)
+    insert_tags(canvas, canvas.id)
     return {"token": generate_token(jwt_username) if jwt_username else None}
 
-@router.put("/{canvas_id}", response_model=Token, tags=["edit_canvas"])
+@router.put("/{canvas_id}", response_model=Token)
 def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
     raise_error_if_blocked(canvas.username) # Cannot edit a blocked creator's canvas
-
+    canvas_id = str(canvas_id)
     if is_canvas_editor(canvas_id, jwt_username) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
-    canvas.username = get_canvas_from_db(con, cur, canvas_id)[1]
-    save_json_data(con, canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
-    cur.execute(f"UPDATE canvases SET name=?, is_public=?, edit_date={int(time.time())} WHERE canvas_id=?",
-                (str(canvas.name), canvas.is_public, str(canvas_id)))
-    # remove old tags
-    cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id=?", (str(canvas_id),))
-    # insert new tags
-    insert_tags_to_db(cur, canvas, canvas_id)
-    con.commit()
-    con.close()
+
+    canvas.username = get_canvas_username(canvas_id)
+    save_json_data(canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
+    update_canvas_in_db(canvas_id, canvas.name, canvas.is_public)
+    remove_all_tags(canvas_id)
+    insert_tags(canvas, canvas_id)
     return {"token": generate_token(jwt_username) if jwt_username else None}
 
-@router.delete("/{canvas_id}", response_model=Token, tags=["delete_canvas"])
+@router.delete("/{canvas_id}", response_model=Token)
 def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
-    username = get_canvas_from_db(con, cur, canvas_id)[1]
+    canvas_id = str(canvas_id)
+    canvas_username = get_canvas_username(canvas_id)
     # checks if the user is creator of canvas or admin
-    if username != jwt_username and is_admin(jwt_username) is False:
+    if canvas_username != jwt_username and is_admin(jwt_username) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    cur.execute("DELETE FROM canvases WHERE canvas_id=?", (str(canvas_id),))
-    cur.execute("DELETE FROM canvas_editors WHERE canvas_id=?", (str(canvas_id),))
-    cur.execute("DELETE FROM likes WHERE canvas_id=?", (str(canvas_id),))
-    cur.execute("DELETE FROM tags_of_canvases WHERE canvas_id=?", (str(canvas_id),))
-    con.commit()
-    con.close()
+    delete_canvas_from_db(canvas_id)
     try:
-        os.remove(f'canvases/{username}/{canvas_id}.json')
+        os.remove(f'canvases/{canvas_username}/{canvas_id}.json')
     except Exception:
         pass
     return {"token": generate_token(jwt_username) if jwt_username else None}
 
 @router.get("/", response_model=CanvasesResponse, tags=["get_canvases_by_filters"])
-def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None, tags: Optional[str] = None,
-                 order: Optional[str] = None, page_num: Optional[int] = None, jwt_username: str | None = Depends(get_jwt_username)):
+def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
+                 tags: Optional[str] = None, order: Optional[str] = None, page_num: Optional[int] = None,
+                 jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
     if jwt_username is None:
         jwt_username = 'guest' # debug
@@ -132,69 +133,73 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
         page_num = 1
 
     if page_num == 1:
-        con = sqlite3.connect(DB)
-        cur = con.cursor()
         if username is not None:
             # request from artist page
-            all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE username=?", (username,)).fetchall()))
+            all_results = all_results.union(set(get_canvases_by_username(username)))
         if canvas_name is not None:
             # request from search page
-            all_results = all_results.union(set(cur.execute(f"SELECT * from canvases WHERE name LIKE ?", (f'%{canvas_name}%',)).fetchall()))
+            all_results = all_results.union(set(get_canvases_by_name(canvas_name)))
         if tags is not None:
             # request from explore page
             for tag in tags.split(','):
-                all_results = all_results.union(set(cur.execute(f"SELECT canvases.canvas_id, username, name, is_public, "
-                                                                f"create_date, edit_date, likes "
-                                                                f"FROM canvases, tags_of_canvases, tags "
-                                                                f"WHERE tags.tag_name=? "
-                                                                f"AND canvases.canvas_id=tags_of_canvases.canvas_id "
-                                                                f"AND tags.tag_id=tags_of_canvases.tag_id",
-                                                                (tag.strip(), )).fetchall()))
+                all_results = all_results.union(set(get_canvases_by_tag(tag)))
         if len(all_results) == 0:
-            all_results = all_results.union(set(cur.execute(f"SELECT * from canvases").fetchall()))
+            all_results = all_results.union(set(get_all_canvases()))
         all_results = list(all_results)
         if order == 'likes':
             # sort canvases by likes from high to low
             all_results.sort(key=lambda x: x[-1], reverse=True)
         else:
             random.shuffle(all_results)
-        explore_json = save_explore_json(all_results, jwt_username, cur)
-        con.close()
+        explore_json = save_explore_json(all_results, jwt_username)
     else:
         explore_json = json.loads(open(f'canvases/{jwt_username}/explore.json', 'r').read())
-    return {"canvases": explore_json[page_num*50-50:page_num*50], "token": generate_token(jwt_username) if jwt_username else None}
+    return {"canvases": explore_json[page_num*50-50:page_num*50],
+            "token": generate_token(jwt_username) if jwt_username else None}
 
 @router.put('/like/{canvas_id}', response_model=LikesResponse, tags=["like_canvas"])
 def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_guest(jwt_username)
     raise_error_if_blocked(jwt_username)
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
-    canvas_username = get_canvas_from_db(con, cur, canvas_id)[1]
+    canvas_id = str(canvas_id)
     try:
-        raise_error_if_blocked(canvas_username) # Cannot like a blocked creator's canvas.
+        raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot like a blocked creator's canvas.
     except Exception as e:
-        con.close()
         raise e
-    res = cur.execute("SELECT * from likes WHERE canvas_id=? AND username=?",
-                      (str(canvas_id), jwt_username)).fetchone()
-    if res is None:
-        # like canvas
-        cur.execute("INSERT INTO likes VALUES (?,?)", (str(canvas_id), jwt_username))
-    else:
-        # canvas already liked. unlike canvas
-        cur.execute("DELETE FROM likes WHERE canvas_id=? AND username=? ", (str(canvas_id), jwt_username))
-    num_of_likes = cur.execute("SELECT COUNT(*) FROM likes WHERE canvas_id=?", (str(canvas_id),)).fetchone()[0]
-    cur.execute("UPDATE canvases SET likes=? WHERE canvas_id=?", (num_of_likes, str(canvas_id)))
-    con.commit()
-    con.close()
-    return {"likes": num_of_likes, "token": generate_token(jwt_username) if jwt_username else None}
+    like_or_unlike_canvas(canvas_id, jwt_username)
+    return {"likes": get_num_of_likes(canvas_id), "token": generate_token(jwt_username) if jwt_username else None}
 
-@router.get('/likes_number/{canvas_id}', tags=["get_canvas_likes"])
+@router.get('/likes_number/{canvas_id}')
 def get_canvas_likes_number(canvas_id: UUID):
-    con = sqlite3.connect(DB)
-    cur = con.cursor()
-    get_canvas_from_db(con, cur, canvas_id)  # checks if canvas exist
-    num_of_likes = cur.execute("SELECT COUNT(*) FROM likes WHERE canvas_id=?", (str(canvas_id),)).fetchone()[0]
-    con.close()
-    return {"likes": num_of_likes}
+    canvas_id = str(canvas_id)
+    get_canvas_from_db(canvas_id)  # checks if canvas exist
+    return {"likes": get_num_of_likes(canvas_id)}
+
+def save_json_data(username, canvas_path, data):
+    Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
+    try:
+        data = data.replace('\'', '\"')
+        with open(canvas_path, 'w', encoding='utf-8') as fd:
+            json.dump(json.loads(data), fd, ensure_ascii=False, indent=4) # raises error if not json, otherwise saves it
+    except json.decoder.JSONDecodeError:
+        try:
+            os.remove(canvas_path)
+        except Exception:
+            pass
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
+
+def save_explore_json(all_results, username):
+    canvases = []
+    Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True)  # maybe in windows needs to add '/' prefix
+    for result in all_results:
+        canvas = dict()
+        (canvas['id'], canvas['username'], canvas['name'], canvas['is_public'], canvas['create_date'],
+         canvas['edit_date'], canvas['likes']) = result
+        canvas['tags'] = get_tags(canvas['id'])
+        with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
+            canvas['data'] = str(json.loads(fd.read()))
+        canvases.append(canvas)
+    # save the list of canvases as json file
+    with open(f'canvases/{username}/explore.json', 'w', encoding='utf-8') as fd:
+        json.dump(canvases, fd, ensure_ascii=False, indent=4)
+    return canvases
