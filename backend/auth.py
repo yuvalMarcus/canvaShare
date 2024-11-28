@@ -40,7 +40,7 @@ def get_jwt_username(token: str | None = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
     if is_user_exist(username):
-        if user_disabled_status(username) == 0:
+        if get_disabled_status(username) == 0:
             return username
     raise credentials_exception
 
