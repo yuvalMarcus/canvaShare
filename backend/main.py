@@ -1,6 +1,7 @@
 from auth import Token, API_KEY, get_jwt_username, generate_token, get_password_hash, verify_password
 from validation import is_valid_email, is_valid_username, is_valid_password
 from fastapi import FastAPI, File , UploadFile, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from user import User, router as user_router
 from canvas import router as canvas_router, CANVASES_PER_PAGE
 from fastapi.responses import FileResponse
@@ -58,6 +59,21 @@ class Photo(BaseModel):
 app = FastAPI(openapi_tags=tags_metadata)
 app.include_router(canvas_router)
 app.include_router(user_router)
+
+origins = [
+    "http://localhost:5173/",
+    "http://localhost:8000/",
+    "http://localhost/"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post('/report', response_model=Token, tags=["report"])
 def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_username)):
