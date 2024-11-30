@@ -105,8 +105,10 @@ def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_us
     if canvas_username != jwt_username and is_admin(jwt_username) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     delete_canvas_from_db(canvas_id)
+    json_path = f'canvases/{canvas_username}/{canvas_id}.json'
+    delete_photos_of_canvas(json_path)
     try:
-        os.remove(f'canvases/{canvas_username}/{canvas_id}.json')
+        os.remove(json_path)
     except Exception:
         pass
     return {"token": generate_token(jwt_username) if jwt_username else None}
@@ -193,3 +195,15 @@ def save_explore_json(all_results, username):
     with open(f'canvases/{username}/explore.json', 'w', encoding='utf-8') as fd:
         json.dump(canvases, fd, ensure_ascii=False, indent=4)
     return canvases
+
+def delete_photos_of_canvas(json_path):
+    try:
+        with open(json_path, 'r', encoding='utf-8') as fd:
+            data = json.loads(fd.read())
+            for obj in data['objects']:
+                try:
+                    os.remove(f'{UPLOAD_DIR}/{obj['src'].split('/')[-1]}')
+                except Exception:
+                    pass
+    except Exception:
+        pass

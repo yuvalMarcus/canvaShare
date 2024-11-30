@@ -147,11 +147,16 @@ def search_photos(category: str, jwt_username: str | None = Depends(get_jwt_user
 def upload_picture(file: UploadFile = File(...)):
     if file.size == 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    if type(file.filename) is str and not file.filename.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Invalid file type. Please upload an image in format jpg, jpeg, webp or png.")
+    if file.size > 10*1024*1024:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image too large. Maximum size is 10MB.")
     try:
         file_id = uuid4()
         Path(UPLOAD_DIR).mkdir(exist_ok=True, parents=True)
         file_extension = file.filename.split('.')[-1]
-        file_path = f"{UPLOAD_DIR}/{file_id}.{file_extension}"
+        file_path = f"{UPLOAD_DIR}/{file_id}.{file_extension.lower()}"
         with Path(file_path).open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         return {"file_path": file_path}
