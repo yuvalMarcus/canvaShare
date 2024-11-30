@@ -306,10 +306,11 @@ def create_tables():
     con.close()
 
 def delete_tables_and_folders():
-    try:
-        shutil.rmtree('canvases/')
-    except Exception:
-        pass
+    for folder in ['canvases', UPLOAD_DIR]:
+        try:
+            shutil.rmtree(f'{folder}/')
+        except Exception:
+            pass
     con = sqlite3.connect(DB)
     cur = con.cursor()
     for table in ("users", "canvases", "canvas_editors", "tags", "tags_of_canvases", "favorite_tags",

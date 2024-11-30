@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, UTC
 from db_utlls import get_disabled_status
 from passlib.context import CryptContext
+from jose.constants import ALGORITHMS
 from db_utlls import is_user_exist
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -15,7 +16,6 @@ load_dotenv()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 API_KEY = os.getenv('API_KEY')
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALGORITHM = "HS256"
 
 class Token(BaseModel):
     token: Optional[str] = None
@@ -31,7 +31,8 @@ def get_jwt_username(token: str | None = Depends(oauth2_scheme)):
                                           detail="Could not validate credentials.",
                                           headers={"WWW-Authenticate": "Bearer"})
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Specifying algorithm name to avoid security vulnerability CVE-2024-33663
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHMS.HS256)
         username: str = payload.get("username")
         expiration: int = payload.get("exp")
 
@@ -56,5 +57,5 @@ def generate_token(username: str | None):
     to_encode = {"username": username}
     expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHMS.HS256)
     return encoded_jwt
