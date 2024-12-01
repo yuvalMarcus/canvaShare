@@ -10,7 +10,6 @@ class User(BaseModel):
     email: Optional[str] = None
     tags: Optional[List[str]] = None
     is_blocked: Optional[bool] = False
-    is_deleted: Optional[bool] = False
     is_admin: Optional[bool] = False
     is_super_admin: Optional[bool] = False
     profile_photo: Optional[str] = None

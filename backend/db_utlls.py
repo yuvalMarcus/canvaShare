@@ -167,12 +167,12 @@ def get_num_of_likes(canvas_id):
 #################################
 ############# user ##############
 
-def insert_user_to_db(username, hashed_password, email, is_blocked, is_deleted, profile_photo, cover_photo, about, disabled):
+def insert_user_to_db(username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled):
     con, cur = connect_to_db()
     cur.execute(
-        "INSERT INTO users (username, hashed_password, email, is_blocked, is_deleted,"
-        " profile_photo, cover_photo, about, disabled) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-        (username, hashed_password, email, is_blocked, is_deleted, profile_photo, cover_photo, about, disabled))
+        "INSERT INTO users (username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled)"
+        " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+        (username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled))
     commit_and_close_db(con)
 
 def raise_error_if_guest(username):
@@ -266,8 +266,8 @@ def insert_report_to_db(report_type, canvas_id, username, description):
 def create_tables():
     con, cur = connect_to_db()
     tables = ["users(username VARCHAR(255) PRIMARY KEY NOT NULL, hashed_password VARCHAR(255) NOT NULL,"
-              " email VARCHAR(255) NOT NULL, is_blocked BOOLEAN NOT NULL, is_deleted BOOLEAN NOT NULL,"
-              " profile_photo VARCHAR(255) UNIQUE, cover_photo VARCHAR(255) UNIQUE, about TEXT, disabled BOOLEAN NOT NULL)",
+              " email VARCHAR(255) NOT NULL, is_blocked BOOLEAN NOT NULL, profile_photo VARCHAR(255) UNIQUE,"
+              " cover_photo VARCHAR(255) UNIQUE, about TEXT, disabled BOOLEAN NOT NULL)",
 
               "canvases(canvas_id VARCHAR(255) PRIMARY KEY NOT NULL,"
               " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, name VARCHAR(255) NOT NULL,"

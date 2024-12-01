@@ -51,11 +51,6 @@ class Report(BaseModel):
     username: Optional[str] = None
     description: str
 
-class Photo(BaseModel):
-    id: Optional[UUID] = None
-    file: UploadFile = File(...)
-
-
 app = FastAPI(openapi_tags=tags_metadata)
 app.include_router(canvas_router)
 app.include_router(user_router)
@@ -99,7 +94,7 @@ def register(user: User):
     if is_valid_username(user.username) and is_valid_password(user.password) and is_valid_email(user.email):
         tags_id = get_tags_id(user.tags)
         insert_user_to_db(username=user.username.lower(), hashed_password=get_password_hash(user.password),
-                          email=user.email, is_blocked=False, is_deleted=False, profile_photo=None, cover_photo=None,
+                          email=user.email, is_blocked=False, profile_photo=None, cover_photo=None,
                           about=None, disabled=True)
         insert_favorite_tags_to_db(user.username, tags_id)
         connect_user(user.username)
