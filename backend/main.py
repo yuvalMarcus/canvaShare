@@ -57,9 +57,7 @@ app.include_router(canvas_router)
 app.include_router(user_router)
 
 origins = [
-    "http://localhost:5173/",
-    "http://localhost:8000/",
-    "http://localhost/"
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -166,7 +164,7 @@ def uploaded_files(file_id: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File not found.")
     return FileResponse(file_path)
 
-delete_tables_and_folders()
+#delete_tables_and_folders()
 create_tables()
 
 if __name__ == "__main__":
