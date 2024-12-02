@@ -20,7 +20,7 @@ UPLOAD_DIR = "uploaded_files"
 def get_tags(canvas_id):
     con, cur = connect_to_db()
     cur.execute(
-        "SELECT tags.tag_name FROM tags, tags_of_canvases WHERE canvas_id = %s AND tags.tag_id=tags_of_canvases.tag_id",
+        "SELECT tags.name FROM tags, tags_of_canvases WHERE canvas_id = %s AND tags.id=tags_of_canvases.tag_id",
         (canvas_id,))
     tags = cur.fetchall()
     con.close()
@@ -32,7 +32,7 @@ def get_tags_id(tags):
     if tags is None:
         return tags_id
     for tag in set(tags):
-        cur.execute("SELECT tag_id FROM tags WHERE tag_name = %s", (tag,))
+        cur.execute("SELECT id FROM tags WHERE name = %s", (tag,))
         res = cur.fetchone()
         if res is None:
             con.close()
@@ -48,12 +48,12 @@ def insert_tags(canvas, canvas_id):
             # invalid tag name. not saved in db
             continue
         # checks if tag exist in db. if not create new tag and then add this tag to canvas.
-        cur.execute(f"SELECT tag_id FROM tags WHERE tag_name = %s", (tag,))
+        cur.execute(f"SELECT id FROM tags WHERE name = %s", (tag,))
         res = cur.fetchone()
         if res is None:
             # create new tag in db
-            cur.execute(f"INSERT INTO tags (tag_name) VALUES (%s)", (tag,))
-            cur.execute(f"SELECT tag_id FROM tags WHERE tag_name = %s", (tag,))
+            cur.execute(f"INSERT INTO tags (name) VALUES (%s)", (tag,))
+            cur.execute(f"SELECT id FROM tags WHERE name = %s", (tag,))
             res = cur.fetchone()
         tag_id = res[0]
         cur.execute(f"INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
@@ -77,7 +77,7 @@ def generate_canvas_id():
     con, cur = connect_to_db()
     canvas_id = str(uuid4())
     while True:
-        cur.execute(f"SELECT * FROM canvases WHERE canvas_id=%s", (canvas_id,))
+        cur.execute(f"SELECT * FROM canvases WHERE id=%s", (canvas_id,))
         if cur.fetchone() is None:
             break
         canvas_id = str(uuid4())
@@ -92,19 +92,19 @@ def insert_canvas_to_db(canvas_id, username, canvas_name, is_public, create_date
 
 def update_canvas_in_db(canvas_id, canvas_name, is_public):
     con, cur = connect_to_db()
-    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())} WHERE canvas_id=%s",
+    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())} WHERE id=%s",
                 (canvas_name, is_public, canvas_id))
     commit_and_close_db(con)
 
 def delete_canvas_from_db(canvas_id):
     con, cur = connect_to_db()
-    cur.execute("DELETE FROM canvases WHERE canvas_id=%s", (canvas_id,))
+    cur.execute("DELETE FROM canvases WHERE id=%s", (canvas_id,))
     commit_and_close_db(con)
 
 def get_canvas_from_db(canvas_id):
     con, cur = connect_to_db()
     # return canvas if existed, else raise 404 error
-    cur.execute(f"SELECT * from canvases WHERE canvas_id=%s", (canvas_id,))
+    cur.execute(f"SELECT * from canvases WHERE id=%s", (canvas_id,))
     res = cur.fetchone()
     con.close()
     if res is None:
@@ -130,9 +130,9 @@ def get_canvases_by_name(canvas_name):
 
 def get_canvases_by_tag(tag):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.canvas_id, username, name, is_public, create_date, edit_date, likes "
-                f"FROM canvases, tags_of_canvases, tags WHERE tags.tag_name=%s "
-                f"AND canvases.canvas_id=tags_of_canvases.canvas_id AND tags.tag_id=tags_of_canvases.tag_id",
+    cur.execute(f"SELECT canvases.id, username, canvases.name, is_public, create_date, edit_date, likes "
+                f"FROM canvases, tags_of_canvases, tags WHERE tags.name=%s "
+                f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id",
                 (tag.strip(),))
     canvases = cur.fetchall()
     con.close()
@@ -154,7 +154,7 @@ def like_or_unlike_canvas(canvas_id, username):
     else:
         # unlike canvas
         cur.execute("DELETE FROM likes WHERE canvas_id=%s AND username=%s ", (canvas_id, username))
-    cur.execute("UPDATE canvases SET likes=%s WHERE canvas_id=%s", (get_num_of_likes(canvas_id), canvas_id))
+    cur.execute("UPDATE canvases SET likes=%s WHERE id=%s", (get_num_of_likes(canvas_id), canvas_id))
     commit_and_close_db(con)
 
 def get_num_of_likes(canvas_id):
@@ -212,7 +212,7 @@ def is_canvas_editor(canvas_id, username):
     if username is None:
         return False
     con, cur = connect_to_db()
-    cur.execute("SELECT username FROM canvases WHERE canvas_id=%s", (canvas_id,))
+    cur.execute("SELECT username FROM canvases WHERE id=%s", (canvas_id,))
     res = cur.fetchone()
     if res is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Canvas not found.")
@@ -256,7 +256,7 @@ def disconnect_user(username):
 def insert_report_to_db(report_type, canvas_id, username, description):
     con, cur = connect_to_db()
     cur.execute(
-        f"INSERT INTO reports (report_date, type, canvas_id, username, description) VALUES ({int(time.time())},%s,%s,%s,%s)",
+        f"INSERT INTO reports (date, type, canvas_id, username, description) VALUES ({int(time.time())},%s,%s,%s,%s)",
         (report_type, canvas_id, username, description))
     commit_and_close_db(con)
 
@@ -269,28 +269,28 @@ def create_tables():
               " email VARCHAR(255) NOT NULL, is_blocked BOOLEAN NOT NULL, profile_photo VARCHAR(255) UNIQUE,"
               " cover_photo VARCHAR(255) UNIQUE, about TEXT, disabled BOOLEAN NOT NULL)",
 
-              "canvases(canvas_id VARCHAR(255) PRIMARY KEY NOT NULL,"
+              "canvases(id VARCHAR(255) PRIMARY KEY NOT NULL,"
               " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, name VARCHAR(255) NOT NULL,"
               " is_public BOOLEAN NOT NULL, create_date INT NOT NULL, edit_date INT NOT NULL, likes INT NOT NULL,"
               " CHECK (create_date >= 0 AND edit_date >= 0 AND likes >= 0))",
 
-              "reports(report_id SERIAL PRIMARY KEY NOT NULL, report_date INT NOT NULL, type VARCHAR(255) NOT NULL,"
-              " canvas_id VARCHAR(255) REFERENCES canvases(canvas_id) ON DELETE CASCADE,"
+              "reports(id SERIAL PRIMARY KEY NOT NULL, date INT NOT NULL, type VARCHAR(255) NOT NULL,"
+              " canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
               " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,"
-              " description TEXT NOT NULL, CHECK (report_date >= 0))",
+              " description TEXT NOT NULL, CHECK (date >= 0))",
 
-              "canvas_editors(canvas_id VARCHAR(255) REFERENCES canvases(canvas_id) ON DELETE CASCADE,"
+              "canvas_editors(canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
               " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, PRIMARY KEY (canvas_id, username))",
 
-              "tags(tag_id SERIAL PRIMARY KEY NOT NULL, tag_name VARCHAR(255) NOT NULL UNIQUE)",
+              "tags(id SERIAL PRIMARY KEY NOT NULL, name VARCHAR(255) NOT NULL UNIQUE)",
 
-              "tags_of_canvases(canvas_id VARCHAR(255) REFERENCES canvases(canvas_id) ON DELETE CASCADE,"
-              " tag_id INT REFERENCES tags(tag_id) ON DELETE CASCADE, PRIMARY KEY (canvas_id, tag_id))",
+              "tags_of_canvases(canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
+              " tag_id INT REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (canvas_id, tag_id))",
 
               "favorite_tags(username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,"
-              " tag_id INT REFERENCES tags(tag_id) ON DELETE CASCADE, PRIMARY KEY (username, tag_id))",
+              " tag_id INT REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (username, tag_id))",
 
-              "likes(canvas_id VARCHAR(255) REFERENCES canvases(canvas_id) ON DELETE CASCADE,"
+              "likes(canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
               " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, PRIMARY KEY (canvas_id, username))",
 
               "admins(username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE PRIMARY KEY)",
@@ -300,6 +300,7 @@ def create_tables():
         try:
             cur.execute("CREATE TABLE IF NOT EXISTS " + table)
         except Exception as e:
+            print(f'Failed to create table {table}')
             print(e)
     commit_and_close_db(con)
 
@@ -314,8 +315,8 @@ def delete_tables_and_folders():
                   "super_admins", "canvases", "users"):
         try:
             cur.execute(f"DROP TABLE {table}")
-        except Exception as e:
-            print(e)
+        except Exception:
+            pass
     commit_and_close_db(con)
 
 def connect_to_db():

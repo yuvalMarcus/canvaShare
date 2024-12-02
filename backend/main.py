@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from pathlib import Path
 from db_utlls import *
 from uuid import UUID
+import logging
 import requests
 import uvicorn
 
@@ -169,4 +170,6 @@ delete_tables_and_folders()
 create_tables()
 
 if __name__ == "__main__":
+    logger = logging.getLogger()
+    logger.setLevel(logging.ERROR)
     uvicorn.run(app, host="127.0.0.1", port=8000)
