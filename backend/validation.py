@@ -1,12 +1,12 @@
-from fastapi import HTTPException, status
 from db_utlls import is_user_exist, get_username_by_email
+from fastapi import HTTPException, status
 import re
 
 def is_valid_password(password):
     if password is not None and 4 <= len(password) <= 50:
-        """and re.search(r'[0-9]', password)
-            and re.search(r'[A-Z]', password) and re.search(r'[a-z]', password)
-            and re.search(r'[!@#$%^&*_+\-=]', password)):"""
+        #and re.search(r'[0-9]', password)
+        #and re.search(r'[A-Z]', password) and re.search(r'[a-z]', password)
+        #and re.search(r'[!@#$%^&*_+\-=]', password)):
         return True
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid password")
 

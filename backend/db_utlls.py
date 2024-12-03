@@ -260,14 +260,14 @@ def get_username_by_email(email):
         return res[0]
     return None
 
-def update_photo(file_path, username, is_profile=False, is_cover=False):
+def update_photo(file_path, username, save_to):
     con, cur = connect_to_db()
     prev_photo = None
-    if is_profile:
+    if save_to == 'profile_photo':
         cur.execute("SELECT profile_photo FROM users WHERE username=%s", (username,))
         prev_photo = cur.fetchone()
         cur.execute("UPDATE users SET profile_photo=%s WHERE username=%s", (file_path, username))
-    elif is_cover:
+    elif save_to == 'cover_photo':
         cur.execute("SELECT cover_photo FROM users WHERE username=%s", (username,))
         prev_photo = cur.fetchone()
         cur.execute("UPDATE users SET cover_photo=%s WHERE username=%s", (file_path, username))
@@ -285,13 +285,30 @@ def insert_report_to_db(report_type, canvas_id, username, description):
         (report_type, canvas_id, username, description))
     commit_and_close_db(con)
 
+def get_db_reports():
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM reports")
+    res = cur.fetchall()
+    con.close()
+    return res
+
+def delete_report_from_db(report_id):
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM reports WHERE id=%s", (report_id,))
+    if cur.fetchone() is None:
+        con.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+    cur.execute("DELETE FROM reports WHERE id=%s", (report_id,))
+    commit_and_close_db(con)
+    con.close()
+
 ####################################
 ####### initial functions ##########
 
 def create_tables_and_folders():
     con, cur = connect_to_db()
     tables = ["users(username VARCHAR(255) PRIMARY KEY NOT NULL, hashed_password VARCHAR(255) NOT NULL,"
-              " email VARCHAR(255) NOT NULL, is_blocked BOOLEAN NOT NULL, profile_photo VARCHAR(255) UNIQUE,"
+              " email VARCHAR(255) UNIQUE NOT NULL, is_blocked BOOLEAN NOT NULL, profile_photo VARCHAR(255) UNIQUE,"
               " cover_photo VARCHAR(255) UNIQUE, about TEXT, disabled BOOLEAN NOT NULL)",
 
               "canvases(id VARCHAR(255) PRIMARY KEY NOT NULL,"

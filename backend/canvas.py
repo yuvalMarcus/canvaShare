@@ -1,8 +1,7 @@
-from auth import get_jwt_username, generate_token, Token
+from auth import get_jwt_username, generate_token, Token, check_guest_or_blocked
 from fastapi import APIRouter, Depends
 from typing import Optional, List
 from pydantic import BaseModel
-from pathlib import Path
 from db_utlls import *
 from uuid import UUID
 import random
@@ -68,10 +67,7 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     return {"canvas": canvas, "token": generate_token(jwt_username) if jwt_username else None}
 
 @router.post("", response_model=CanvasResponse)
-def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
-    raise_error_if_guest(jwt_username)
-    raise_error_if_blocked(jwt_username)
-
+def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(check_guest_or_blocked)):
     canvas.id = generate_canvas_id()
     # Saves canvas in json file
     save_json_data(jwt_username, f'canvases/{jwt_username}/{canvas.id}.json', canvas.data)
@@ -81,9 +77,7 @@ def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(get_jwt_use
     return get_canvas(canvas.id, jwt_username)
 
 @router.put("/{canvas_id}", response_model=CanvasResponse)
-def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(get_jwt_username)):
-    raise_error_if_guest(jwt_username)
-    raise_error_if_blocked(jwt_username)
+def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(check_guest_or_blocked)):
     raise_error_if_blocked(canvas.username) # Cannot edit a blocked creator's canvas
     canvas_id = str(canvas_id)
     if is_canvas_editor(canvas_id, jwt_username) is False:
@@ -96,9 +90,7 @@ def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = De
     return get_canvas(canvas_id, jwt_username)
 
 @router.delete("/{canvas_id}", response_model=Token)
-def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
-    raise_error_if_guest(jwt_username)
-    raise_error_if_blocked(jwt_username)
+def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_guest_or_blocked)):
     canvas_id = str(canvas_id)
     canvas_username = get_canvas_username(canvas_id)
     # checks if the user is creator of canvas or admin
@@ -150,9 +142,7 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
             "token": generate_token(jwt_username) if jwt_username else None}
 
 @router.put('/like/{canvas_id}', response_model=LikesResponse, tags=["like_canvas"])
-def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
-    raise_error_if_guest(jwt_username)
-    raise_error_if_blocked(jwt_username)
+def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_guest_or_blocked)):
     canvas_id = str(canvas_id)
     try:
         raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot like a blocked creator's canvas.
