@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from db_utlls import is_user_exist
+from db_utlls import is_user_exist, get_username_by_email
 import re
 
 def is_valid_password(password):
@@ -18,6 +18,8 @@ def is_valid_username(username):
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username")
 
 def is_valid_email(email):
+    if get_username_by_email(email) is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with this email already exists")
     if email is not None and re.search(r"^\S+@\S+\.\S+$", email):
         return True
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email")

@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from dotenv import load_dotenv
+from pathlib import Path
 from uuid import uuid4
 import psycopg2
 import shutil
@@ -250,6 +251,30 @@ def disconnect_user(username):
     cur.execute("UPDATE users SET disabled=%s WHERE username=%s", (True, username))
     commit_and_close_db(con)
 
+def get_username_by_email(email):
+    con, cur = connect_to_db()
+    cur.execute("SELECT username FROM users WHERE email=%s", (email,))
+    res = cur.fetchone()
+    con.close()
+    if res is not None:
+        return res[0]
+    return None
+
+def update_photo(file_path, username, is_profile=False, is_cover=False):
+    con, cur = connect_to_db()
+    prev_photo = None
+    if is_profile:
+        cur.execute("SELECT profile_photo FROM users WHERE username=%s", (username,))
+        prev_photo = cur.fetchone()
+        cur.execute("UPDATE users SET profile_photo=%s WHERE username=%s", (file_path, username))
+    elif is_cover:
+        cur.execute("SELECT cover_photo FROM users WHERE username=%s", (username,))
+        prev_photo = cur.fetchone()
+        cur.execute("UPDATE users SET cover_photo=%s WHERE username=%s", (file_path, username))
+    commit_and_close_db(con)
+    if prev_photo is not None:
+        return prev_photo[0]
+
 ####################################
 ########### report #################
 
@@ -263,7 +288,7 @@ def insert_report_to_db(report_type, canvas_id, username, description):
 ####################################
 ####### initial functions ##########
 
-def create_tables():
+def create_tables_and_folders():
     con, cur = connect_to_db()
     tables = ["users(username VARCHAR(255) PRIMARY KEY NOT NULL, hashed_password VARCHAR(255) NOT NULL,"
               " email VARCHAR(255) NOT NULL, is_blocked BOOLEAN NOT NULL, profile_photo VARCHAR(255) UNIQUE,"
@@ -303,6 +328,8 @@ def create_tables():
             print(f'Failed to create table {table}')
             print(e)
     commit_and_close_db(con)
+    for folder in ['canvases', UPLOAD_DIR]:
+        Path(folder).mkdir(exist_ok=True, parents=True)
 
 def delete_tables_and_folders():
     for folder in ['canvases', UPLOAD_DIR]:

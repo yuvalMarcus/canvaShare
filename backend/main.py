@@ -7,7 +7,6 @@ from canvas import router as canvas_router, CANVASES_PER_PAGE
 from fastapi.responses import FileResponse
 from typing import Dict, Optional
 from pydantic import BaseModel
-from pathlib import Path
 from db_utlls import *
 from uuid import UUID
 import logging
@@ -60,14 +59,8 @@ origins = [
     "http://localhost:5173"
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"],
+                   allow_headers=["*"])
 
 @app.post('/report', response_model=Token, tags=["report"])
 def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_username)):
@@ -101,6 +94,8 @@ def register(user: User):
 
 @app.post('/login', response_model=Token)
 def login(user: User):
+    username_by_email = get_username_by_email(user.username) # In case an email was entered in the username box
+    user.username = username_by_email if username_by_email is not None else user.username
     if is_user_exist(user.username) and user.password:
         hashed_password = get_hashed_password(user.username)
         if verify_password(user.password, hashed_password=hashed_password):
@@ -131,28 +126,32 @@ def search_photos(category: str, jwt_username: str | None = Depends(get_jwt_user
     raise_error_if_blocked(jwt_username)
     if category:
         try:
-            api_results = requests.get(f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()
+            api_results = requests.get(
+                f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()
             return {"api_results": api_results, "token": generate_token(jwt_username) if jwt_username else None}
         except Exception:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                                 detail=f"Rate Limit Exceeded (50 per hour). Try again later.")
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 @app.post("/upload")
-def upload_picture(file: UploadFile = File(...)):
-    if file.size == 0:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+def upload_picture(file: UploadFile = File(...), is_profile_photo: bool = False, is_cover_photo: bool = False,
+                   jwt_username: str | None = Depends(get_jwt_username)):
+    raise_error_if_guest(jwt_username)
+    raise_error_if_blocked(jwt_username)
+    if not (0 < file.size <= 10*1024*1024):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image size must be between 0 and 10MB")
     if type(file.filename) is str and not file.filename.lower().endswith((".jpg", ".jpeg", ".png", ".webp")):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid file type. Please upload an image in format jpg, jpeg, webp or png.")
-    if file.size > 10*1024*1024:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image too large. Maximum size is 10MB.")
     try:
-        file_id = uuid4()
-        Path(UPLOAD_DIR).mkdir(exist_ok=True, parents=True)
+        file_id = generate_file_id()
         file_extension = file.filename.split('.')[-1]
         file_path = f"{UPLOAD_DIR}/{file_id}.{file_extension.lower()}"
         with Path(file_path).open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+        if is_profile_photo or is_cover_photo:
+            prev_photo = update_photo(file_path, jwt_username, is_profile=is_profile_photo, is_cover=is_cover_photo)
+            delete_prev_photo(prev_photo)
         return {"file_path": file_path}
     except Exception:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT)
@@ -164,8 +163,28 @@ def uploaded_files(file_id: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"File not found.")
     return FileResponse(file_path)
 
+def generate_file_id():
+    while True:
+        exist = False
+        file_id = str(uuid4())
+        for file in Path(UPLOAD_DIR).iterdir():
+            if file_id in file.name:
+                exist = True
+                break
+        if not exist:
+            break
+    return file_id
+
+def delete_prev_photo(prev_photo):
+    try:
+        if prev_photo:
+            os.remove(prev_photo)
+    except Exception:
+        print(f'Could not delete previous photo {prev_photo}')
+
+
 #delete_tables_and_folders()
-create_tables()
+create_tables_and_folders()
 
 if __name__ == "__main__":
     logger = logging.getLogger()
