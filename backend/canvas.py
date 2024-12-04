@@ -170,7 +170,7 @@ def convert_results_to_canvases(results):
             with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
                 canvas['data'] = str(json.loads(fd.read()))
         except FileNotFoundError:
-            print(f'Error: Canvas {canvas["username"]}/{canvas["id"]} not found')
+            print(f'Error: Json Data of canvas {canvas["username"]}/{canvas["id"]} not found')
             canvas['data'] = '{}'
         canvases.append(canvas)
     return canvases
