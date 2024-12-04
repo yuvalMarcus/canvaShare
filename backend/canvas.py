@@ -61,7 +61,7 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
             canvas["data"] = str(json.loads(fd.read()))
     except FileNotFoundError:
         # canvas exist in db but the json file of data not exist.
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Canvas not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Json Data of canvas {canvas_id} not found")
     except json.decoder.JSONDecodeError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
     
@@ -133,10 +133,7 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
 @router.put('/like/{canvas_id}', response_model=LikesResponse)
 def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_guest_or_blocked)):
     canvas_id = str(canvas_id)
-    try:
-        raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot like a blocked creator's canvas.
-    except Exception as e:
-        raise e
+    raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot like a blocked creator's canvas.
     like_or_unlike_canvas(canvas_id, jwt_username)
     return {"likes": get_num_of_likes(canvas_id), "token": generate_token(jwt_username) if jwt_username else None}
 
