@@ -123,7 +123,8 @@ def get_canvas_username(canvas_id):
 
 def get_canvases_by_username(username, page_num, order_by):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from canvases WHERE username=%s" + order_by + " LIMIT %s OFFSET %s",
+    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.username=users.username"
+                f" AND users.username=%s AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
                 (username, CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
@@ -131,7 +132,8 @@ def get_canvases_by_username(username, page_num, order_by):
 
 def get_canvases_by_name(canvas_name, page_num, order_by):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from canvases WHERE name LIKE %s" + order_by + " LIMIT %s OFFSET %s",
+    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.username=users.username"
+                f" AND is_blocked=false AND canvases.name LIKE %s" + order_by + " LIMIT %s OFFSET %s",
                 (f'%{canvas_name}%', CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
@@ -139,9 +141,9 @@ def get_canvases_by_name(canvas_name, page_num, order_by):
 
 def get_canvases_by_tag(tag):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.id, username, canvases.name, is_public, create_date, edit_date, likes "
-                f"FROM canvases, tags_of_canvases, tags WHERE tags.name=%s "
-                f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id",
+    cur.execute(f"SELECT canvases.* FROM canvases, tags_of_canvases, tags, users WHERE tags.name=%s "
+                f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id "
+                f"AND canvases.username=users.username AND is_blocked=false",
                 (tag.strip(),))
     canvases = cur.fetchall()
     con.close()
@@ -149,7 +151,8 @@ def get_canvases_by_tag(tag):
 
 def get_all_canvases(page_num, order_by):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from canvases" + order_by + " LIMIT %s OFFSET %s",
+    cur.execute(f"SELECT canvases.* FROM canvases,users  WHERE "
+                f"canvases.username=users.username AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
                 (CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()

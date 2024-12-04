@@ -45,13 +45,8 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     canvas["tags"] = get_tags(canvas_id)
 
     is_jwt_admin = is_admin(jwt_username)
-    if is_jwt_admin is False:
-        # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
-        # Only administrators can see blocked canvases.
-        try:
-            raise_error_if_blocked(canvas["username"])
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
+    raise_error_if_blocked(canvas["username"])
 
     # If canvas is private (draft), only creator, editors and admins should get it
     if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_username) is False and is_jwt_admin is False:
