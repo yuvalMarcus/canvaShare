@@ -24,7 +24,7 @@ def get_photos_from_api(category: str, jwt_username: str | None = Depends(check_
         except Exception:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                                 detail=f"Rate Limit Exceeded (50 per hour), Try again later")
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+    return {"api_results": {}, "token": generate_token(jwt_username) if jwt_username else None}
 
 @router.post('')
 def upload_picture(save_to: str, file: UploadFile = File(...), jwt_username: str | None = Depends(check_guest_or_blocked)):
@@ -36,7 +36,6 @@ def upload_picture(save_to: str, file: UploadFile = File(...), jwt_username: str
                             detail="Invalid file type. Please upload an image in format jpg, jpeg, webp or png")
     try:
         photo_id = generate_photo_id()
-
         photo_name = f"{photo_id}.{file_extension}"
         with Path(f"{UPLOAD_DIR}/{photo_name}").open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -45,7 +44,7 @@ def upload_picture(save_to: str, file: UploadFile = File(...), jwt_username: str
             delete_prev_photo(prev_photo)
         return {"photo": photo_name}
     except Exception:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Upload failed")
 
 @router.get("/{photo_name}", response_model=UploadFile)
 def uploaded_files(photo_name: str):

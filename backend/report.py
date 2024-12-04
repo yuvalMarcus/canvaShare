@@ -50,11 +50,11 @@ def get_reports(jwt_username: str | None = Depends(check_guest_or_blocked)):
              report['description']) = db_report
             reports.append(report)
         return {"reports": reports, "token": generate_token(jwt_username) if jwt_username else None}
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 @router.delete('/{report_id}', response_model=Token)
 def delete_report(report_id: int, jwt_username: str | None = Depends(check_guest_or_blocked)):
     if is_admin(jwt_username):
         delete_report_from_db(report_id)
         return {"token": generate_token(jwt_username) if jwt_username else None}
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
