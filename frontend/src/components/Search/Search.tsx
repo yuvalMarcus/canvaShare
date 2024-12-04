@@ -24,17 +24,15 @@ const Search = () => {
     }
 
     return (
-        <Stack flexDirection="row" gap={2}>
-            <Stack flexDirection="row" alignItems="center" border={2} borderColor={grey[900]} sx={{  backgroundColor: grey[800] }} onKeyDown={handleClickKey}>
-                <InputBase
-                    sx={{ ml: 1, flex: 1, color: grey[100] }}
-                    placeholder="Search Arts"
-                    inputProps={{ 'aria-label': 'search' }}
-                />
-                <IconButton type="button" aria-label="search" onClick={() => navigate('/search')}>
-                    <SearchIcon sx={{ color: grey[100] }} />
-                </IconButton>
-            </Stack>
+        <Stack flexDirection="row" alignItems="center" flex={1} border={2} borderColor={grey[900]} sx={{  backgroundColor: grey[800] }} onKeyDown={handleClickKey}>
+            <InputBase
+                sx={{ ml: 1, flex: 1, color: grey[100] }}
+                placeholder="Search Arts"
+                inputProps={{ 'aria-label': 'search' }}
+            />
+            <IconButton type="button" aria-label="search" onClick={() => navigate('/search')}>
+                <SearchIcon sx={{ color: grey[100] }} />
+            </IconButton>
         </Stack>
     )
 }
