@@ -11,8 +11,9 @@ import logging
 import uvicorn
 
 load_dotenv()
-DOMAIN = os.getenv('DOMAIN')
-PORT = os.getenv('PORT')
+FRONT_DOMAIN, FRONT_PORT = os.getenv('FRONT_DOMAIN'), os.getenv('FRONT_PORT')
+BACK_DOMAIN, BACK_PORT = os.getenv('BACK_DOMAIN'), int(os.getenv('BACK_PORT'))
+
 app = FastAPI()
 app.include_router(canvas_router)
 app.include_router(user_router)
@@ -20,7 +21,7 @@ app.include_router(report_router)
 app.include_router(photo_router)
 
 origins = [
-    f"{DOMAIN}:{PORT}"
+    f"{FRONT_DOMAIN}:{FRONT_PORT}"
 ]
 
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
@@ -69,4 +70,4 @@ create_tables_and_folders()
 if __name__ == "__main__":
     logger = logging.getLogger()
     logger.setLevel(logging.ERROR)
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host=BACK_DOMAIN, port=BACK_PORT)
