@@ -1,20 +1,31 @@
-import {Canvas} from "fabric";
-import React, {MutableRefObject, useState} from "react";
+import {Canvas, Path} from "fabric";
+import React, {MutableRefObject, useCallback, useLayoutEffect, useState} from "react";
 import {Box, FormControl, MenuItem, Select, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import {HexColorPicker} from "react-colorful";
-import {grey} from "@mui/material/colors";
-import {setBrushColor, setBrushSize} from "./brushes.utils.ts";
+import {green, grey} from "@mui/material/colors";
+import {drawingMode, setBrushColor, setBrushSize} from "./brushes.utils.ts";
+import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
 
 const Brushes = ({canvas}: {canvas: MutableRefObject<Canvas | null>}) => {
     const [brush, setBrush] = useState<'pencil' | 'brush' | 'spray'>('pencil');
     const [size, setSize] = useState<number>(1);
-    const [color, setColor] = useState<string>('#000000');
+
+    useLayoutEffect(() => {
+
+        if(canvas.current) drawingMode(canvas.current, true);
+
+        return () => {
+            if(canvas.current) drawingMode(canvas.current, false);
+        }
+
+    }, []);
+
+    //console.log('canvas.current', canvas.current?.toJSON())
 
     return (
         <Stack gap={2} pb={2}>
             <Box>
-                <Typography color={grey[800]} fontSize={18} mb={1}>Type</Typography>
+                <Typography color={grey[100]} fontSize={18} mb={1}>Type</Typography>
                 <FormControl variant="standard" fullWidth>
                     <Select
                         value={brush ?? "pencil"}
@@ -28,8 +39,8 @@ const Brushes = ({canvas}: {canvas: MutableRefObject<Canvas | null>}) => {
             </Box>
             <Box>
                 <Stack flexDirection="row" alignItems="center" gap={1} mb={1}>
-                    <Typography color={grey[800]} fontSize={18}>Size:</Typography>
-                    <Typography color={grey[600]} fontSize={14} component="span" mt={0.5}>{size}px</Typography>
+                    <Typography color={grey[100]} fontSize={18}>Size:</Typography>
+                    <Typography color={grey[400]} fontSize={14} component="span" mt={0.5}>{size}px</Typography>
                 </Stack>
                 <Slider min={1} max={100} value={size} onChange={({ target }) => {
                     setSize(target.value);
@@ -38,16 +49,13 @@ const Brushes = ({canvas}: {canvas: MutableRefObject<Canvas | null>}) => {
             </Box>
             <Box>
                 <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
-                    <Typography color={grey[800]} fontSize={18}>Color:</Typography>
-                    <Box width={15} height={15} boxShadow={1} sx={{ backgroundColor: color }} />
+                    <Typography color={grey[100]} fontSize={18}>Color:</Typography>
+                    <ColorPicker onChange={color => setBrushColor(canvas.current, color)} />
                 </Stack>
-                <Box px={1}>
-                    <HexColorPicker color={color} onChange={(value) => {
-                        setColor(value);
-                        setBrushColor(canvas.current, value);
-                    }} />
-                </Box>
             </Box>
+            <Typography color={grey[100]} textTransform="capitalize" textAlign="center" py={0.5} sx={{ backgroundColor: green[700] }}>
+                draw is active
+            </Typography>
         </Stack>
     )
 }
