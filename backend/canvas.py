@@ -4,11 +4,9 @@ from typing import Optional, List
 from pydantic import BaseModel
 from db_utlls import *
 from uuid import UUID
-import random
 import time
 import json
 
-CANVASES_PER_PAGE = 50
 
 router = APIRouter(prefix="/canvas")
 
@@ -50,11 +48,14 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     if is_jwt_admin is False:
         # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
         # Only administrators can see blocked canvases.
-        raise_error_if_blocked(canvas["username"])
+        try:
+            raise_error_if_blocked(canvas["username"])
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # If canvas is private (draft), only creator, editors and admins should get it
     if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_username) is False and is_jwt_admin is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     try:
         with open(f'canvases/{canvas["username"]}/{canvas["id"]}.json', 'r', encoding='utf-8') as fd:
             canvas["data"] = str(json.loads(fd.read()))
@@ -81,7 +82,7 @@ def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = De
     raise_error_if_blocked(canvas.username) # Cannot edit a blocked creator's canvas
     canvas_id = str(canvas_id)
     if is_canvas_editor(canvas_id, jwt_username) is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     canvas.username = get_canvas_username(canvas_id)
     save_json_data(canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
     update_canvas_in_db(canvas_id, canvas.name, canvas.is_public)
@@ -95,7 +96,7 @@ def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_gues
     canvas_username = get_canvas_username(canvas_id)
     # checks if the user is creator of canvas or admin
     if canvas_username != jwt_username and is_admin(jwt_username) is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     delete_canvas_from_db(canvas_id)
     json_path = f'canvases/{canvas_username}/{canvas_id}.json'
     delete_photos_of_canvas(json_path)
@@ -106,39 +107,27 @@ def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_gues
     return {"token": generate_token(jwt_username) if jwt_username else None}
 
 @router.get("", response_model=CanvasesResponse)
-def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
-                 tags: Optional[str] = None, order: Optional[str] = None, page_num: Optional[int] = None,
+def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None, tags: Optional[str] = None,
+                 order: Optional[str] = None, page_num: Optional[int] = None,
                  jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
-    if jwt_username is None:
-        jwt_username = 'guest' # debug
-    all_results = set()
-    if page_num is None or page_num < 1 or os.path.isfile(f'canvases/{jwt_username}/explore.json') is False:
-        page_num = 1
-
-    if page_num == 1:
-        if username:
-            # request from artist page
-            all_results = all_results.union(set(get_canvases_by_username(username)))
-        if canvas_name:
-            # request from search page
-            all_results = all_results.union(set(get_canvases_by_name(canvas_name)))
-        if tags:
-            # request from explore page
-            for tag in tags.split(','):
-                all_results = all_results.union(set(get_canvases_by_tag(tag)))
-        if username is None and canvas_name is None and tags is None:
-            all_results = all_results.union(set(get_all_canvases()))
-        all_results = list(all_results)
+    results = []
+    order_by = ' ORDER BY likes DESC' if order == 'likes' else ''
+    page_num = 1 if page_num is None or page_num < 1 else page_num
+    if username:
+        results = get_canvases_by_username(username, page_num, order_by)
+    elif canvas_name:
+        results = get_canvases_by_name(canvas_name, page_num, order_by)
+    elif tags:
+        for tag in tags.split(','):
+            results += get_canvases_by_tag(tag)
         if order == 'likes':
             # sort canvases by likes from high to low
-            all_results.sort(key=lambda x: x[-1], reverse=True)
-        else:
-            random.shuffle(all_results)
-        explore_json = save_explore_json(all_results, jwt_username)
+            results.sort(key=lambda x: x[-1], reverse=True)
+        results = results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE]
     else:
-        explore_json = json.loads(open(f'canvases/{jwt_username}/explore.json', 'r').read())
-    return {"canvases": explore_json[page_num*CANVASES_PER_PAGE-CANVASES_PER_PAGE : page_num*CANVASES_PER_PAGE],
+        results = get_all_canvases(page_num, order_by)
+    return {"canvases": convert_results_to_canvases(results),
             "token": generate_token(jwt_username) if jwt_username else None}
 
 @router.put('/like/{canvas_id}', response_model=LikesResponse)
@@ -170,20 +159,20 @@ def save_json_data(username, canvas_path, data):
             pass
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
 
-def save_explore_json(all_results, username):
+def convert_results_to_canvases(results):
     canvases = []
-    Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True)  # maybe in windows needs to add '/' prefix
-    for result in all_results:
+    for result in results:
         canvas = dict()
         (canvas['id'], canvas['username'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes']) = result
         canvas['tags'] = get_tags(canvas['id'])
-        with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
-            canvas['data'] = str(json.loads(fd.read()))
+        try:
+            with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
+                canvas['data'] = str(json.loads(fd.read()))
+        except FileNotFoundError:
+            print(f'Error: Canvas {canvas["username"]}/{canvas["id"]} not found')
+            canvas['data'] = '{}'
         canvases.append(canvas)
-    # save the list of canvases as json file
-    with open(f'canvases/{username}/explore.json', 'w', encoding='utf-8') as fd:
-        json.dump(canvases, fd, ensure_ascii=False, indent=4)
     return canvases
 
 def delete_photos_of_canvas(json_path):

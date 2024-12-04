@@ -27,7 +27,7 @@ def get_jwt_username(token: str | None = Depends(oauth2_scheme)):
     if token is None:
         return None
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                          detail="Could not validate credentials.",
+                                          detail="Could not validate credentials",
                                           headers={"WWW-Authenticate": "Bearer"})
     try:
         # Specifying algorithm name to avoid security vulnerability CVE-2024-33663

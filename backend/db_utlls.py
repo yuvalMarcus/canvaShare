@@ -14,6 +14,7 @@ DB_PASS = os.getenv("DB_PASS")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 UPLOAD_DIR = "uploaded_files"
+CANVASES_PER_PAGE = 50
 
 #################################
 ############# tags ##############
@@ -120,16 +121,18 @@ def get_canvas_from_db(canvas_id):
 def get_canvas_username(canvas_id):
     return get_canvas_from_db(canvas_id)[1]
 
-def get_canvases_by_username(username):
+def get_canvases_by_username(username, page_num, order_by):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from canvases WHERE username=%s", (username,))
+    cur.execute(f"SELECT * from canvases WHERE username=%s" + order_by + " LIMIT %s OFFSET %s",
+                (username, CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
     return canvases
 
-def get_canvases_by_name(canvas_name):
+def get_canvases_by_name(canvas_name, page_num, order_by):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from canvases WHERE name LIKE %s", (f'%{canvas_name}%',))
+    cur.execute(f"SELECT * from canvases WHERE name LIKE %s" + order_by + " LIMIT %s OFFSET %s",
+                (f'%{canvas_name}%', CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
     return canvases
@@ -144,9 +147,10 @@ def get_canvases_by_tag(tag):
     con.close()
     return canvases
 
-def get_all_canvases():
+def get_all_canvases(page_num, order_by):
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from canvases")
+    cur.execute(f"SELECT * from canvases" + order_by + " LIMIT %s OFFSET %s",
+                (CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
     return canvases
@@ -160,6 +164,7 @@ def like_or_unlike_canvas(canvas_id, username):
     else:
         # unlike canvas
         cur.execute("DELETE FROM likes WHERE canvas_id=%s AND username=%s ", (canvas_id, username))
+    con.commit()
     cur.execute("UPDATE canvases SET likes=%s WHERE id=%s", (get_num_of_likes(canvas_id), canvas_id))
     commit_and_close_db(con)
 
@@ -183,7 +188,7 @@ def insert_user_to_db(username, hashed_password, email, is_blocked, profile_phot
 
 def raise_error_if_guest(username):
     if username is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 def raise_error_if_blocked(username):
     if username is None:
@@ -192,7 +197,7 @@ def raise_error_if_blocked(username):
     cur.execute("SELECT * FROM users WHERE username=%s AND is_blocked=False", (username,))
     if not cur.fetchall():
         con.close()
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username not found or blocked.")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is blocked")
     con.close()
 
 def is_user_exist(username: str) -> bool:
@@ -221,7 +226,7 @@ def is_canvas_editor(canvas_id, username):
     cur.execute("SELECT username FROM canvases WHERE id=%s", (canvas_id,))
     res = cur.fetchone()
     if res is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Canvas not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Canvas not found")
     creator = res[0]
     cur.execute("SELECT * FROM canvas_editors WHERE canvas_id=%s AND username=%s", (canvas_id, username))
     if creator == username or cur.fetchone() is not None:
@@ -302,7 +307,7 @@ def delete_report_from_db(report_id):
     cur.execute("SELECT * FROM reports WHERE id=%s", (report_id,))
     if cur.fetchone() is None:
         con.close()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
     cur.execute("DELETE FROM reports WHERE id=%s", (report_id,))
     commit_and_close_db(con)
     con.close()

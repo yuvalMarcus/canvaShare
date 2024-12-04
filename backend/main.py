@@ -61,8 +61,8 @@ def logout_username(username: str, jwt_username: str | None = Depends(check_gues
         if is_admin(jwt_username):
             disconnect_user(username)
             return {} # should be empty
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
 #delete_tables_and_folders()
 create_tables_and_folders()
