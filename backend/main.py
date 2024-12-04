@@ -1,5 +1,5 @@
 from validation import is_valid_email, is_valid_username, is_valid_password
-from canvas import router as canvas_router, CANVASES_PER_PAGE
+from canvas import router as canvas_router
 from fastapi.middleware.cors import CORSMiddleware
 from user import User, router as user_router
 from report import router as report_router
@@ -10,33 +10,10 @@ from auth import *
 import logging
 import uvicorn
 
-tags_metadata = [
-    {
-        "name": "logout_username",
-        "description": "This endpoint is for admins to log out users"
-    },
-    {
-        "name": "get_photos_from_api",
-        "description": "Search photos in https://unsplash.com API"
-    },
-    {
-        "name": "get_canvases_by_filters",
-        "description": "Get list of canvases by filters.<br>"
-                       "The filters can be username, canvas name, tags.<br>"
-                       "The results can be sorted by likes.<br>"
-                       f"In every request (page) the maximum results is {CANVASES_PER_PAGE}.<br>"
-                       "To get the rest of results you need to request specific page."
-    },
-    {
-        "name": "like_canvas",
-        "description": "Like a canvas or remove like from canvas."
-    }
-]
-
 load_dotenv()
 DOMAIN = os.getenv('DOMAIN')
 PORT = os.getenv('PORT')
-app = FastAPI(openapi_tags=tags_metadata)
+app = FastAPI()
 app.include_router(canvas_router)
 app.include_router(user_router)
 app.include_router(report_router)
@@ -77,7 +54,7 @@ def logout(jwt_username: str | None = Depends(get_jwt_username)):
     disconnect_user(jwt_username)
     return {} # should be empty
     
-@app.post('/logout/{username}', tags=["logout_username"])
+@app.post('/logout/{username}')
 def logout_username(username: str, jwt_username: str | None = Depends(check_guest_or_blocked)):
     if is_user_exist(username):
         if is_admin(jwt_username):
@@ -85,7 +62,6 @@ def logout_username(username: str, jwt_username: str | None = Depends(check_gues
             return {} # should be empty
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-
 
 #delete_tables_and_folders()
 create_tables_and_folders()

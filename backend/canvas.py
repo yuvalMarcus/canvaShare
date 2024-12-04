@@ -10,7 +10,7 @@ import json
 
 CANVASES_PER_PAGE = 50
 
-router = APIRouter(prefix="/canvas",tags=["canvas"])
+router = APIRouter(prefix="/canvas")
 
 
 class Canvas(BaseModel):
@@ -105,7 +105,7 @@ def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_gues
         pass
     return {"token": generate_token(jwt_username) if jwt_username else None}
 
-@router.get("", response_model=CanvasesResponse, tags=["get_canvases_by_filters"])
+@router.get("", response_model=CanvasesResponse)
 def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None,
                  tags: Optional[str] = None, order: Optional[str] = None, page_num: Optional[int] = None,
                  jwt_username: str | None = Depends(get_jwt_username)):
@@ -141,7 +141,7 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
     return {"canvases": explore_json[page_num*CANVASES_PER_PAGE-CANVASES_PER_PAGE : page_num*CANVASES_PER_PAGE],
             "token": generate_token(jwt_username) if jwt_username else None}
 
-@router.put('/like/{canvas_id}', response_model=LikesResponse, tags=["like_canvas"])
+@router.put('/like/{canvas_id}', response_model=LikesResponse)
 def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_guest_or_blocked)):
     canvas_id = str(canvas_id)
     try:

@@ -18,6 +18,8 @@ def is_valid_username(username):
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username")
 
 def is_valid_email(email):
+    if not (6 <= len(email) < 255):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email must be between 6 and 255 characters")
     if get_username_by_email(email) is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User with this email already exists")
     if email is not None and re.search(r"^\S+@\S+\.\S+$", email):

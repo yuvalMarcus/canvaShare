@@ -24,6 +24,8 @@ def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_use
     if not (1 <= len(report.description) <= 100):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Report description must be between 1 and 100 characters.")
+    if not (3 <= len(report.username) <= 20 and report.username.isalnum()):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username")
     if report.type == 'artist' and report.username is not None:
         if is_user_exist(report.username) is False:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Username not found.")

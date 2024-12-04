@@ -43,11 +43,12 @@ def get_tags_id(tags):
     return tags_id
 
 def insert_tags(canvas, canvas_id):
+    for tag in canvas.tags:
+        if ',' in tag or len(tag) >= 255:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail=f"Tag can't be longer than 255 characters and not contain a comma")
     con, cur = connect_to_db()
     for tag in canvas.tags:
-        if ',' in tag:
-            # invalid tag name. not saved in db
-            continue
         # checks if tag exist in db. if not create new tag and then add this tag to canvas.
         cur.execute(f"SELECT id FROM tags WHERE name = %s", (tag,))
         res = cur.fetchone()
@@ -86,12 +87,16 @@ def generate_canvas_id():
     return canvas_id
 
 def insert_canvas_to_db(canvas_id, username, canvas_name, is_public, create_date, edit_date, likes):
+    if len(canvas_name) >= 255:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
     con, cur = connect_to_db()
     cur.execute("INSERT INTO canvases VALUES (%s,%s,%s,%s,%s,%s,%s)",
                 (canvas_id, username, canvas_name, is_public, create_date, edit_date, likes))
     commit_and_close_db(con)
 
 def update_canvas_in_db(canvas_id, canvas_name, is_public):
+    if len(canvas_name) >= 255:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
     con, cur = connect_to_db()
     cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())} WHERE id=%s",
                 (canvas_name, is_public, canvas_id))
@@ -306,43 +311,19 @@ def delete_report_from_db(report_id):
 ####### initial functions ##########
 
 def create_tables_and_folders():
+    commands = []
+    with open('tables.sql', 'r') as fd:
+        lines = fd.read().split(';')
+        for line in lines:
+            line = line.strip()
+            if line.startswith('CREATE TABLE'):
+                commands.append(line)
     con, cur = connect_to_db()
-    tables = ["users(username VARCHAR(255) PRIMARY KEY NOT NULL, hashed_password VARCHAR(255) NOT NULL,"
-              " email VARCHAR(255) UNIQUE NOT NULL, is_blocked BOOLEAN NOT NULL, profile_photo VARCHAR(255) UNIQUE,"
-              " cover_photo VARCHAR(255) UNIQUE, about TEXT, disabled BOOLEAN NOT NULL)",
-
-              "canvases(id VARCHAR(255) PRIMARY KEY NOT NULL,"
-              " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, name VARCHAR(255) NOT NULL,"
-              " is_public BOOLEAN NOT NULL, create_date INT NOT NULL, edit_date INT NOT NULL, likes INT NOT NULL,"
-              " CHECK (create_date >= 0 AND edit_date >= 0 AND likes >= 0))",
-
-              "reports(id SERIAL PRIMARY KEY NOT NULL, date INT NOT NULL, type VARCHAR(255) NOT NULL,"
-              " canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
-              " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,"
-              " description TEXT NOT NULL, CHECK (date >= 0))",
-
-              "canvas_editors(canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
-              " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, PRIMARY KEY (canvas_id, username))",
-
-              "tags(id SERIAL PRIMARY KEY NOT NULL, name VARCHAR(255) NOT NULL UNIQUE)",
-
-              "tags_of_canvases(canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
-              " tag_id INT REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (canvas_id, tag_id))",
-
-              "favorite_tags(username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,"
-              " tag_id INT REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (username, tag_id))",
-
-              "likes(canvas_id VARCHAR(255) REFERENCES canvases(id) ON DELETE CASCADE,"
-              " username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE, PRIMARY KEY (canvas_id, username))",
-
-              "admins(username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE PRIMARY KEY)",
-
-              "super_admins(username VARCHAR(255) REFERENCES users(username) ON DELETE RESTRICT PRIMARY KEY)"]
-    for table in tables:
+    for command in commands:
         try:
-            cur.execute("CREATE TABLE IF NOT EXISTS " + table)
+            cur.execute(command)
         except Exception as e:
-            print(f'Failed to create table {table}')
+            print(f'Failed to create table')
             print(e)
     commit_and_close_db(con)
     for folder in ['canvases', UPLOAD_DIR]:
@@ -355,12 +336,7 @@ def delete_tables_and_folders():
         except Exception:
             pass
     con, cur = connect_to_db()
-    for table in ("canvas_editors", "tags_of_canvases", "favorite_tags", "tags", "likes", "reports", "admins",
-                  "super_admins", "canvases", "users"):
-        try:
-            cur.execute(f"DROP TABLE {table}")
-        except Exception:
-            pass
+    cur.execute(f"DROP SCHEMA public CASCADE; CREATE SCHEMA public")
     commit_and_close_db(con)
 
 def connect_to_db():
