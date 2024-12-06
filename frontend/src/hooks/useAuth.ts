@@ -1,22 +1,28 @@
 import { useAtom } from 'jotai'
 import { isLoginAtom } from "../state/auth.ts";
 
-export const useAuth = () => {
-    const [isLogin, setIsLogin] = useAtom(isLoginAtom);
+interface UseAuth {
+    isAuth: boolean;
+    login: (token: string) => void;
+    logout: () => void;
+}
+
+export const useAuth = (): UseAuth => {
+    const [isAuth, setIsAuth] = useAtom(isLoginAtom);
 
     const login = (token: string) => {
         localStorage.setItem('token', token);
-        setIsLogin(true);
+        setIsAuth(true);
     }
 
     const logout = () => {
         localStorage.removeItem('token');
-        setIsLogin(false);
+        setIsAuth(false);
     }
 
     return {
+        isAuth,
         login,
         logout,
-        isLogin,
     }
 }
