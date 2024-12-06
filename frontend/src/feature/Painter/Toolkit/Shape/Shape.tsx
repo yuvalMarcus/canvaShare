@@ -5,9 +5,8 @@ import React, {FC, MutableRefObject, useState} from "react";
 import Button from "@mui/material/Button";
 import {v4 as uuidv4} from "uuid";
 import {Canvas} from "fabric";
-import {getCircle, getRectangle, getSquare, getTriangular} from "./shape.utils.ts";
 import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
-import {DEFAULT_COLOR, DEFAULT_SIZE, mapShapeToIcon, SHAPE_TYPE} from "./shape.config.tsx";
+import {DEFAULT_COLOR, DEFAULT_SIZE, mapShapeToFabricObject, mapShapeToIcon, SHAPE_TYPE} from "./shape.config.tsx";
 
 interface ShapeProps {
     canvas: MutableRefObject<Canvas | null>;
@@ -25,22 +24,21 @@ const Shape: FC<ShapeProps> = ({ canvas, onClose }) => {
         setSize(value);
     }
 
+    const handleUpdateStroke = (color: string) => {
+        setStroke(color);
+    }
+
+    const handleUpdateFill = (color: string) => {
+        setFill(color);
+    }
+
     const handleCreateShape = () => {
         const newId = uuidv4();
 
-        const o1 = {
-            square: getSquare,
-            circle: getCircle,
-            rectangle: getRectangle,
-            triangular: getTriangular
-        }
+        const object = mapShapeToFabricObject[selectedShape](newId, fill, stroke, size);
 
-        const item = o1[selectedShape](newId, fill, stroke, size);
-
-        canvas.current?.add(item);
-
-        canvas.current?.centerObject(item);
-
+        canvas.current?.add(object);
+        canvas.current?.centerObject(object);
         canvas.current?.renderAll();
 
         onClose();
@@ -63,11 +61,11 @@ const Shape: FC<ShapeProps> = ({ canvas, onClose }) => {
             </Box>
             <Stack position="relative" flexDirection="row" alignItems="center" gap={1} mb={2}>
                 <Typography color={grey[100]} fontSize={18}>Stroke:</Typography>
-                <ColorPicker onChange={color => setStroke(color)} />
+                <ColorPicker onChange={handleUpdateStroke} />
             </Stack>
             <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
                 <Typography color={grey[100]} fontSize={18}>Fill:</Typography>
-                <ColorPicker onChange={color => setFill(color)} />
+                <ColorPicker onChange={handleUpdateFill} />
             </Stack>
             <Button variant="contained" onClick={handleCreateShape}>add new shape</Button>
         </Stack>

@@ -1,16 +1,4 @@
-// https://fabricjs.com/demos/free-drawing/
-
-import {Circle, Polygon, Rect, Triangle, Control} from "fabric";
-
-function deleteObject(_eventData, transform) {
-    const canvas = transform.target.canvas;
-    canvas.remove(transform.target);
-    canvas.requestRenderAll();
-}
-
-function renderIcon(ctx, left, top, _styleOverride, fabricObject) {
-    return '<div>sdsdsd</div>';
-}
+import {Circle, Rect, Triangle} from "fabric";
 
 export const getSquare = (id: string, fill: string, stroke: string, strokeWidth: number) => {
     const square = new Rect({
@@ -21,15 +9,6 @@ export const getSquare = (id: string, fill: string, stroke: string, strokeWidth:
         fill,
         stroke,
         strokeWidth
-    });
-    square.controls.deleteControl = new Control({
-        x: 0.5,
-        y: -0.5,
-        offsetY: 16,
-        cursorStyle: 'pointer',
-        mouseUpHandler: deleteObject,
-        render: renderIcon,
-        cornerSize: 24,
     });
     return square;
 }

@@ -1,6 +1,8 @@
 import React, {ReactNode} from "react";
 import {Box} from "@mui/material";
 import {blue, grey} from "@mui/material/colors";
+import {getCircle, getRectangle, getSquare, getTriangular} from "./shape.utils.ts";
+import {FabricObject} from "fabric";
 
 export enum SHAPE_TYPE {
     SQUARE = 'square',
@@ -21,3 +23,10 @@ export const mapShapeToIcon: Record<SHAPE_TYPE, (isSelected: boolean, onClick: (
 export const DEFAULT_SIZE = 1;
 
 export const DEFAULT_COLOR = grey[900];
+
+export const mapShapeToFabricObject: Record<SHAPE_TYPE, (id: string, fill: string, stroke: string, strokeWidth: number) => FabricObject> = {
+    [SHAPE_TYPE.SQUARE]: getSquare,
+    [SHAPE_TYPE.CIRCLE]: getCircle,
+    [SHAPE_TYPE.RECTANGLE]: getRectangle,
+    [SHAPE_TYPE.TRIANGULAR]: getTriangular
+}
