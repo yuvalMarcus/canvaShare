@@ -1,7 +1,4 @@
-// https://fabricjs.com/demos/free-drawing/
-
-import {Canvas, FabricObject, Path, PencilBrush} from "fabric";
-import {useCallback} from "react";
+import {Canvas, PencilBrush} from "fabric";
 import {IEvent} from "fabric/fabric-impl";
 
 export const drawingMode = (canvas: Canvas | null, mood: boolean) => {
