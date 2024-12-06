@@ -6,7 +6,7 @@ import {grey} from "@mui/material/colors";
 import Button from "@mui/material/Button";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
 import CloseIcon from "@mui/icons-material/Close";
-import Brushes from "../Brushes/Brushes.tsx";
+import Draw from "../Draw/Draw.tsx";
 import Text from "../Text/Text.tsx";
 import Shape from "../Shape/Shape.tsx";
 import Photo from "../Photo/Photo.tsx";
@@ -32,7 +32,7 @@ const ToolkitBox = ({canvas, actionType, onClose}: ToolkitBoxProps) => {
                         <CloseIcon sx={{ color: grey[900] }} />
                     </Button>
                 </Stack>
-                {actionType === "draw" && <Brushes canvas={canvas} />}
+                {actionType === "draw" && <Draw canvas={canvas} />}
                 {actionType === "text" && <Text canvas={canvas} />}
                 {actionType === "shape" && <Shape canvas={canvas} />}
             </Box>

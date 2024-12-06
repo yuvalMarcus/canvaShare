@@ -1,53 +1,67 @@
-import React, {MutableRefObject, useLayoutEffect, useState} from "react";
-import {Canvas, Textbox, Text as Text2, IText} from "fabric";
+import React, {FC, MutableRefObject, useState} from "react";
+import {Canvas, IText} from "fabric";
 import { v4 as uuidv4 } from 'uuid';
 import {Box, IconButton, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import {grey} from "@mui/material/colors";
+import {blue, grey} from "@mui/material/colors";
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
-import {updateFontWeight, setTextColor, setTextSize, updateTextDecoration} from "./text.utils.ts";
 import Button from "@mui/material/Button";
 import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
+import {DEFAULT_COLOR, DEFAULT_SIZE, FONT_STYLE, FONT_WEIGHT, TEXT_DECORATION} from "./text.config.ts";
 
 interface TextProps {
     canvas: MutableRefObject<Canvas | null>;
     onClose: () => void;
-    initId?: string;
 }
 
-const Text = ({ canvas, onClose, initId }: TextProps) => {
-    const [id, setId]= useState<string | null>(initId ?? null);
-    const [fontStyle, setFontStyle] = useState<'bold' | 'underline' | 'italic' | null>(null);
-    const [fontWeight, setFontWeight] = useState<'normal' | 'bold'>('normal');
-    const [textDecoration, setTextDecoration] = useState<'none' | 'underline'>('none');
-    const [size, setSize] = useState<number>(24);
-    const [color, setColor] = useState<string>('#000000');
+const Text: FC<TextProps> = ({ canvas, onClose }) => {
+    const [fontWeight, setFontWeight] = useState<FONT_WEIGHT>(FONT_WEIGHT.NORMAL);
+    const [textDecoration, setTextDecoration] = useState<TEXT_DECORATION>(TEXT_DECORATION.NONE);
+    const [fontStyle, setFontStyle] = useState<FONT_STYLE>(FONT_STYLE.NORMAL);
+    const [size, setSize] = useState<number>(DEFAULT_SIZE);
+    const [color, setColor] = useState<string>(DEFAULT_COLOR);
 
-    useLayoutEffect(() => {
-        /*
-        if (id) return;
+    const isBold = fontWeight === FONT_WEIGHT.BOLD;
+    const isUnderline = textDecoration === TEXT_DECORATION.UNDERLINE;
+    const isItalic = fontStyle === FONT_STYLE.ITALIC;
 
-        const newId = uuidv4();
+    const handleUpdateFontWeight = () => {
+        setFontWeight(isBold ? FONT_WEIGHT.NORMAL: FONT_WEIGHT.BOLD);
+    }
 
-        console.log('newId', newId)
+    const handleUpdateTextDecoration = () => {
+        setTextDecoration(isUnderline ? TEXT_DECORATION.NONE : TEXT_DECORATION.UNDERLINE);
+    }
 
-        const newText = new IText('Text', {id: newId, textAlign: 'center', fontSize: size, fill: color, editable: true});
+    const handleUpdateFontStyle = () => {
+        setFontStyle(isItalic ? FONT_STYLE.NORMAL : FONT_STYLE.ITALIC);
+    }
 
-        setId(newId);
+    const handleUpdateSize = (event: Event, newValue: number | number[]) => {
+        const value = typeof newValue == "number" ? newValue : newValue[0];
+        setSize(value);
+    }
 
-        canvas.current?.add(newText);
-        canvas.current?.renderAll();
-
-         */
-
-    }, []);
+    const handleUpdateColor = (color: string) => {
+        setColor(color);
+    }
 
     const handleCreateText = () => {
         const newId = uuidv4();
 
-        const newText = new IText('Text', {id: newId, textAlign: 'center', fontSize: size, fill: color, editable: true});
+        const newText = new IText('Text', {
+            id: newId,
+            textAlign: 'center',
+            fontSize: size,
+            fill: color,
+            editable: true,
+            fontWeight,
+            underline: isUnderline,
+            fontStyle: 'italic'
+
+        });
 
         canvas.current?.add(newText);
 
@@ -58,9 +72,6 @@ const Text = ({ canvas, onClose, initId }: TextProps) => {
         onClose();
     }
 
-    const isBold = fontWeight === "bold";
-    const isUnderline = textDecoration === "underline";
-
     return (
         <Stack gap={2} pb={2}>
             <Box>
@@ -68,21 +79,13 @@ const Text = ({ canvas, onClose, initId }: TextProps) => {
                     <Typography color={grey[100]} fontSize={18} textTransform="capitalize">font style:</Typography>
                 </Stack>
                 <Stack flexDirection="row" justifyContent="space-between" gap={1}>
-                    <IconButton type="button" color={isBold ? "primary" : "inherit"} onClick={() => {
-                        const newFontWeight = isBold ? "normal" : "bold";
-                        setFontWeight(newFontWeight);
-                        id && updateFontWeight(canvas.current, id, newFontWeight);
-                    }} sx={{ p: 1 }}>
+                    <IconButton type="button" onClick={handleUpdateFontWeight} sx={{ color: isBold ? blue[300] : grey[100] }}>
                         <FormatBoldIcon />
                     </IconButton>
-                    <IconButton type="button" color={isUnderline ? "primary" : "inherit"} onClick={() => {
-                        const newTextDecoration = isUnderline ? "none" : "underline";
-                        setTextDecoration(newTextDecoration);
-                        id && updateTextDecoration(canvas.current, id, !isUnderline);
-                    }} sx={{ p: 1 }}>
+                    <IconButton type="button" onClick={handleUpdateTextDecoration} sx={{ color: isUnderline ? blue[300] : grey[100] }}>
                         <FormatUnderlinedIcon />
                     </IconButton>
-                    <IconButton type="button" onClick={() => setFontStyle(prev => prev !== "italic" ? "italic": null)} sx={{ p: 1 }}>
+                    <IconButton type="button" onClick={handleUpdateFontStyle} sx={{ color: isItalic ? blue[300] : grey[100] }}>
                         <FormatItalicIcon />
                     </IconButton>
                 </Stack>
@@ -92,17 +95,12 @@ const Text = ({ canvas, onClose, initId }: TextProps) => {
                     <Typography color={grey[100]} fontSize={18}>Size:</Typography>
                     <Typography color={grey[400]} fontSize={14} component="span" mt={0.5}>{size}px</Typography>
                 </Stack>
-                <Slider min={14} max={100} value={size} onChange={({ target }) => {
-                    setSize(target.value);
-                    id && setTextSize(canvas.current, id, target.value);
-                }} />
+                <Slider min={14} max={100} value={size} onChange={handleUpdateSize} />
             </Box>
-            <Box>
-                <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
-                    <Typography color={grey[100]} fontSize={18}>Color:</Typography>
-                    <ColorPicker onChange={color => setColor(color)} />
-                </Stack>
-            </Box>
+            <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
+                <Typography color={grey[100]} fontSize={18}>Color:</Typography>
+                <ColorPicker onChange={handleUpdateColor} />
+            </Stack>
             <Button variant="contained" onClick={handleCreateText}>add new text</Button>
         </Stack>
     )
