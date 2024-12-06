@@ -8,6 +8,10 @@ import Register from "./feature/Register/Register.tsx";
 import Login from "./feature/Login/Login.tsx";
 import Artist from "./feature/Artist/Artist.tsx";
 import Search from "./feature/Search/Search.tsx";
+import {ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import {useEffect} from "react";
+import {useAuth} from "./hooks/useAuth.ts";
 
 const routers = createBrowserRouter([
   {
@@ -48,7 +52,8 @@ function App() {
 
   return (
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={routers} />
+          <ToastContainer />
+          <RouterProvider router={routers} />
       </QueryClientProvider>
   )
 }

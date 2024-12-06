@@ -17,7 +17,7 @@ const pages = [];
 
 const Header = () => {
 
-    const { isLogin, logout } = useAuth();
+    const { isAuth, logout } = useAuth();
 
     const handleLogout = async () => {
         await api.logout();
@@ -51,7 +51,7 @@ const Header = () => {
                             <Search />
                         </Box>
                     </Stack>
-                    {!isLogin && (
+                    {!isAuth && (
                       <>
                           <S.Button to={'login'} component={Link}>
                               login
@@ -61,7 +61,7 @@ const Header = () => {
                           </S.Button>
                       </>
                     )}
-                    {isLogin && (
+                    {isAuth && (
                         <S.Button onClick={handleLogout}>
                             logout
                         </S.Button>
