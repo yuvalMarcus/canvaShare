@@ -19,13 +19,12 @@ CANVASES_PER_PAGE = 50
 #################################
 ############# tags ##############
 
-def get_tags():
+def get_tags_from_db():
     con, cur = connect_to_db()
-    cur.execute("SELECT tags.name FROM tags")
+    cur.execute("SELECT * FROM tags")
     tags = cur.fetchall()
     con.close()
-    cur.close()
-    return [tag[0] for tag in tags]
+    return [{'id': tag[0], 'name': tag[1]} for tag in tags]
 
 def get_canvas_tags(canvas_id):
     con, cur = connect_to_db()
@@ -34,7 +33,6 @@ def get_canvas_tags(canvas_id):
         (canvas_id,))
     tags = cur.fetchall()
     con.close()
-    cur.close()
     return [tag[0] for tag in tags]
 
 def get_tags_id(tags):
@@ -50,34 +48,31 @@ def get_tags_id(tags):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Tag {tag} not found")
         tags_id.append(res[0])
     con.close()
-    cur.close()
     return tags_id
 
 def get_tag_by_id(tag_id):
     con, cur = connect_to_db()
-    cur.execute("SELECT tags.name FROM tags WHERE tags.id = %s", (tag_id,))
-    tag_name = cur.fetchone()
+    cur.execute("SELECT * FROM tags WHERE tags.id = %s", (tag_id,))
+    tag = cur.fetchone()
     con.close()
-    cur.close()
-    return tag_name
+    return tag
 
 def insert_tag(tag_name):
     con, cur = connect_to_db()
-    try:
-        cur.execute("INSERT INTO tags(name) VALUES (%s)",(tag_name,))
-        con.commit()
-    except Exception as e:
-        con.rollback()
-        print(f"Error inserting tag {tag_name}: {e}")
-    finally:
+    cur.execute("SELECT * FROM tags WHERE name = %s", (tag_name,))
+    if cur.fetchone():
         con.close()
-        cur.close()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Tag {tag_name} already exists")
+    cur.execute("INSERT INTO tags(name) VALUES (%s)",(tag_name,))
+    con.commit()
+    cur.execute("SELECT * FROM tags WHERE name = %s", (tag_name,))
+    tag = cur.fetchone()
+    con.close()
+    return tag
 
 def insert_canvas_tags(canvas, canvas_id):
-    for tag in canvas.tags:
-        if ',' in tag or len(tag) >= 255:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                detail=f"Tag can't be longer than 255 characters and not contain a comma")
+    for tag_name in canvas.tags:
+        is_valid_tag(tag_name)
     con, cur = connect_to_db()
     for tag in canvas.tags:
         # checks if tag exist in db. if not create new tag and then add this tag to canvas.
@@ -385,3 +380,8 @@ def connect_to_db():
 def commit_and_close_db(con):
     con.commit()
     con.close()
+
+def is_valid_tag(tag_name):
+    if ',' in tag_name or not (0 < len(tag_name) < 255):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Tag name must be between 0 and 255 characters and not contain commas")

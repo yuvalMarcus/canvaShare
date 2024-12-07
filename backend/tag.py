@@ -1,51 +1,33 @@
-from typing import Optional
-from uuid import UUID
-from pydantic import BaseModel
-from fastapi import APIRouter,Depends
 from auth import get_jwt_username,check_guest_or_blocked
+from fastapi import APIRouter,Depends
+from typing import List, Optional
+from pydantic import BaseModel
 from db_utlls import *
-from psycopg2 import Error
 
 router = APIRouter(prefix="/tag")
 
 class Tag(BaseModel):
-    id: Optional[UUID] = None
+    id: Optional[int] = None
     name: str
 
-class TagResponse(BaseModel):
-    name: str
+class Tags(BaseModel):
+    tags: List[Tag]
 
-@router.get("",response_model=TagResponse)
+@router.get("", response_model=Tags)
 def get_tags(jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
-    tags = get_tags()
-    return tags
+    return {'tags': get_tags_from_db()}
 
-@router.get("/{tag_id}",response_model=TagResponse)
-def get_tags(tag_id: int, jwt_username: str | None = Depends(get_jwt_username)):
+@router.get("/{tag_id}", response_model=Tag)
+def get_tag(tag_id: int, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
     tag = get_tag_by_id(tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="Tag not found")
-    return tag
+    return {'id': tag[0], 'name': tag[1]}
 
-@router.post("",status_code=status.HTTP_201_CREATED)
-def create_tag(tag_name:str, jwt_username: str | None = Depends(check_guest_or_blocked)):
-    try:
-        insert_tag(tag_name)
-        return {"message": f"tag {tag_name} was created"}
-    except Error as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail= f"Database error: {e}")
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f"Error creating tag: {e}")
-
-
-
-
-
-
-
-
-
-
-
+@router.post("", response_model=Tag)
+def create_tag(tag: Tag, _: str | None = Depends(check_guest_or_blocked)):
+    is_valid_tag(tag.name)
+    tag = insert_tag(tag.name)
+    return {'id': tag[0], 'name': tag[1]}

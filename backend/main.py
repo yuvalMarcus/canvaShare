@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from user import User, router as user_router
 from report import router as report_router
 from photo import router as photo_router
+from tag import router as tag_router
 from fastapi import FastAPI
 from db_utlls import *
 from auth import *
@@ -19,6 +20,7 @@ app.include_router(canvas_router)
 app.include_router(user_router)
 app.include_router(report_router)
 app.include_router(photo_router)
+app.include_router(tag_router)
 
 origins = [
     f"{FRONT_DOMAIN}:{FRONT_PORT}"
