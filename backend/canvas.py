@@ -42,7 +42,7 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     canvas = dict()
     (canvas["id"], canvas["username"], canvas["name"] , canvas["is_public"], canvas["create_date"],
      canvas["edit_date"], canvas["likes"]) = get_canvas_from_db(canvas_id)
-    canvas["tags"] = get_tags(canvas_id)
+    canvas["tags"] = get_canvas_tags(canvas_id)
 
     is_jwt_admin = is_admin(jwt_username)
     # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
@@ -62,14 +62,14 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     
     return {"canvas": canvas, "token": generate_token(jwt_username) if jwt_username else None}
 
-@router.post("", response_model=CanvasResponse)
+@router.post("", response_model=CanvasResponse,status_code=status.HTTP_201_CREATED)
 def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(check_guest_or_blocked)):
     canvas.id = generate_canvas_id()
     # Saves canvas in json file
     save_json_data(jwt_username, f'canvases/{jwt_username}/{canvas.id}.json', canvas.data)
     insert_canvas_to_db(canvas_id=canvas.id, username=jwt_username, canvas_name=canvas.name,
                         is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0)
-    insert_tags(canvas, canvas.id)
+    insert_canvas_tags(canvas, canvas.id)
     return get_canvas(canvas.id, jwt_username)
 
 @router.put("/{canvas_id}", response_model=CanvasResponse)
@@ -82,7 +82,7 @@ def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = De
     save_json_data(canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
     update_canvas_in_db(canvas_id, canvas.name, canvas.is_public)
     remove_all_tags(canvas_id)
-    insert_tags(canvas, canvas_id)
+    insert_canvas_tags(canvas, canvas_id)
     return get_canvas(canvas_id, jwt_username)
 
 @router.delete("/{canvas_id}", response_model=Token)
@@ -157,7 +157,7 @@ def convert_results_to_canvases(results):
         canvas = dict()
         (canvas['id'], canvas['username'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes']) = result
-        canvas['tags'] = get_tags(canvas['id'])
+        canvas['tags'] = get_canvas_tags(canvas['id'])
         try:
             with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
                 canvas['data'] = str(json.loads(fd.read()))

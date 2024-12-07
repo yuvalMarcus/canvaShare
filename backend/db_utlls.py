@@ -19,13 +19,22 @@ CANVASES_PER_PAGE = 50
 #################################
 ############# tags ##############
 
-def get_tags(canvas_id):
+def get_tags():
+    con, cur = connect_to_db()
+    cur.execute("SELECT tags.name FROM tags")
+    tags = cur.fetchall()
+    con.close()
+    cur.close()
+    return [tag[0] for tag in tags]
+
+def get_canvas_tags(canvas_id):
     con, cur = connect_to_db()
     cur.execute(
         "SELECT tags.name FROM tags, tags_of_canvases WHERE canvas_id = %s AND tags.id=tags_of_canvases.tag_id",
         (canvas_id,))
     tags = cur.fetchall()
     con.close()
+    cur.close()
     return [tag[0] for tag in tags]
 
 def get_tags_id(tags):
@@ -41,9 +50,30 @@ def get_tags_id(tags):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Tag {tag} not found")
         tags_id.append(res[0])
     con.close()
+    cur.close()
     return tags_id
 
-def insert_tags(canvas, canvas_id):
+def get_tag_by_id(tag_id):
+    con, cur = connect_to_db()
+    cur.execute("SELECT tags.name FROM tags WHERE tags.id = %s", (tag_id,))
+    tag_name = cur.fetchone()
+    con.close()
+    cur.close()
+    return tag_name
+
+def insert_tag(tag_name):
+    con, cur = connect_to_db()
+    try:
+        cur.execute("INSERT INTO tags(name) VALUES (%s)",(tag_name,))
+        con.commit()
+    except Exception as e:
+        con.rollback()
+        print(f"Error inserting tag {tag_name}: {e}")
+    finally:
+        con.close()
+        cur.close()
+
+def insert_canvas_tags(canvas, canvas_id):
     for tag in canvas.tags:
         if ',' in tag or len(tag) >= 255:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -51,7 +81,7 @@ def insert_tags(canvas, canvas_id):
     con, cur = connect_to_db()
     for tag in canvas.tags:
         # checks if tag exist in db. if not create new tag and then add this tag to canvas.
-        cur.execute(f"SELECT id FROM tags WHERE name = %s", (tag,))
+        cur.execute("SELECT id FROM tags WHERE name = %s", (tag,))
         res = cur.fetchone()
         if res is None:
             # create new tag in db
@@ -59,7 +89,7 @@ def insert_tags(canvas, canvas_id):
             cur.execute(f"SELECT id FROM tags WHERE name = %s", (tag,))
             res = cur.fetchone()
         tag_id = res[0]
-        cur.execute(f"INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
+        cur.execute("INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
     commit_and_close_db(con)
 
 def remove_all_tags(canvas_id):
