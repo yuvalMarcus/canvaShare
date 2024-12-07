@@ -1,8 +1,6 @@
-from auth import generate_token, check_guest_or_blocked
+from auth import check_guest_or_blocked
 from fastapi import APIRouter, File, UploadFile, Depends
 from fastapi.responses import FileResponse
-from typing import Optional, Dict
-from pydantic import BaseModel
 from db_utlls import *
 import requests
 
@@ -10,21 +8,19 @@ router = APIRouter(prefix="/photo")
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
 
-class PhotosResponse(BaseModel):
-    api_results: Optional[Dict] = None
-    token: Optional[str] = None
 
-@router.get('', response_model=PhotosResponse)
-def get_photos_from_api(category: str, jwt_username: str | None = Depends(check_guest_or_blocked)):
+@router.get('')
+def get_photos_from_api(category: str, _: str | None = Depends(check_guest_or_blocked)):
+    results = []
     if category:
-        try:
-            api_results = requests.get(
-                f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()
-            return {"api_results": api_results, "token": generate_token(jwt_username) if jwt_username else None}
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                                detail=f"Rate Limit Exceeded (50 per hour), Try again later")
-    return {"api_results": {}, "token": generate_token(jwt_username) if jwt_username else None}
+        for page in range(1, 4):
+            try:
+                results += requests.get(f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()['results']
+            except Exception:
+                if page == 1:
+                    raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                                        detail=f"Rate Limit Exceeded (50 per hour), Try again later")
+    return {"results": results}
 
 @router.post('')
 def upload_picture(save_to: str, file: UploadFile = File(...), jwt_username: str | None = Depends(check_guest_or_blocked)):
