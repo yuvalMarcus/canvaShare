@@ -15,7 +15,8 @@ def get_photos_from_api(category: str, _: str | None = Depends(check_guest_or_bl
     if category:
         for page in range(1, 4):
             try:
-                results += requests.get(f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}').json()['results']
+                results += requests.get(f'https://api.unsplash.com/search/photos?query={category}'
+                                        f'&client_id={API_KEY}&page={page}').json()['results']
             except Exception:
                 if page == 1:
                     raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
