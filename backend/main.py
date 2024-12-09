@@ -18,7 +18,7 @@ for router in [canvas_router, user_router, report_router, photo_router, tag_rout
 app.add_middleware(CORSMiddleware, allow_origins=[os.getenv('ORIGIN')], allow_credentials=True, allow_methods=["*"],
                    allow_headers=["*"])
 
-delete_tables_and_folders()
+#delete_tables_and_folders()
 create_tables_and_folders()
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
-from typing import Optional, List
-from pydantic import BaseModel
+from typing import List
 from fastapi import APIRouter
 from db_utlls import *
 from auth import *
