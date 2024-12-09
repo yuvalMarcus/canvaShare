@@ -15,12 +15,8 @@ FRONT_DOMAIN, FRONT_PORT = os.getenv('FRONT_DOMAIN'), os.getenv('FRONT_PORT')
 BACK_DOMAIN, BACK_PORT = os.getenv('BACK_DOMAIN'), int(os.getenv('BACK_PORT'))
 
 app = FastAPI()
-app.include_router(canvas_router)
-app.include_router(user_router)
-app.include_router(report_router)
-app.include_router(photo_router)
-app.include_router(tag_router)
-app.include_router(user_prefixed_router)
+for router in [canvas_router, user_router, report_router, photo_router, tag_router, user_prefixed_router]:
+    app.include_router(router)
 
 origins = [
     f"{FRONT_DOMAIN}:{FRONT_PORT}"
