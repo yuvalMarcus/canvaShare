@@ -27,7 +27,7 @@ def get_tag(tag_id: int, jwt_username: str | None = Depends(get_jwt_username)):
     return {'id': tag[0], 'name': tag[1]}
 
 @router.post("", response_model=Tag,status_code=status.HTTP_201_CREATED)
-def create_tag(tag: Tag, _: str | None = Depends(check_guest_or_blocked)):
+def create_tag(tag: Tag, _: str = Depends(check_guest_or_blocked)):
     is_valid_tag(tag.name)
-    tag = insert_tag(tag.name)
-    return {'id': tag[0], 'name': tag[1]}
+    tag.id, tag.name = insert_tag(tag.name)
+    return tag

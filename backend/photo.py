@@ -10,7 +10,7 @@ API_KEY = os.getenv('API_KEY')
 
 
 @router.get('')
-def get_photos_from_api(category: str, _: str | None = Depends(check_guest_or_blocked)):
+def get_photos_from_api(category: str, _: str = Depends(check_guest_or_blocked)):
     results = []
     if category:
         for page in range(1, 4):
@@ -24,7 +24,7 @@ def get_photos_from_api(category: str, _: str | None = Depends(check_guest_or_bl
     return {"results": results}
 
 @router.post('')
-def upload_picture(save_to: str, file: UploadFile = File(...), jwt_username: str | None = Depends(check_guest_or_blocked)):
+def upload_picture(save_to: str, file: UploadFile = File(...), jwt_username: str = Depends(check_guest_or_blocked)):
     file_extension = file.filename.split('.')[-1].lower()
     if not (0 < file.size <= 10*1024*1024):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image size must be between 0 and 10MB")

@@ -1,4 +1,4 @@
-from auth import get_jwt_username, generate_token, Token, check_guest_or_blocked
+from auth import get_jwt_username, check_guest_or_blocked
 from fastapi import APIRouter, Depends
 from typing import Optional, List
 from pydantic import BaseModel
@@ -9,7 +9,6 @@ import json
 
 
 router = APIRouter(prefix="/canvas")
-
 
 class Canvas(BaseModel):
     id: Optional[UUID] = None
@@ -22,15 +21,10 @@ class Canvas(BaseModel):
     data: str
     likes: Optional[int] = None
 
-class CanvasResponse(BaseModel):
-    canvas: Canvas
-    token: Optional[str] = None
-
-class CanvasesResponse(BaseModel):
+class Canvases(BaseModel):
     canvases: List[Canvas]
-    token: Optional[str] = None
     
-@router.get("/{canvas_id}", response_model=CanvasResponse)
+@router.get("/{canvas_id}", response_model=Canvas)
 def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
     canvas_id = str(canvas_id)
@@ -54,11 +48,10 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Json Data of canvas {canvas_id} not found")
     except json.decoder.JSONDecodeError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
-    
-    return {"canvas": canvas, "token": generate_token(jwt_username) if jwt_username else None}
+    return canvas
 
-@router.post("", response_model=CanvasResponse,status_code=status.HTTP_201_CREATED)
-def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(check_guest_or_blocked)):
+@router.post("", response_model=Canvas, status_code=status.HTTP_201_CREATED)
+def create_canvas(canvas: Canvas, jwt_username: str = Depends(check_guest_or_blocked)):
     canvas.id = generate_canvas_id()
     # Saves canvas in json file
     save_json_data(jwt_username, f'canvases/{jwt_username}/{canvas.id}.json', canvas.data)
@@ -67,8 +60,8 @@ def create_canvas(canvas: Canvas, jwt_username: str | None = Depends(check_guest
     insert_canvas_tags(canvas, canvas.id)
     return get_canvas(canvas.id, jwt_username)
 
-@router.put("/{canvas_id}", response_model=CanvasResponse)
-def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = Depends(check_guest_or_blocked)):
+@router.put("/{canvas_id}", response_model=Canvas)
+def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str = Depends(check_guest_or_blocked)):
     raise_error_if_blocked(canvas.username) # Cannot edit a blocked creator's canvas
     canvas_id = str(canvas_id)
     if is_canvas_editor(canvas_id, jwt_username) is False:
@@ -80,8 +73,8 @@ def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str | None = De
     insert_canvas_tags(canvas, canvas_id)
     return get_canvas(canvas_id, jwt_username)
 
-@router.delete("/{canvas_id}", response_model=Token)
-def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_guest_or_blocked)):
+@router.delete("/{canvas_id}")
+def delete_canvas(canvas_id: UUID, jwt_username: str = Depends(check_guest_or_blocked)):
     canvas_id = str(canvas_id)
     canvas_username = get_canvas_username(canvas_id)
     # checks if the user is creator of canvas or admin
@@ -94,9 +87,9 @@ def delete_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_gues
         os.remove(json_path)
     except Exception:
         pass
-    return {"token": generate_token(jwt_username) if jwt_username else None}
+    return {}
 
-@router.get("", response_model=CanvasesResponse)
+@router.get("", response_model=Canvases)
 def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None, tags: Optional[str] = None,
                  order: Optional[str] = None, page_num: Optional[int] = None,
                  jwt_username: str | None = Depends(get_jwt_username)):
@@ -117,8 +110,7 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
         results = results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE]
     else:
         results = get_all_canvases(page_num, order_by)
-    return {"canvases": convert_results_to_canvases(results),
-            "token": generate_token(jwt_username) if jwt_username else None}
+    return {"canvases": convert_results_to_canvases(results)}
 
 def save_json_data(username, canvas_path, data):
     Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix

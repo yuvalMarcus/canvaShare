@@ -14,14 +14,14 @@ class Likes(BaseModel):
     results: List[Like]
 
 @router.post('', response_model=Like)
-def like(like_obj: Like, jwt_username: str | None = Depends(check_guest_or_blocked)):
+def like(like_obj: Like, jwt_username: str = Depends(check_guest_or_blocked)):
     canvas_id = str(like_obj.canvas_id)
     raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot like a blocked creator's canvas.
     like_or_unlike_canvas(canvas_id, jwt_username, like=True)
     return {"canvas_id": canvas_id, "likes": get_num_of_likes(canvas_id)}
 
 @router.delete('', response_model=Like)
-def unlike(like_obj: Like, jwt_username: str | None = Depends(check_guest_or_blocked)):
+def unlike(like_obj: Like, jwt_username: str = Depends(check_guest_or_blocked)):
     canvas_id = str(like_obj.canvas_id)
     raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot unlike a blocked creator's canvas.
     like_or_unlike_canvas(canvas_id, jwt_username, like=False)

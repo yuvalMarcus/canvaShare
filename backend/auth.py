@@ -13,11 +13,16 @@ import os
 
 load_dotenv()
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_TIME = 24*60 # Day
+REFRESH_TOKEN_EXPIRE_TIME = 7*24*60 # Week
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 class Token(BaseModel):
+    token: str
+
+class Tokens(BaseModel):
     token: Optional[str] = None
+    refresh_token: Optional[str] = None
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -55,11 +60,11 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def generate_token(username: str | None):
+def generate_token(username: str | None, expire_time):
     if username is None:
         return ''
     to_encode = {"username": username}
-    expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + timedelta(minutes=expire_time)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHMS.HS256)
     return encoded_jwt

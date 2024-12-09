@@ -1,4 +1,4 @@
-from auth import get_jwt_username, generate_token, Token, check_guest_or_blocked
+from auth import get_jwt_username, check_guest_or_blocked
 from fastapi import APIRouter, Depends
 from typing import Optional, List
 from pydantic import BaseModel
@@ -15,11 +15,10 @@ class Report(BaseModel):
     username: Optional[str] = None
     description: str
 
-class ReportsResponse(BaseModel):
+class Reports(BaseModel):
     reports: List[Report]
-    token: Optional[str] = None
 
-@router.post('', response_model=Token)
+@router.post('')
 def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_username)):
     if not (1 <= len(report.description) <= 100):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -38,10 +37,10 @@ def create_report(report: Report, jwt_username: str | None = Depends(get_jwt_use
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Report type must be 'artist' or 'canvas' and their fields cannot be empty")
     insert_report_to_db(report.type, report.canvas_id, report.username, report.description)
-    return {"token": generate_token(jwt_username) if jwt_username else None}
+    return {}
 
-@router.get('', response_model=ReportsResponse)
-def get_reports(jwt_username: str | None = Depends(check_guest_or_blocked)):
+@router.get('', response_model=Reports)
+def get_reports(jwt_username: str = Depends(check_guest_or_blocked)):
     if is_admin(jwt_username):
         reports = []
         for db_report in get_db_reports():
@@ -49,12 +48,12 @@ def get_reports(jwt_username: str | None = Depends(check_guest_or_blocked)):
             (report['id'], report['date'], report['type'], report['canvas_id'], report['username'],
              report['description']) = db_report
             reports.append(report)
-        return {"reports": reports, "token": generate_token(jwt_username) if jwt_username else None}
+        return {"reports": reports}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
-@router.delete('/{report_id}', response_model=Token)
-def delete_report(report_id: int, jwt_username: str | None = Depends(check_guest_or_blocked)):
+@router.delete('/{report_id}')
+def delete_report(report_id: int, jwt_username: str = Depends(check_guest_or_blocked)):
     if is_admin(jwt_username):
         delete_report_from_db(report_id)
-        return {"token": generate_token(jwt_username) if jwt_username else None}
+        return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
