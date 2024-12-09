@@ -4,6 +4,7 @@ from report import router as report_router
 from canvas import router as canvas_router
 from photo import router as photo_router
 from tag import router as tag_router
+from like import router as like_router
 from fastapi import FastAPI
 from db_utlls import *
 from auth import *
@@ -12,7 +13,7 @@ import uvicorn
 
 load_dotenv()
 app = FastAPI()
-for router in [canvas_router, user_router, report_router, photo_router, tag_router, user_prefixed_router]:
+for router in [canvas_router, user_router, report_router, photo_router, tag_router, user_prefixed_router, like_router]:
     app.include_router(router)
 
 app.add_middleware(CORSMiddleware, allow_origins=[os.getenv('ORIGIN')], allow_credentials=True, allow_methods=["*"],

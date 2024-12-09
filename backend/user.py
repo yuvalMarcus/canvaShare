@@ -55,7 +55,7 @@ def logout(jwt_username: str | None = Depends(get_jwt_username)):
     return {}  # should be empty
 
 
-@router.post('/logout/{username,}', status_code=status.HTTP_204_NO_CONTENT)
+@router.post('/logout/{username}', status_code=status.HTTP_204_NO_CONTENT)
 def logout_username(username: str, jwt_username: str | None = Depends(check_guest_or_blocked)):
     if is_user_exist(username):
         if is_admin(jwt_username):

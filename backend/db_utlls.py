@@ -183,13 +183,14 @@ def get_all_canvases(page_num, order_by):
     con.close()
     return canvases
 
-def like_or_unlike_canvas(canvas_id, username):
+def like_or_unlike_canvas(canvas_id, username, like):
     con, cur = connect_to_db()
     cur.execute("SELECT * from likes WHERE canvas_id=%s AND username=%s", (canvas_id, username))
-    if cur.fetchone() is None:
+    res = cur.fetchone()
+    if res is None and like is True:
         # like canvas
         cur.execute("INSERT INTO likes VALUES (%s,%s)", (canvas_id, username))
-    else:
+    if res is not None and like is False:
         # unlike canvas
         cur.execute("DELETE FROM likes WHERE canvas_id=%s AND username=%s ", (canvas_id, username))
     con.commit()
@@ -202,6 +203,13 @@ def get_num_of_likes(canvas_id):
     num_of_likes = cur.fetchone()[0]
     con.close()
     return num_of_likes
+
+def get_canvases_likes():
+    con, cur = connect_to_db()
+    cur.execute("SELECT id, likes FROM canvases")
+    res = cur.fetchall()
+    con.close()
+    return res
 
 #################################
 ############# user ##############

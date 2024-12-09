@@ -30,11 +30,6 @@ class CanvasesResponse(BaseModel):
     canvases: List[Canvas]
     token: Optional[str] = None
     
-class LikesResponse(BaseModel):
-    likes: int
-    token: Optional[str] = None
-    
-    
 @router.get("/{canvas_id}", response_model=CanvasResponse)
 def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
@@ -124,19 +119,6 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
         results = get_all_canvases(page_num, order_by)
     return {"canvases": convert_results_to_canvases(results),
             "token": generate_token(jwt_username) if jwt_username else None}
-
-@router.put('/like/{canvas_id}', response_model=LikesResponse)
-def like_canvas(canvas_id: UUID, jwt_username: str | None = Depends(check_guest_or_blocked)):
-    canvas_id = str(canvas_id)
-    raise_error_if_blocked(get_canvas_username(canvas_id)) # Cannot like a blocked creator's canvas.
-    like_or_unlike_canvas(canvas_id, jwt_username)
-    return {"likes": get_num_of_likes(canvas_id), "token": generate_token(jwt_username) if jwt_username else None}
-
-@router.get('/likes_number/{canvas_id}')
-def get_canvas_likes_number(canvas_id: UUID):
-    canvas_id = str(canvas_id)
-    get_canvas_from_db(canvas_id)  # checks if canvas exist
-    return {"likes": get_num_of_likes(canvas_id)}
 
 def save_json_data(username, canvas_path, data):
     Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
