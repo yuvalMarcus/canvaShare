@@ -23,10 +23,10 @@ def get_tag(tag_id: int, jwt_username: str | None = Depends(get_jwt_username)):
     raise_error_if_blocked(jwt_username)
     tag = get_tag_by_id(tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="Tag not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
     return {'id': tag[0], 'name': tag[1]}
 
-@router.post("", response_model=Tag)
+@router.post("", response_model=Tag,status_code=status.HTTP_201_CREATED)
 def create_tag(tag: Tag, _: str | None = Depends(check_guest_or_blocked)):
     is_valid_tag(tag.name)
     tag = insert_tag(tag.name)
