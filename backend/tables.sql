@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS users(username VARCHAR(255) PRIMARY KEY NOT NULL,
                                  profile_photo VARCHAR(255) UNIQUE,
                                  cover_photo VARCHAR(255) UNIQUE,
                                  about TEXT,
-                                 disabled BOOLEAN NOT NULL);
+                                 disabled BOOLEAN NOT NULL,
+                                 is_admin BOOLEAN,
+                                 is_super_admin BOOLEAN );
 CREATE TABLE IF NOT EXISTS canvases(id VARCHAR(255) PRIMARY KEY NOT NULL,
                                     username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
                                     name VARCHAR(255) NOT NULL,

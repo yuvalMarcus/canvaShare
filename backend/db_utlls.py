@@ -214,12 +214,15 @@ def get_canvases_likes():
 #################################
 ############# user ##############
 
-def insert_user_to_db(username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled):
+def insert_user_to_db(username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled,
+                      admin, super_admin):
     con, cur = connect_to_db()
     cur.execute(
-        "INSERT INTO users (username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled)"
-        " VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
-        (username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled))
+        "INSERT INTO users (username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled,"
+        "is_admin, is_super_admin)"
+        " VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+        (username, hashed_password, email, is_blocked, profile_photo, cover_photo, about, disabled,
+         admin, super_admin))
     commit_and_close_db(con)
 
 def raise_error_if_guest(username):
@@ -393,3 +396,84 @@ def is_valid_tag(tag_name):
     if ',' in tag_name or not (0 < len(tag_name) < 255):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Tag name must be between 0 and 255 characters and not contain commas")
+
+
+def is_user_blocked(username: str) -> bool:
+    con, cur = connect_to_db()
+    cur.execute("SELECT is_blocked FROM users WHERE username=%s", (username,))
+    res = cur.fetchone()
+    con.close()
+    return res and res[0]  # Return True if the user is blocked
+
+
+def is_admin(username: str) -> bool:
+    print(f"Checking if {username} is an admin")  # Debug
+    con, cur = connect_to_db()
+    cur.execute("SELECT is_admin FROM users WHERE username=%s", (username,))
+    res = cur.fetchone()
+    con.close()
+    print(f"Result for {username} admin check: {res}")  # Debug
+    return res and res[0]  # Return True if the user is an admin
+
+def is_super_admin(username: str) -> bool:
+    print(f"Checking if {username} is a super admin")  # Debug
+    con, cur = connect_to_db()
+    cur.execute("SELECT is_super_admin FROM users WHERE username=%s", (username,))
+    res = cur.fetchone()
+    con.close()
+    print(f"Result for {username} super admin check: {res}")  # Debug
+    return res and res[0]  # Return True if the user is a super admin
+
+
+
+def delete_user_from_db(username: str):
+    con, cur = connect_to_db()
+    cur.execute("DELETE FROM users WHERE username=%s", (username,))
+    commit_and_close_db(con)
+
+def remove_photos(username: str):
+    con, cur = connect_to_db()
+    cur.execute("SELECT profile_photo, cover_photo FROM users WHERE username=%s", (username,))
+    res = cur.fetchone()
+    if res:
+        profile_photo, cover_photo = res
+        if profile_photo:
+            try:
+                os.remove(profile_photo)
+            except Exception as e:
+                print(f"Error deleting profile photo: {e}")
+        if cover_photo:
+            try:
+                os.remove(cover_photo)
+            except Exception as e:
+                print(f"Error deleting cover photo: {e}")
+    con.close()
+
+
+def update_user_in_db(username, is_admin=None, is_blocked=None, profile_photo=None, cover_photo=None, about=None):
+    con, cur = connect_to_db()
+    updates = []
+    params = []
+
+    if is_admin is not None:
+        updates.append("is_admin=%s")
+        params.append(is_admin)
+    if is_blocked is not None:
+        updates.append("is_blocked=%s")
+        params.append(is_blocked)
+    if profile_photo is not None:
+        updates.append("profile_photo=%s")
+        params.append(profile_photo)
+    if cover_photo is not None:
+        updates.append("cover_photo=%s")
+        params.append(cover_photo)
+    if about is not None:
+        updates.append("about=%s")
+        params.append(about)
+
+    if updates:
+        query = f"UPDATE users SET {', '.join(updates)} WHERE username=%s"
+        params.append(username)
+        cur.execute(query, tuple(params))
+        commit_and_close_db(con)
+
