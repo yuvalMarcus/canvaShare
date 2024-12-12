@@ -1,47 +1,28 @@
-from auth import get_jwt_username, check_guest_or_blocked
+from auth import get_jwt_user_id, check_guest_or_blocked
 from fastapi import APIRouter, Depends
-from typing import Optional, List
-from pydantic import BaseModel
+from classes import Canvases, Canvas
 from db_utlls import *
-from uuid import UUID
 import time
 import json
 
-
 router = APIRouter(prefix="/canvas")
-
-class Canvas(BaseModel):
-    id: Optional[UUID] = None
-    username: Optional[str] = None
-    name: str
-    tags: Optional[List[str]] = None
-    is_public: bool = False
-    create_date: Optional[int] = None
-    edit_date: Optional[int] = None
-    data: str
-    likes: Optional[int] = None
-
-class Canvases(BaseModel):
-    canvases: List[Canvas]
     
 @router.get("/{canvas_id}", response_model=Canvas)
-def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_username)):
-    raise_error_if_blocked(jwt_username)
-    canvas_id = str(canvas_id)
+def get_canvas(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Canvas:
+    raise_error_if_blocked(jwt_user_id)
     canvas = dict()
-    (canvas["id"], canvas["username"], canvas["name"] , canvas["is_public"], canvas["create_date"],
+    (canvas["id"], canvas["user_id"], canvas["name"] , canvas["is_public"], canvas["create_date"],
      canvas["edit_date"], canvas["likes"]) = get_canvas_from_db(canvas_id)
     canvas["tags"] = get_canvas_tags(canvas_id)
 
-    is_jwt_admin = is_admin(jwt_username)
     # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
-    raise_error_if_blocked(canvas["username"])
+    raise_error_if_blocked(canvas["user_id"])
 
     # If canvas is private (draft), only creator, editors and admins should get it
-    if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_username) is False and is_jwt_admin is False:
+    if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_user_id) is False and is_admin(jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     try:
-        with open(f'canvases/{canvas["username"]}/{canvas["id"]}.json', 'r', encoding='utf-8') as fd:
+        with open(f'canvases/{canvas["user_id"]}/{canvas["id"]}.json', 'r', encoding='utf-8') as fd:
             canvas["data"] = str(json.loads(fd.read()))
     except FileNotFoundError:
         # canvas exist in db but the json file of data not exist.
@@ -51,37 +32,37 @@ def get_canvas(canvas_id: UUID, jwt_username: str | None = Depends(get_jwt_usern
     return canvas
 
 @router.post("", response_model=Canvas, status_code=status.HTTP_201_CREATED)
-def create_canvas(canvas: Canvas, jwt_username: str = Depends(check_guest_or_blocked)):
-    canvas.id = generate_canvas_id()
-    # Saves canvas in json file
-    save_json_data(jwt_username, f'canvases/{jwt_username}/{canvas.id}.json', canvas.data)
-    insert_canvas_to_db(canvas_id=canvas.id, username=jwt_username, canvas_name=canvas.name,
+def create_canvas(canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> Canvas:
+    if len(canvas.name) >= 255:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
+    canvas.id = insert_canvas_to_db(user_id=jwt_user_id, canvas_name=canvas.name,
                         is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0)
+    save_json_data(jwt_user_id, f'canvases/{jwt_user_id}/{canvas.id}.json', canvas.data)
     insert_canvas_tags(canvas, canvas.id)
-    return get_canvas(canvas.id, jwt_username)
+    return get_canvas(canvas.id, jwt_user_id)
 
 @router.put("/{canvas_id}", response_model=Canvas)
-def update_canvas(canvas_id: UUID, canvas: Canvas, jwt_username: str = Depends(check_guest_or_blocked)):
-    raise_error_if_blocked(canvas.username) # Cannot edit a blocked creator's canvas
-    canvas_id = str(canvas_id)
-    if is_canvas_editor(canvas_id, jwt_username) is False:
+def update_canvas(canvas_id: int, canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> Canvas:
+    raise_error_if_blocked(canvas.user_id) # Cannot edit a blocked creator's canvas
+    if is_canvas_editor(canvas_id, jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    canvas.username = get_canvas_username(canvas_id)
-    save_json_data(canvas.username, f'canvases/{canvas.username}/{canvas_id}.json', canvas.data)
+    if len(canvas.name) >= 255:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
+    canvas.user_id = get_canvas_user_id(canvas_id)
+    save_json_data(canvas.user_id, f'canvases/{canvas.user_id}/{canvas_id}.json', canvas.data)
     update_canvas_in_db(canvas_id, canvas.name, canvas.is_public)
     remove_all_tags(canvas_id)
     insert_canvas_tags(canvas, canvas_id)
-    return get_canvas(canvas_id, jwt_username)
+    return get_canvas(canvas_id, jwt_user_id)
 
 @router.delete("/{canvas_id}")
-def delete_canvas(canvas_id: UUID, jwt_username: str = Depends(check_guest_or_blocked)):
-    canvas_id = str(canvas_id)
-    canvas_username = get_canvas_username(canvas_id)
+def delete_canvas(canvas_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
+    canvas_user_id = get_canvas_user_id(canvas_id)
     # checks if the user is creator of canvas or admin
-    if canvas_username != jwt_username and is_admin(jwt_username) is False:
+    if canvas_user_id != jwt_user_id and is_admin(jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     delete_canvas_from_db(canvas_id)
-    json_path = f'canvases/{canvas_username}/{canvas_id}.json'
+    json_path = f'canvases/{canvas_user_id}/{canvas_id}.json'
     delete_photos_of_canvas(json_path)
     try:
         os.remove(json_path)
@@ -90,15 +71,15 @@ def delete_canvas(canvas_id: UUID, jwt_username: str = Depends(check_guest_or_bl
     return {}
 
 @router.get("", response_model=Canvases)
-def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = None, tags: Optional[str] = None,
+def get_canvases(user_id: Optional[int] = None, canvas_name: Optional[str] = None, tags: Optional[str] = None,
                  order: Optional[str] = None, page_num: Optional[int] = None,
-                 jwt_username: str | None = Depends(get_jwt_username)):
-    raise_error_if_blocked(jwt_username)
+                 jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Canvases:
+    raise_error_if_blocked(jwt_user_id)
     results = []
     order_by = ' ORDER BY likes DESC' if order == 'likes' else ''
     page_num = 1 if page_num is None or page_num < 1 else page_num
-    if username:
-        results = get_canvases_by_username(username, page_num, order_by)
+    if user_id:
+        results = get_canvases_by_user_id(user_id, page_num, order_by)
     elif canvas_name:
         results = get_canvases_by_name(canvas_name, page_num, order_by)
     elif tags:
@@ -112,8 +93,8 @@ def get_canvases(username: Optional[str] = None, canvas_name: Optional[str] = No
         results = get_all_canvases(page_num, order_by)
     return {"canvases": convert_results_to_canvases(results)}
 
-def save_json_data(username, canvas_path, data):
-    Path(f"canvases/{username}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
+def save_json_data(user_id: int, canvas_path: str, data: str) -> None:
+    Path(f"canvases/{user_id}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
     try:
         data = data.replace('\'', '\"')
         with open(canvas_path, 'w', encoding='utf-8') as fd:
@@ -125,23 +106,23 @@ def save_json_data(username, canvas_path, data):
             pass
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
 
-def convert_results_to_canvases(results):
+def convert_results_to_canvases(results: list) -> List[Canvas]:
     canvases = []
     for result in results:
         canvas = dict()
-        (canvas['id'], canvas['username'], canvas['name'], canvas['is_public'], canvas['create_date'],
+        (canvas['id'], canvas['user_id'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes']) = result
         canvas['tags'] = get_canvas_tags(canvas['id'])
         try:
-            with open(f'canvases/{canvas['username']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
+            with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
                 canvas['data'] = str(json.loads(fd.read()))
         except FileNotFoundError:
-            print(f'Error: Json Data of canvas {canvas["username"]}/{canvas["id"]} not found')
+            print(f'Error: Json Data of canvas {canvas["user_id"]}/{canvas["id"]} not found')
             canvas['data'] = '{}'
         canvases.append(canvas)
     return canvases
 
-def delete_photos_of_canvas(json_path):
+def delete_photos_of_canvas(json_path: str) -> None:
     try:
         with open(json_path, 'r', encoding='utf-8') as fd:
             data = json.loads(fd.read())
