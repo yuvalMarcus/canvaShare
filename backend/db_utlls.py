@@ -81,7 +81,7 @@ def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
         res = cur.fetchone()
         if res is None:
             # create new tag in db
-            cur.execute(f"INSERT INTO tags (name) VALUES (%s) RETURNING id", (tag,))
+            cur.execute(f"INSERT INTO tags(name) VALUES (%s) RETURNING id", (tag,))
             res = cur.fetchone()
         tag_id = res[0]
         cur.execute("INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
@@ -110,7 +110,8 @@ def raise_error_if_invalid_tag(tag_name: str) -> None:
 def insert_canvas_to_db(user_id: int, canvas_name: str, is_public: bool,
                         create_date: int, edit_date: int, likes: int) -> int:
     con, cur = connect_to_db()
-    cur.execute("INSERT INTO canvases VALUES (%s,%s,%s,%s,%s,%s) RETURNING id",
+    cur.execute("INSERT INTO canvases(user_id, name, is_public, create_date, edit_date, likes)"
+                " VALUES (%s,%s,%s,%s,%s,%s) RETURNING id",
                 (user_id, canvas_name, is_public, create_date, edit_date, likes))
     canvas_id = cur.fetchone()[0]
     commit_and_close_db(con)

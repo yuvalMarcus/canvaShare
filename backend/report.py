@@ -1,6 +1,5 @@
 from auth import check_guest_or_blocked
 from fastapi import APIRouter, Depends
-from typing import Dict, Never
 from classes import Reports, Report
 from db_utlls import *
 
