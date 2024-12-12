@@ -67,11 +67,10 @@ def delete_user(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)
     print(f"User with user_id {user_id} deleted successfully.")
     return {}
 
-@router.put('/artist/{username}')
-def update_user_status(user_id: int, admin_flag: Optional[bool] = None, blocked_flag: Optional[bool] = None,
-                       jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
+@router.put('/artist/{user_id}')
+def update_user_status(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     # Ensure the target user exists
-    if not is_user_exist(user_id=user_id):
+    if not is_user_exist(user_id=user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Only admin can update user status
@@ -79,20 +78,20 @@ def update_user_status(user_id: int, admin_flag: Optional[bool] = None, blocked_
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # Handle admin status updates
-    if admin_flag is not None:
-        if is_super_admin(jwt_user_id) is True and is_super_admin(user_id) is False:
-            update_admin_in_db(user_id, admin_flag)
+    if user.is_admin is not None:
+        if is_super_admin(jwt_user_id) is True and is_super_admin(user.id) is False:
+            update_admin_in_db(user.id, user.is_admin)
             return {}
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
     # Handle block status updates
-    if blocked_flag is not None:
+    if user.is_blocked is not None:
         # Super admin can block only admins and users. Regular admin can block only users.
-        if is_super_admin(user_id) is False and (is_super_admin(jwt_user_id) is True or is_admin(user_id) is False):
-            update_user_in_db(user_id, is_blocked=blocked_flag)
-            if blocked_flag is True:
-                disconnect_user(user_id) # disconnect user after block
+        if is_super_admin(user.id) is False and (is_super_admin(jwt_user_id) is True or is_admin(user.id) is False):
+            update_user_in_db(user.id, is_blocked=user.is_blocked)
+            if user.is_blocked is True:
+                disconnect_user(user.id) # disconnect user after block
             return {}
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
