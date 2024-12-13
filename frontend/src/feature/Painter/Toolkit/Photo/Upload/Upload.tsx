@@ -1,0 +1,50 @@
+import {Box, Stack} from "@mui/material";
+import Typography from "@mui/material/Typography";
+import {grey, red} from "@mui/material/colors";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
+import React from "react";
+import {useDropzone} from "react-dropzone";
+import {useForm} from "react-hook-form";
+
+const Upload = () => {
+    const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
+        multiple: false,
+        accept: {
+            //'video/mp4': ['.mp4'],
+            //'video/x-msvideo': ['.avi']
+        }
+    });
+
+    const { control, handleSubmit, setValue, getValues, watch, formState: {errors}, register } = useForm({
+        //resolver: yupResolver(schema),
+    });
+
+    const file = watch('file');
+    const hasFileError = errors?.['file'] && !file;
+
+    return (
+        <Box>
+            <Stack flexDirection="row" alignItems="center" gap={1} mb={1}>
+                <Typography color={grey[100]} fontSize={18} textTransform="capitalize">upload photo:</Typography>
+            </Stack>
+            <Box border="dotted" borderColor={hasFileError ? red[400] : grey[400]} bgcolor={grey[200]} textAlign="center" p={4} {...getRootProps({className: 'dropzone'})} sx={{cursor: "pointer"}}>
+                <input {...getInputProps()} />
+                <FileUploadIcon fontSize={"large"} sx={{
+                    color: grey[600]
+                }} />
+                <Typography color={grey[700]}>Drag 'n' drop some photo here, or click to select photo</Typography>
+            </Box>
+            <Box>
+                {file && (
+                    <Stack direction="row" gap={1}>
+                        <Typography fontWeight="bold">File: </Typography>
+                        <Typography color={grey[600]}>{(file as File).name}</Typography>
+                    </Stack>
+                )}
+                {!file && <Typography color={grey[600]}>No photos selected to translate</Typography>}
+            </Box>
+        </Box>
+    )
+}
+
+export default Upload;
