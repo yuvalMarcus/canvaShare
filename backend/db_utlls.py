@@ -462,6 +462,24 @@ def delete_tables_and_folders() -> None:
     cur.execute(f"DROP SCHEMA public CASCADE; CREATE SCHEMA public")
     commit_and_close_db(con)
 
+def insert_initial_tags(tags: List[str]) -> None:
+    con, cur = connect_to_db()
+    for tag in tags:
+        try:
+            cur.execute(f"INSERT INTO tags (name) VALUES (%s)", (tag,))
+            con.commit()
+        except Exception:
+            con, cur = connect_to_db()
+    commit_and_close_db(con)
+
+def add_super_admin(username: str) -> None:
+    con, cur = connect_to_db()
+    cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+    user_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO admins(user_id) VALUES (%s)", (user_id,))
+    cur.execute("INSERT INTO super_admins(user_id) VALUES (%s)", (user_id,))
+    commit_and_close_db(con)
+
 def connect_to_db() -> tuple:
     con = psycopg2.connect(database=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
     cur = con.cursor()
