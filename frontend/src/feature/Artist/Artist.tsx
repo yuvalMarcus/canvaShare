@@ -14,6 +14,8 @@ import {grey} from "@mui/material/colors";
 import CanvasList from "../../components/CanvasList/CanvasList.tsx";
 import {top100Films} from "../../mook.ts";
 import * as S from "../Home/Home.style.ts";
+import Button from "@mui/material/Button";
+import {Link} from "react-router-dom";
 
 const Artist = () => {
     return (
@@ -25,7 +27,10 @@ const Artist = () => {
             </S.TopController>
             <Container>
                 <Stack flexDirection="row" alignItems="center" justifyContent="space-between" gap={3} pl={20} py={1} mb={4}>
-                    <Typography color={grey[900]} fontWeight="bold" variant="h4" textTransform="capitalize">artist nickname</Typography>
+                    <Stack flexDirection="row" gap={2}>
+                        <Typography color={grey[900]} fontWeight="bold" variant="h4" textTransform="capitalize">artist nickname</Typography>
+                        <Button variant="contained"  to='/painter' component={Link}>add canvas</Button>
+                    </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={2}>
                         <Typography whiteSpace="nowrap" color={grey[700]} fontWeight="bold" fontSize={18} textTransform="capitalize">
                             Order By :
