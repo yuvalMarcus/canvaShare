@@ -270,7 +270,7 @@ def get_user_id(username:str) -> int | None:
     return res[0] if res else None
 
 
-def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool]:
+def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool, str, str, str]:
     con, cur = connect_to_db()
     # return user if existed, else raise 404 error
     cur.execute(f"SELECT * from users WHERE id=%s", (user_id,))

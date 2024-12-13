@@ -16,7 +16,7 @@ def get_user(user_id: int) -> User:
     if not is_user_exist(user_id=user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user = dict()
-    (user["id"], user["username"], user["is_blocked"], user["is_admin"]) = get_user_from_db(user_id)
+    (user["id"], user["username"], user["is_blocked"], user["is_admin"], user ["profile_photo"], user["cover_photo"], user["about"]) = get_user_from_db(user_id)
     return user
 
 
