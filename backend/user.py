@@ -10,6 +10,16 @@ router = APIRouter()
 # Routes endpoints to here , prefix is /user so endpoints start from what's after /user .
 # for example /user/{user_id} would just be /{user_id}
 
+@router.get("/{user_id}", response_model=User)
+def get_user(user_id: int) -> User:
+    # Ensure the target user exists
+    if not is_user_exist(user_id=user_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user = dict()
+    (user["id"], user["username"], user["is_blocked"], user["is_admin"]) = get_user_from_db(user_id)
+    return user
+
+
 
 @router.post('/register')
 def register(user: User) -> dict:

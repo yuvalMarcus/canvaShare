@@ -269,6 +269,18 @@ def get_user_id(username:str) -> int | None:
     con.close()
     return res[0] if res else None
 
+
+def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool]:
+    con, cur = connect_to_db()
+    # return user if existed, else raise 404 error
+    cur.execute(f"SELECT * from users WHERE id=%s", (user_id,))
+    res = cur.fetchone()
+    con.close()
+    if res is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
+    return res
+
+
 def is_admin(user_id: int) -> bool:
     con, cur = connect_to_db()
     cur.execute("SELECT * FROM admins WHERE user_id=%s", (user_id,))
