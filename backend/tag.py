@@ -1,5 +1,8 @@
+
 from auth import get_jwt_user_id,check_guest_or_blocked
 from fastapi import APIRouter,Depends
+
+from canvas import get_canvas
 from classes import Tags, Tag
 from db_utlls import *
 
@@ -23,3 +26,10 @@ def create_tag(tag: Tag, _: int = Depends(check_guest_or_blocked)) -> Tag:
     raise_error_if_invalid_tag(tag.name)
     tag.id, tag.name = insert_tag(tag.name)
     return tag
+
+@router.delete('/{tad_id}', response_model=None)
+def delete_tag(tag_id: int, canvas_id:int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> None:
+    raise_error_if_blocked(jwt_user_id)
+    if not (is_admin(jwt_user_id) | is_canvas_editor(jwt_user_id, canvas_id)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User in not permitted to delete tag")
+    delete_canvas_tag(get_canvas(canvas_id), canvas_id, tag_id)

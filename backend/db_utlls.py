@@ -87,6 +87,12 @@ def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
         cur.execute("INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
     commit_and_close_db(con)
 
+def delete_canvas_tag(canvas: Canvas, canvas_id: int, tag_id: int) -> None:
+    con, cur = connect_to_db()
+    for tag_id in canvas.tags:
+        cur.execute(f"DELETE FROM tags_of_canvases VALUES (%s,%s)", (canvas_id,tag_id,))
+    commit_and_close_db(con)
+
 def remove_all_tags(canvas_id: int) -> None:
     con, cur = connect_to_db()
     cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id=%s", (canvas_id,))
