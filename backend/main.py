@@ -1,4 +1,4 @@
-from user import user_prefixed_router, router as user_router, register
+from user import access_router, user_router, register
 from fastapi.middleware.cors import CORSMiddleware
 from report import router as report_router
 from canvas import router as canvas_router
@@ -16,7 +16,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
 load_dotenv()
 app = FastAPI()
-for router in [canvas_router, user_router, report_router, photo_router, tag_router, user_prefixed_router, like_router]:
+for router in [canvas_router, user_router, report_router, photo_router, tag_router, access_router, like_router]:
     app.include_router(router)
 
 app.add_middleware(CORSMiddleware, allow_origins=[os.getenv('ORIGIN')], allow_credentials=True, allow_methods=["*"],

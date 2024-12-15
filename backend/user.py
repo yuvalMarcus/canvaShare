@@ -4,14 +4,14 @@ from db_utlls import *
 from auth import *
 from validation import *
 
-user_prefixed_router = APIRouter(prefix="/user")
-router = APIRouter()
+user_router = APIRouter(prefix="/user")
+access_router = APIRouter()
 
 # Routes endpoints to here , prefix is /user so endpoints start from what's after /user .
 # for example /user/{user_id} would just be /{user_id}
 
 
-@router.post('/register')
+@access_router.post('/register')
 def register(user: User) -> dict:
     if is_valid_username(user.username) and is_valid_password(user.password) and is_valid_email(user.email):
         tags_id = get_tags_id(user.tags)
@@ -20,7 +20,7 @@ def register(user: User) -> dict:
         insert_favorite_tags_to_db(user.id, tags_id)
         return {}
 
-@router.post('/login', response_model=Tokens)
+@access_router.post('/login', response_model=Tokens)
 def login(user: User) -> Tokens:
     username_by_email = get_username_by_email(user.username)  # In case an email was entered in the username box
     user.username = username_by_email if username_by_email is not None else user.username
@@ -32,13 +32,13 @@ def login(user: User) -> Tokens:
                     "refresh_token": generate_token(user.id, user.username, REFRESH_TOKEN_EXPIRE_TIME)}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
 
-@router.post('/logout')
+@access_router.post('/logout')
 def logout(jwt_user_id: int | None = Depends(get_jwt_user_id)) -> dict:
     raise_error_if_guest(jwt_user_id)
     disconnect_user(jwt_user_id)
     return {}
 
-@router.post('/refreshToken', response_model=Tokens)
+@access_router.post('/refreshToken', response_model=Tokens)
 def refresh_token(token: Token) -> Tokens:
     jwt_user_id = get_jwt_user_id(token.token) # validate token
     raise_error_if_guest(jwt_user_id)
@@ -49,7 +49,7 @@ def refresh_token(token: Token) -> Tokens:
 
 ##### Only admins can delete users #####
 #####  Super admin can delete admins, and regular admins cannot delete each other ####
-@router.delete('/artist/{user_id}')
+@user_router.delete('/{user_id}')
 def delete_user(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     if not is_admin(jwt_user_id):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -67,7 +67,7 @@ def delete_user(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)
     print(f"User with user_id {user_id} deleted successfully.")
     return {}
 
-@router.put('/artist/{user_id}')
+@user_router.put('/{user_id}')
 def update_user_status(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     # Ensure the target user exists
     if not is_user_exist(user_id=user.id):
