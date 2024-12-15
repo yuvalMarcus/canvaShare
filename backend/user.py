@@ -49,6 +49,13 @@ def refresh_token(token: Token) -> Tokens:
 
 ##### Only admins can delete users #####
 #####  Super admin can delete admins, and regular admins cannot delete each other ####
+
+@user_router.post("")
+def create_user(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)):
+    if is_admin(jwt_user_id):
+        return register(user)
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized user")
+
 @user_router.delete('/{user_id}')
 def delete_user(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     if not is_admin(jwt_user_id):
