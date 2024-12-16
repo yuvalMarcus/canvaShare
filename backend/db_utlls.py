@@ -285,7 +285,7 @@ def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool, str, str, str]
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
     return res
 
-def search_user_by_name(user_name: Optional[str] = None) -> List[str]:
+def search_user_by_name(user_name: Optional[str] = None) -> List[User]:
     con, cur = connect_to_db()
     cur.execute("SELECT * FROM users WHERE is_blocked =false ORDER BY SIMILARITY(username,user_name) DESC LIMIT 50")
     res = cur.fetchall()

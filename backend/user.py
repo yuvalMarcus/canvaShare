@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from classes import User, Tokens, Token, Users
+from classes import User, Tokens, Token
 from db_utlls import *
 from auth import *
 from validation import *
@@ -20,7 +20,7 @@ def get_user(user_id: int) -> User:
     return user
 
 @router.get("/{user_name}", response_model=List[str])
-def get_user(user_name: Optional(str) = None) -> Users:
+def get_user(user_name: Optional(str) = None) -> List[User]:
     return search_user_by_name(user_name=user_name)
 
 @router.post('/register')
