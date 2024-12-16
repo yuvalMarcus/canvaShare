@@ -1,7 +1,7 @@
 from typing import List, Tuple, Optional, Literal
 from fastapi import HTTPException, status
 from dotenv import load_dotenv
-from classes import Canvas
+from classes import Canvas, User
 from pathlib import Path
 import psycopg2
 import inspect
@@ -283,6 +283,13 @@ def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool, str, str, str]
     con.close()
     if res is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
+    return res
+
+def search_user_by_name(user_name: Optional[str] = None) -> List[str]:
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM users WHERE is_blocked =false ORDER BY SIMILARITY(name,user_name) DESC LIMIT 50")
+    res = cur.fetchall()
+    con.close()
     return res
 
 
