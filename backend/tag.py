@@ -29,7 +29,6 @@ def create_tag(tag: Tag, _: int = Depends(check_guest_or_blocked)) -> Tag:
 
 @router.delete('/{tad_id}', response_model=None)
 def delete_tag(tag_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> None:
-    raise_error_if_blocked(jwt_user_id)
     if not (is_admin(jwt_user_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User in not permitted to delete tag")
     delete_tag(tag_id)
