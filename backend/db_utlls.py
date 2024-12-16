@@ -287,7 +287,7 @@ def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool, str, str, str]
 
 def search_user_by_name(user_name: Optional[str] = None) -> List[str]:
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM users WHERE is_blocked =false ORDER BY SIMILARITY(name,user_name) DESC LIMIT 50")
+    cur.execute("SELECT * FROM users WHERE is_blocked =false ORDER BY SIMILARITY(username,user_name) DESC LIMIT 50")
     res = cur.fetchall()
     con.close()
     return res
