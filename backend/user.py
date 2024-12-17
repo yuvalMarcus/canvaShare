@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from classes import User, Tokens, Token
+from classes import User, Token , UserInfoResponse
 from db_utlls import *
 from auth import *
 from validation import *
@@ -20,16 +20,21 @@ def register(user: User) -> dict:
         insert_favorite_tags_to_db(user.id, tags_id)
         return {}
 
-@access_router.post('/login', response_model=Tokens)
-def login(user: User) -> Tokens:
+@access_router.post('/login', response_model=UserInfoResponse)
+def login(user: User):
     username_by_email = get_username_by_email(user.username)  # In case an email was entered in the username box
     user.username = username_by_email if username_by_email is not None else user.username
     user.id = get_user_id(user.username)
     if user.id and user.password:
         if verify_password(user.password, hashed_password=get_hashed_password(user.id)):
             connect_user(user.id)
-            return {"token": generate_token(user.id, user.username, ACCESS_TOKEN_EXPIRE_TIME),
-                    "refresh_token": generate_token(user.id, user.username, REFRESH_TOKEN_EXPIRE_TIME)}
+            return {
+                "token": generate_token(user.id, user.username, ACCESS_TOKEN_EXPIRE_TIME),
+                "refresh_token": generate_token(user.id, user.username, ACCESS_TOKEN_EXPIRE_TIME),
+                "id": user.id,
+                "username": user.username,
+                "email": get_user_email(user.id)
+            }
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
 
 @access_router.post('/logout')
@@ -38,14 +43,18 @@ def logout(jwt_user_id: int | None = Depends(get_jwt_user_id)) -> dict:
     disconnect_user(jwt_user_id)
     return {}
 
-@access_router.post('/refreshToken', response_model=Tokens)
-def refresh_token(token: Token) -> Tokens:
+@access_router.post('/refreshToken', response_model=UserInfoResponse)
+def refresh_token(token: Token):
     jwt_user_id = get_jwt_user_id(token.token) # validate token
     raise_error_if_guest(jwt_user_id)
     raise_error_if_blocked(jwt_user_id)
     username = get_username_by_id(jwt_user_id)
     return {"token": generate_token(jwt_user_id, username, ACCESS_TOKEN_EXPIRE_TIME),
-            "refresh_token": generate_token(jwt_user_id, username, REFRESH_TOKEN_EXPIRE_TIME)}
+            "refresh_token": generate_token(jwt_user_id, username, REFRESH_TOKEN_EXPIRE_TIME),
+            "id": jwt_user_id,
+            "username": username,
+            "email": get_user_email(jwt_user_id)
+            }
 
 ##### Only admins can delete users #####
 #####  Super admin can delete admins, and regular admins cannot delete each other ####
