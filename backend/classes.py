@@ -59,3 +59,10 @@ class User(BaseModel):
     profile_photo: Optional[str] = None
     cover_photo: Optional[str] = None
     about: Optional[str] = None
+
+class UserInfoResponse(BaseModel):
+    token: str
+    refresh_token: str
+    id: int
+    username: str
+    email: Optional[str]
