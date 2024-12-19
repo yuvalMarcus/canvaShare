@@ -112,7 +112,7 @@ def insert_canvas_to_db(user_id: int, canvas_name: str, is_public: bool,
     con, cur = connect_to_db()
     cur.execute("INSERT INTO canvases(user_id, name, is_public, create_date, edit_date, likes, description, photo)"
                 " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                (user_id, canvas_name, is_public, create_date, edit_date, likes))
+                (user_id, canvas_name, is_public, create_date, edit_date, likes, description, photo))
     canvas_id = cur.fetchone()[0]
     commit_and_close_db(con)
     return canvas_id
