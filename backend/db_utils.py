@@ -145,7 +145,7 @@ def get_canvases_by_user_id(user_id: int, page_num: int, order_by: str) \
         -> List[Tuple[int, int, str, bool, int, int, int]]:
     con, cur = connect_to_db()
     cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
-                f" AND users.user_id=%s AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
+                f" AND users.id=%s AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
                 (user_id, CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
