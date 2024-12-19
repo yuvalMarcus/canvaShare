@@ -269,6 +269,13 @@ def get_user_id(username:str) -> int | None:
     con.close()
     return res[0] if res else None
 
+def get_user_email(user_id: int):
+    con, cur = connect_to_db()
+    cur.execute("SELECT email FROM users WHERE id=%s", (user_id,))
+    res = cur.fetchone()
+    con.close()
+    return res[0] if res else None
+
 def is_admin(user_id: int) -> bool:
     con, cur = connect_to_db()
     cur.execute("SELECT * FROM admins WHERE user_id=%s", (user_id,))
