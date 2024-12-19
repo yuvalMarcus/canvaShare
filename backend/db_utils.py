@@ -117,10 +117,10 @@ def insert_canvas_to_db(user_id: int, canvas_name: str, is_public: bool,
     commit_and_close_db(con)
     return canvas_id
 
-def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool,canvas_description: str, canvas_photo:str) -> None:
+def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool, description: str, photo:str) -> None:
     con, cur = connect_to_db()
     cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())}, description = %s, photo = %s WHERE id=%s",
-                (canvas_name, is_public, canvas_description, canvas_photo, canvas_id))
+                (canvas_name, is_public, description, photo, canvas_id))
     commit_and_close_db(con)
 
 def delete_canvas_from_db(canvas_id: int) -> None:
@@ -128,7 +128,7 @@ def delete_canvas_from_db(canvas_id: int) -> None:
     cur.execute("DELETE FROM canvases WHERE id=%s", (canvas_id,))
     commit_and_close_db(con)
 
-def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, int]:
+def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, int, str, str]:
     con, cur = connect_to_db()
     # return canvas if existed, else raise 404 error
     cur.execute(f"SELECT * from canvases WHERE id=%s", (canvas_id,))
@@ -141,22 +141,19 @@ def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, i
 def get_canvas_user_id(canvas_id: int) -> int:
     return get_canvas_from_db(canvas_id)[1]
 
-def get_canvases_by_user_id(user_id: int, page_num: int, order_by: str) \
-        -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
+def get_canvases_by_filters(args) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
+    filters = ""
+    params = []
+    for name, value in args:
+        if name == "user_id":
+            filters += " AND users.id=%s"
+            params.append(value)
+        elif name == "canvas_name":
+            filters += " AND canvases.name LIKE %s"
+            params.append(f'%{value}%')
     con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
-                f" AND users.id=%s AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
-                (user_id, CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
-    canvases = cur.fetchall()
-    con.close()
-    return canvases
-
-def get_canvases_by_name(canvas_name: str, page_num: int, order_by: str)\
-        -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
-    con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
-                f" AND is_blocked=false AND canvases.name LIKE %s" + order_by + " LIMIT %s OFFSET %s",
-                (f'%{canvas_name}%', CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
+    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id AND is_blocked=false"
+                + filters, (*params,))
     canvases = cur.fetchall()
     con.close()
     return canvases
@@ -167,15 +164,6 @@ def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, i
                 f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id "
                 f"AND canvases.user_id=users.id AND is_blocked=false",
                 (tag.strip(),))
-    canvases = cur.fetchall()
-    con.close()
-    return canvases
-
-def get_all_canvases(page_num: int, order_by: str) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
-    con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* FROM canvases,users  WHERE "
-                f"canvases.user_id=users.id AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
-                (CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
     return canvases

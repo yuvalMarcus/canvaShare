@@ -76,23 +76,30 @@ def get_canvases(user_id: Optional[int] = None, canvas_name: Optional[str] = Non
                  order: Optional[str] = None, page_num: Optional[int] = None,
                  jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Canvases:
     raise_error_if_blocked(jwt_user_id)
-    results = []
-    order_by = ' ORDER BY likes DESC' if order == 'likes' else ''
+    tags_results, filters = [], []
     page_num = 1 if page_num is None or page_num < 1 else page_num
+
     if user_id:
-        results = get_canvases_by_user_id(user_id, page_num, order_by)
-    elif canvas_name:
-        results = get_canvases_by_name(canvas_name, page_num, order_by)
-    elif tags:
+        filters.append(('user_id', user_id))
+    if canvas_name:
+        filters.append(('canvas_name', canvas_name))
+
+    if tags:
         for tag in tags.split(','):
-            results += get_canvases_by_tag(tag)
-        if order == 'likes':
-            # sort canvases by likes from high to low
-            results.sort(key=lambda x: x[-1], reverse=True)
-        results = results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE]
+            tags_results += get_canvases_by_tag(tag)
+        results = list(set(get_canvases_by_filters(filters)) & set(tags_results))
     else:
-        results = get_all_canvases(page_num, order_by)
-    return {"canvases": convert_results_to_canvases(results)}
+        results = get_canvases_by_filters(filters)
+
+    if order == 'likes':
+        # sort canvases by likes from high to low
+        results.sort(key=lambda x: x[6], reverse=True)
+    else:
+        # sort canvases by dates from low to high
+        results.sort(key=lambda x: x[0])
+
+    return {"canvases": convert_results_to_canvases(
+        results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE])}
 
 def save_json_data(user_id: int, canvas_path: str, data: str) -> None:
     Path(f"canvases/{user_id}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
@@ -112,7 +119,7 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
     for result in results:
         canvas = dict()
         (canvas['id'], canvas['user_id'], canvas['name'], canvas['is_public'], canvas['create_date'],
-         canvas['edit_date'], canvas['likes'],canvas['description'], canvas['photo']) = result
+         canvas['edit_date'], canvas['likes'], canvas['description'], canvas['photo']) = result
         canvas['tags'] = get_canvas_tags(canvas['id'])
         try:
             with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
