@@ -142,7 +142,7 @@ def get_canvas_user_id(canvas_id: int) -> int:
     return get_canvas_from_db(canvas_id)[1]
 
 def get_canvases_by_user_id(user_id: int, page_num: int, order_by: str) \
-        -> List[Tuple[int, int, str, bool, int, int, int]]:
+        -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
     con, cur = connect_to_db()
     cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
                 f" AND users.id=%s AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
@@ -152,7 +152,7 @@ def get_canvases_by_user_id(user_id: int, page_num: int, order_by: str) \
     return canvases
 
 def get_canvases_by_name(canvas_name: str, page_num: int, order_by: str)\
-        -> List[Tuple[int, int, str, bool, int, int, int]]:
+        -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
     con, cur = connect_to_db()
     cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
                 f" AND is_blocked=false AND canvases.name LIKE %s" + order_by + " LIMIT %s OFFSET %s",
@@ -161,7 +161,7 @@ def get_canvases_by_name(canvas_name: str, page_num: int, order_by: str)\
     con.close()
     return canvases
 
-def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, int]]:
+def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
     con, cur = connect_to_db()
     cur.execute(f"SELECT canvases.* FROM canvases, tags_of_canvases, tags, users WHERE tags.name=%s "
                 f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id "
@@ -171,7 +171,7 @@ def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, i
     con.close()
     return canvases
 
-def get_all_canvases(page_num: int, order_by: str) -> List[Tuple[int, int, str, bool, int, int, int]]:
+def get_all_canvases(page_num: int, order_by: str) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
     con, cur = connect_to_db()
     cur.execute(f"SELECT canvases.* FROM canvases,users  WHERE "
                 f"canvases.user_id=users.id AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
