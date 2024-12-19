@@ -1,7 +1,7 @@
 from auth import get_jwt_user_id, check_guest_or_blocked
 from fastapi import APIRouter, Depends
 from classes import Canvases, Canvas
-from db_utlls import *
+from db_utils import *
 import time
 import json
 
@@ -12,7 +12,7 @@ def get_canvas(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id
     raise_error_if_blocked(jwt_user_id)
     canvas = dict()
     (canvas["id"], canvas["user_id"], canvas["name"] , canvas["is_public"], canvas["create_date"],
-     canvas["edit_date"], canvas["likes"]) = get_canvas_from_db(canvas_id)
+     canvas["edit_date"], canvas["likes"],canvas["description"], canvas["photo"]) = get_canvas_from_db(canvas_id)
     canvas["tags"] = get_canvas_tags(canvas_id)
 
     # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
@@ -36,7 +36,8 @@ def create_canvas(canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_bloc
     if len(canvas.name) >= 255:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
     canvas.id = insert_canvas_to_db(user_id=jwt_user_id, canvas_name=canvas.name,
-                        is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0)
+                        is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0,
+                                    description=canvas.description, photo=canvas.photo)
     save_json_data(jwt_user_id, f'canvases/{jwt_user_id}/{canvas.id}.json', canvas.data)
     insert_canvas_tags(canvas, canvas.id)
     return get_canvas(canvas.id, jwt_user_id)
@@ -50,7 +51,7 @@ def update_canvas(canvas_id: int, canvas: Canvas, jwt_user_id: int = Depends(che
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
     canvas.user_id = get_canvas_user_id(canvas_id)
     save_json_data(canvas.user_id, f'canvases/{canvas.user_id}/{canvas_id}.json', canvas.data)
-    update_canvas_in_db(canvas_id, canvas.name, canvas.is_public)
+    update_canvas_in_db(canvas_id, canvas.name, canvas.is_public,canvas.description, canvas.photo)
     remove_all_tags(canvas_id)
     insert_canvas_tags(canvas, canvas_id)
     return get_canvas(canvas_id, jwt_user_id)
@@ -111,7 +112,7 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
     for result in results:
         canvas = dict()
         (canvas['id'], canvas['user_id'], canvas['name'], canvas['is_public'], canvas['create_date'],
-         canvas['edit_date'], canvas['likes']) = result
+         canvas['edit_date'], canvas['likes'],canvas['description'], canvas['photo']) = result
         canvas['tags'] = get_canvas_tags(canvas['id'])
         try:
             with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:

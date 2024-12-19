@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from classes import User, Token , UserInfoResponse
-from db_utlls import *
+from db_utils import *
 from auth import *
 from validation import *
 

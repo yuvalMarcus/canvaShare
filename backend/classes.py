@@ -18,6 +18,8 @@ class Canvas(BaseModel):
     edit_date: Optional[int] = None
     data: str
     likes: Optional[int] = None
+    description: Optional[str] = None
+    photo: Optional[str] = None
 
 class Canvases(BaseModel):
     canvases: List[Canvas]

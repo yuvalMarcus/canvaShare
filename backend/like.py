@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from classes import Like, Likes
-from db_utlls import *
+from db_utils import *
 from auth import *
 
 router = APIRouter(prefix="/like")

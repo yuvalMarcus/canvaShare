@@ -1,4 +1,4 @@
-from db_utlls import is_user_exist, get_username_by_email
+from db_utils import is_user_exist, get_username_by_email
 from fastapi import HTTPException, status
 import re
 

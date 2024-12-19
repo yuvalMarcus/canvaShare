@@ -1,7 +1,7 @@
 from auth import get_jwt_user_id,check_guest_or_blocked
 from fastapi import APIRouter,Depends
 from classes import Tags, Tag
-from db_utlls import *
+from db_utils import *
 
 router = APIRouter(prefix="/tag")
 
