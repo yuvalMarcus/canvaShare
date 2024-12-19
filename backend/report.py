@@ -1,7 +1,7 @@
 from auth import check_guest_or_blocked
 from fastapi import APIRouter, Depends
 from classes import Reports, Report
-from db_utlls import *
+from db_utils import *
 
 router = APIRouter(prefix="/report")
 

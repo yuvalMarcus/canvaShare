@@ -108,19 +108,19 @@ def raise_error_if_invalid_tag(tag_name: str) -> None:
 ############# canvas ##############
 
 def insert_canvas_to_db(user_id: int, canvas_name: str, is_public: bool,
-                        create_date: int, edit_date: int, likes: int) -> int:
+                        create_date: int, edit_date: int, likes: int, description: str, photo: str) -> int:
     con, cur = connect_to_db()
-    cur.execute("INSERT INTO canvases(user_id, name, is_public, create_date, edit_date, likes)"
-                " VALUES (%s,%s,%s,%s,%s,%s) RETURNING id",
+    cur.execute("INSERT INTO canvases(user_id, name, is_public, create_date, edit_date, likes, description, photo)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
                 (user_id, canvas_name, is_public, create_date, edit_date, likes))
     canvas_id = cur.fetchone()[0]
     commit_and_close_db(con)
     return canvas_id
 
-def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool) -> None:
+def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool,canvas_description: str, canvas_photo:str) -> None:
     con, cur = connect_to_db()
-    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())} WHERE id=%s",
-                (canvas_name, is_public, canvas_id))
+    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())}, description = %s, photo = %s WHERE id=%s",
+                (canvas_name, is_public, canvas_description, canvas_photo, canvas_id))
     commit_and_close_db(con)
 
 def delete_canvas_from_db(canvas_id: int) -> None:

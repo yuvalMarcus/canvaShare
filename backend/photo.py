@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from auth import check_guest_or_blocked
 from typing import Dict
 from uuid import uuid4
-from db_utlls import *
+from db_utils import *
 import requests
 
 router = APIRouter(prefix="/photo")

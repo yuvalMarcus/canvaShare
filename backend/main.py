@@ -7,7 +7,7 @@ from tag import router as tag_router
 from like import router as like_router
 from classes import User
 from fastapi import FastAPI
-from db_utlls import *
+from db_utils import *
 from auth import *
 import logging
 import uvicorn
