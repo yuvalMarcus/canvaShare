@@ -277,7 +277,7 @@ def get_user_id(username:str) -> int | None:
 
 def get_user_from_db(user_id: int) -> User:
     con, cur = connect_to_db()
-    cur.execute(f"SELECT * from users WHERE id=%s", (user_id,))
+    cur.execute("SELECT DISTINCT username, email, tags, is_blocked, is_admin, is_super_admin, profile_photo, cover_photo, about FROM users WHERE id=%s", (user_id,))
     res = cur.fetchone()
     return res
 
