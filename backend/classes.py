@@ -27,6 +27,10 @@ class Canvases(BaseModel):
 
 class Like(BaseModel):
     canvas_id: int
+    user_id: Optional[int] = None
+
+class LikesNumber(BaseModel):
+    canvas_id: int
     likes: Optional[int] = None
 
 class Likes(BaseModel):

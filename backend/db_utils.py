@@ -189,9 +189,17 @@ def get_num_of_likes(canvas_id: int) -> int:
     con.close()
     return num_of_likes
 
-def get_canvases_likes() -> List[Tuple[int, int]]:
+def get_canvases_likes(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> List[Tuple[int, int]]:
+    filters = ""
+    params = []
+    if canvas_id:
+        filters += " AND canvas_id=%s"
+        params.append(canvas_id)
+    if user_id:
+        filters += " AND user_id=%s"
+        params.append(user_id)
     con, cur = connect_to_db()
-    cur.execute("SELECT id, likes FROM canvases")
+    cur.execute(f"SELECT * from likes WHERE 1=1{filters}", (*params,))
     res = cur.fetchall()
     con.close()
     return res
