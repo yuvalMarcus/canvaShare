@@ -15,9 +15,10 @@ def get_user(user_id: int) -> User:
     # Ensure the target user exists
     if not is_user_exist(user_id=user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user = dict()
-    (user["id"], user["username"], user["is_blocked"], user["is_admin"], user ["profile_photo"], user["cover_photo"], user["about"]) = get_user_from_db(user_id)
-    return user
+    return get_user_from_db(user_id)
+
+#user = dict()
+# (user["id"], user["username"], user["is_blocked"], user["is_admin"], user ["profile_photo"], user["cover_photo"], user["about"]) = get_user_from_db(user_id)
 
 @router.get("/{user_name}", response_model=List[str])
 def get_user(user_name: Optional(str) = None) -> List[User]:

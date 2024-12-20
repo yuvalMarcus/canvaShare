@@ -275,15 +275,21 @@ def get_user_id(username:str) -> int | None:
     return res[0] if res else None
 
 
-def get_user_from_db(user_id: int) -> Tuple[int, str, bool, bool, str, str, str]:
+def get_user_from_db(user_id: int) -> User:
     con, cur = connect_to_db()
-    # return user if existed, else raise 404 error
     cur.execute(f"SELECT * from users WHERE id=%s", (user_id,))
     res = cur.fetchone()
-    con.close()
-    if res is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
     return res
+
+    #
+    # -> Tuple[int, str, bool, bool, str, str, str]:
+    #
+    # return user if existed, else raise 404 error
+
+    #con.close()
+    #if res is None:
+        #raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
+    #return res
 
 def search_user_by_name(user_name: Optional[str] = None) -> List[User]:
     con, cur = connect_to_db()
