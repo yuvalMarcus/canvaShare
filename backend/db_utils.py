@@ -1,7 +1,7 @@
 from typing import List, Tuple, Optional, Literal
 from fastapi import HTTPException, status
 from dotenv import load_dotenv
-from classes import Canvas
+from classes import Canvas, User
 from pathlib import Path
 import psycopg2
 import inspect
@@ -85,6 +85,11 @@ def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
             res = cur.fetchone()
         tag_id = res[0]
         cur.execute("INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
+    commit_and_close_db(con)
+
+def delete_tag_from_db(tag_id: int) -> None:
+    con, cur = connect_to_db()
+    cur.execute(f"DELETE FROM tags WHERE id = %s ", (tag_id,))
     commit_and_close_db(con)
 
 def remove_all_tags(canvas_id: int) -> None:
@@ -257,6 +262,24 @@ def is_user_blocked(user_id: int) -> bool:
     res = cur.fetchone()
     con.close()
     return res and res[0]  # Return True if the user is blocked
+
+def get_user_from_db(user_id: int) -> Tuple[int, str, str, str, bool, str, str, str, bool]:
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+    res = cur.fetchone()
+    con.close()
+    if res is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
+    return res
+
+def get_users_from_db(username: Optional[str] = None) ->  List[Tuple[int, str, str, str, bool, str, str, str, bool]]:
+    filters = "" if username is None else f" AND SIMILARITY(username, %s) > 0.2 ORDER BY SIMILARITY(username, %s) DESC LIMIT 50"
+    params = [] if username is None else [username, username]
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM users WHERE is_blocked=false" + filters, (*params,))
+    res = cur.fetchall()
+    con.close()
+    return res
 
 def get_user_id(username:str) -> int | None:
     con, cur = connect_to_db()
@@ -473,6 +496,15 @@ def insert_initial_tags(tags: List[str]) -> None:
             con.commit()
         except Exception:
             con, cur = connect_to_db()
+    commit_and_close_db(con)
+
+def add_pg_trgm_extension() -> None:
+    con, cur = connect_to_db()
+    try:
+        cur.execute("CREATE EXTENSION pg_trgm;")
+    except Exception:
+        con.close()
+        return
     commit_and_close_db(con)
 
 def add_super_admin(username: str) -> None:

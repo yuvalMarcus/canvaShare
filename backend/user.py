@@ -10,19 +10,30 @@ access_router = APIRouter()
 # Routes endpoints to here , prefix is /user so endpoints start from what's after /user .
 # for example /user/{user_id} would just be /{user_id}
 
-@router.get("/{user_id}", response_model=User)
-def get_user(user_id: int) -> User:
-    # Ensure the target user exists
-    if not is_user_exist(user_id=user_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return get_user_from_db(user_id)
+@user_router.get("/{user_id}", response_model=User)
+def get_user(user_id: int, jwt_user_id: int = Depends(get_jwt_user_id)) -> User:
+    raise_error_if_blocked(jwt_user_id)
+    user = dict()
+    (user["id"], user["username"], _, user["is_blocked"], user["profile_photo"], user["coverphoto"],
+     user["about"], ) = get_user_from_db(user_id)
 
-#user = dict()
-# (user["id"], user["username"], user["is_blocked"], user["is_admin"], user ["profile_photo"], user["cover_photo"], user["about"]) = get_user_from_db(user_id)
+    if user_id == jwt_user_id:
+        #user["tags"] = get_favorite_tags(user_id) ######### need to add this function in db_utils
+        pass
+    #user["is_admin"] = 'debug' ######## need to ask Yuval if necessary
+    #user["is_super_admin"] = 'debug' ######## need to ask Yuval if necessary
+    return user
 
-@router.get("/{user_name}", response_model=List[str])
-def get_user(user_name: Optional(str) = None) -> List[User]:
-    return search_user_by_name(user_name=user_name)
+@user_router.get("", response_model=List[User])
+def get_user(username: Optional[str] = None, jwt_user_id: int = Depends(get_jwt_user_id)) -> List[User]:
+    raise_error_if_blocked(jwt_user_id)
+    users = []
+    for db_user in get_users_from_db(username):
+        user = dict()
+        (user["id"], user["username"], _, user["is_blocked"], user["profile_photo"], user["coverphoto"],
+         user["about"], ) = db_user
+        users.append(user)
+    return users
 
 @access_router.post('/register')
 def register(user: User) -> dict:

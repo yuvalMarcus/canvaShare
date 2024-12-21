@@ -24,6 +24,7 @@ app.add_middleware(CORSMiddleware, allow_origins=[os.getenv('ORIGIN')], allow_cr
 
 #delete_tables_and_folders()
 create_tables_and_folders()
+add_pg_trgm_extension()
 
 tags = ['Christmas', 'Animals', 'Art', 'Beauty', 'Design', 'DIY And Crafts', 'Food And Drink', 'Home Decor',
             'Quotes', 'Travel', 'Tattoos', 'Fantasy', 'Arcane']
