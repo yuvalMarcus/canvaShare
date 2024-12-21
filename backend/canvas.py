@@ -14,7 +14,7 @@ def get_canvas(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id
     (canvas["id"], canvas["user_id"], canvas["name"] , canvas["is_public"], canvas["create_date"],
      canvas["edit_date"], canvas["likes"],canvas["description"], canvas["photo"]) = get_canvas_from_db(canvas_id)
     canvas["tags"] = get_canvas_tags(canvas_id)
-
+    canvas["username"], _, _, _, canvas["profile_photo"] = get_user_from_db(canvas["user_id"])[1:6]
     # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
     raise_error_if_blocked(canvas["user_id"])
 
@@ -31,8 +31,8 @@ def get_canvas(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error")
     return canvas
 
-@router.post("", response_model=Canvas, status_code=status.HTTP_201_CREATED)
-def create_canvas(canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> Canvas:
+@router.post("")
+def create_canvas(canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     if len(canvas.name) >= 255:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
     canvas.id = insert_canvas_to_db(user_id=jwt_user_id, canvas_name=canvas.name,
@@ -40,10 +40,10 @@ def create_canvas(canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_bloc
                                     description=canvas.description, photo=canvas.photo)
     save_json_data(jwt_user_id, f'canvases/{jwt_user_id}/{canvas.id}.json', canvas.data)
     insert_canvas_tags(canvas, canvas.id)
-    return get_canvas(canvas.id, jwt_user_id)
+    return {}
 
-@router.put("/{canvas_id}", response_model=Canvas)
-def update_canvas(canvas_id: int, canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> Canvas:
+@router.put("/{canvas_id}")
+def update_canvas(canvas_id: int, canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     raise_error_if_blocked(canvas.user_id) # Cannot edit a blocked creator's canvas
     if is_canvas_editor(canvas_id, jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -54,7 +54,7 @@ def update_canvas(canvas_id: int, canvas: Canvas, jwt_user_id: int = Depends(che
     update_canvas_in_db(canvas_id, canvas.name, canvas.is_public,canvas.description, canvas.photo)
     remove_all_tags(canvas_id)
     insert_canvas_tags(canvas, canvas_id)
-    return get_canvas(canvas_id, jwt_user_id)
+    return {}
 
 @router.delete("/{canvas_id}")
 def delete_canvas(canvas_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
@@ -96,7 +96,7 @@ def get_canvases(user_id: Optional[int] = None, canvas_name: Optional[str] = Non
         results.sort(key=lambda x: x[6], reverse=True)
     else:
         # sort canvases by dates from low to high
-        results.sort(key=lambda x: x[0])
+        results.sort(key=lambda x: x[0], reverse=True)
 
     return {"canvases": convert_results_to_canvases(
         results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE])}
@@ -121,6 +121,7 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
         (canvas['id'], canvas['user_id'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes'], canvas['description'], canvas['photo']) = result
         canvas['tags'] = get_canvas_tags(canvas['id'])
+        canvas["username"], _, _, _, canvas["profile_photo"] = get_user_from_db(canvas["user_id"])[1:6]
         try:
             with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
                 canvas['data'] = str(json.loads(fd.read()))
