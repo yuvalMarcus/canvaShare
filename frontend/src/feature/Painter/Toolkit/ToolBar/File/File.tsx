@@ -8,24 +8,30 @@ import Typography from "@mui/material/Typography";
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../../../../api/painter.ts";
 import {Canvas} from "fabric";
-import {useCanvas} from "../../../../../context/canvas.context.tsx";
 import {useNavigate} from "react-router-dom";
 import {Bounce, toast} from "react-toastify";
+import {useUpload} from "../../../../../hooks/useUpload.ts";
+import { usePainter } from '../../../../../context/painter.context.tsx';
+import {useAuth} from "../../../../../context/auth.context.tsx";
 
 interface FileProps {
     canvas: MutableRefObject<Canvas | null>;
 }
 
 
-const File: FC<FileProps> = ({ canvas }) => {
+const FileO: FC<FileProps> = ({ canvas }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const { canvas: canvasItem } = useCanvas();
+    const { canvas: canvasItem } = usePainter();
+
+    const { upload } = useUpload();
+
+    const { userId } = useAuth();
 
     const navigate = useNavigate();
 
     const handleOnSuccess = () => {
         toast.success('canvas save successfully', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -35,12 +41,12 @@ const File: FC<FileProps> = ({ canvas }) => {
             theme: "colored",
             transition: Bounce,
         });
-        navigate("/artist");
+        navigate(`/artist/${userId}`);
     }
 
     const handleOnError = () => {
         toast.error('error', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -65,8 +71,11 @@ const File: FC<FileProps> = ({ canvas }) => {
             quality: 0.8
         });
 
+        const { data } = photo ? await upload(photo, 'hello.png','image/jpeg') : { data: { photo: '' } };
+
         await mutateAsync({
             ...canvasItem,
+            photo: data.photo,
             data: JSON.stringify(canvas.current?.toJSON())
         });
     }
@@ -120,14 +129,6 @@ const File: FC<FileProps> = ({ canvas }) => {
                                     </ListItemButton>
                                 )}
                             </ListItem>
-                            <ListItem disablePadding>
-                                <ListItemButton>
-                                    <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
-                                        <AttachFileIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary="Save as Draft" />
-                                </ListItemButton>
-                            </ListItem>
                         </List>
                     </nav>
                 </Box>
@@ -136,4 +137,4 @@ const File: FC<FileProps> = ({ canvas }) => {
     )
 }
 
-export default File;
+export default FileO;

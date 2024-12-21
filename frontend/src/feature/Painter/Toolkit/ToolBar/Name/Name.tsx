@@ -1,10 +1,10 @@
 import {TextField} from "@mui/material";
 import React from "react";
-import {useCanvas} from "../../../../../context/canvas.context.tsx";
+import { usePainter } from "../../../../../context/painter.context.tsx";
 
 const Name = () => {
 
-    const { canvas: { name }, handleUpload } = useCanvas();
+    const { canvas: { name }, handleUpload } = usePainter();
 
     return (
         <TextField id="outlined-basic" label="Name" variant="outlined" size="small" value={name} onChange={event => handleUpload('name', event.target.value)} />

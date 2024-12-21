@@ -4,7 +4,7 @@ import {blue, grey} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import React, {FC} from "react";
 import {Stack} from "@mui/material";
-import {usePainter} from "../../../../../hooks/usePainter.ts";
+import { usePainter } from "../../../../../context/painter.context.tsx";
 
 interface ItemProps {
     action: ACTION_TYPE;

@@ -29,7 +29,7 @@ const SearchModal: FC<SearchPhotosProps> = ({ canvas, isOpen, onClose }) => {
 
         if(!selectedPhoto) return;
 
-        const img = await Image.fromURL(selectedPhoto.urls.regular);
+        const img = await Image.fromURL(selectedPhoto.urls.regular, { crossOrigin: 'anonymous' });
 
         img.scaleToWidth(400);
 

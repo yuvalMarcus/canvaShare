@@ -8,7 +8,7 @@ import React, {FC, MutableRefObject} from "react";
 import {Canvas} from "fabric";
 import Photo from "../../Toolkit/Photo/Photo.tsx";
 import {ACTION_TYPE} from "../../painter.config.ts";
-import {usePainter} from "../../../../hooks/usePainter.ts";
+import { usePainter } from '../../../../context/painter.context.tsx';
 
 interface ActionContentProps {
     canvas: MutableRefObject<Canvas | null>;

@@ -1,12 +1,13 @@
 import {Canvas} from "fabric";
 import React, {FC, MutableRefObject, useLayoutEffect, useState} from "react";
-import {Box, FormControl, MenuItem, Select, SelectChangeEvent, Slider, Stack} from "@mui/material";
+import {Box, FormControl, IconButton, MenuItem, Select, SelectChangeEvent, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import {green, grey} from "@mui/material/colors";
+import {blue, green, grey} from "@mui/material/colors";
 import {drawingMode, setBrushColor, setBrushSize} from "./draw.utils.ts";
 import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
-import {DRAW_TYPE} from "./draw.config.ts";
+import {DRAW_TYPE, mapDrawTypeToIcon} from "./draw.config.ts";
 import {backgroundColor} from "@eslint/js";
+import Button from "@mui/material/Button";
 
 interface DrawProps {
     canvas: MutableRefObject<Canvas | null>
@@ -24,9 +25,8 @@ const Draw: FC<DrawProps> = ({canvas}) => {
         }
     }, []);
 
-    const handleUpdateType = (event: SelectChangeEvent<DRAW_TYPE>) => {
-        const { target: { value } } = event;
-        setSelectedType(value as DRAW_TYPE);
+    const handleUpdateType = (value: DRAW_TYPE) => {
+        setSelectedType(value);
     }
 
     const handleUpdateSize = (event: Event, newValue: number | number[]) => {
@@ -44,13 +44,21 @@ const Draw: FC<DrawProps> = ({canvas}) => {
             <Box>
                 <Typography color={grey[100]} fontSize={18} mb={1}>Type</Typography>
                 <FormControl variant="standard" fullWidth>
-                    <Select
-                        value={selectedType ?? DRAW_TYPE.PENCIL}
-                        onChange={handleUpdateType}>
-                        {Object.values(DRAW_TYPE).map(value => <MenuItem key={value} value={value}>
-                            <Typography color={grey[100]} textTransform="capitalize">{value}</Typography>
-                        </MenuItem>)}
-                    </Select>
+                    <Stack flexDirection="row" justifyContent="space-between">
+                        {Object.values(DRAW_TYPE).map((value) => {
+
+                            const Icon = mapDrawTypeToIcon[value];
+
+                            return (
+                                <Button onClick={() => handleUpdateType(value as DRAW_TYPE)}>
+                                    <Stack alignItems="center">
+                                        <Icon sx={{ color: selectedType === value ? blue[300] : grey[100] }} />
+                                        <Typography fontSize='medium' textTransform="capitalize" color={selectedType === value ? blue[300] : grey[100]}>{value}</Typography>
+                                    </Stack>
+                                </Button>
+                            )
+                        })}
+                    </Stack>
                 </FormControl>
             </Box>
             <Box>

@@ -11,13 +11,13 @@ import {grey, red} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import * as api from "../../../../../api/tags.ts";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {useCanvas} from "../../../../../context/canvas.context.tsx";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Bounce, toast} from "react-toastify";
 import {TagPayload} from "../../../../../types/tags.ts";
 import InputText from "../../../../../components/Form/InputText/InputText.tsx";
 import {z} from "zod";
+import { usePainter } from '../../../../../context/painter.context.tsx';
 
 const schema = z.object({
     name: z.string().min(1, { message: 'required' }),
@@ -26,7 +26,7 @@ const schema = z.object({
 const Tags = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-    const { canvas: { tags }, handleUpload } = useCanvas();
+    const { canvas: { tags }, handleUpload } = usePainter();
 
     const { data, isPending: isPendingData } = useQuery({
         queryKey: [],
@@ -49,7 +49,7 @@ const Tags = () => {
         setValue('name', '');
 
         toast.success('tag add successfully', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -63,7 +63,7 @@ const Tags = () => {
 
     const handleOnError = () => {
         toast.error('error', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -158,7 +158,6 @@ const Tags = () => {
                             <Typography color={red[700]} height={30}>{errors.name?.message}</Typography>
                         </form>
                     </Stack>
-                    <Button variant="contained">Save</Button>
                 </Stack>
             </Popover>
         </>
