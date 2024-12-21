@@ -1,6 +1,6 @@
 import React from "react";
 import {
-    Box,
+    Box, CircularProgress,
     Container,
     Stack,
     Toolbar,
@@ -10,20 +10,14 @@ import {Link} from "react-router-dom";
 import {grey} from "@mui/material/colors";
 import Search from "../Search/Search.tsx";
 import * as S from './Header.style.ts';
-import {useAuth} from "../../hooks/useAuth.ts";
-import * as api from '../../api/auth.ts';
+import {useAuth} from "../../context/auth.context.tsx";
 import User from "./User/User.tsx";
 
 const pages = [];
 
 const Header = () => {
 
-    const { isAuth, logout } = useAuth();
-
-    const handleLogout = async () => {
-        await api.logout();
-        logout();
-    }
+    const { isAuth, refreshTokenIsPending } = useAuth();
 
     return (
         <S.Container position="fixed">
@@ -52,7 +46,12 @@ const Header = () => {
                             <Search theme='dark' placeholder='Search Arts' />
                         </Box>
                     </Stack>
-                    {!isAuth && (
+                    {refreshTokenIsPending && (
+                        <Stack justifyContent="center">
+                            <CircularProgress size={24} />
+                        </Stack>
+                    )}
+                    {!refreshTokenIsPending && !isAuth && (
                       <>
                           <S.Button to={'login'} component={Link}>
                               login
@@ -62,7 +61,7 @@ const Header = () => {
                           </S.Button>
                       </>
                     )}
-                    {isAuth && (
+                    {!refreshTokenIsPending && isAuth && (
                         <User />
                     )}
                 </Toolbar>

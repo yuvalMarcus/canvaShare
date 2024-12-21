@@ -1,11 +1,17 @@
 import {Avatar, IconButton, Menu, MenuItem} from "@mui/material";
 import React, {useState} from "react";
-import {useAuth} from "../../../hooks/useAuth.ts";
+import {useAuth} from "../../../context/auth.context.tsx";
 import * as api from "../../../api/auth.ts";
+import {useNavigate} from "react-router-dom";
 
 export const User  = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
+
+    const { userId } = useAuth();
+
+    const navigate = useNavigate();
+
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -14,6 +20,11 @@ export const User  = () => {
     };
 
     const { logout } = useAuth();
+
+    const handleProfile = async () => {
+        navigate(`artist/${userId}`)
+        handleClose();
+    }
 
     const handleLogout = async () => {
         await api.logout();
@@ -41,8 +52,8 @@ export const User  = () => {
                     'aria-labelledby': 'basic-button',
                 }}
             >
-                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My account</MenuItem>
+                <MenuItem onClick={handleProfile}>Profile</MenuItem>
+                <MenuItem onClick={handleClose}>My Account</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
         </>
