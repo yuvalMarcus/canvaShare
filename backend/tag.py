@@ -1,8 +1,5 @@
-
 from auth import get_jwt_user_id,check_guest_or_blocked
 from fastapi import APIRouter,Depends
-
-from canvas import get_canvas
 from classes import Tags, Tag
 from db_utils import *
 
@@ -21,11 +18,11 @@ def get_tag(tag_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id)) -> 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
     return {'id': tag[0], 'name': tag[1]}
 
-@router.post("", response_model=Tag)
-def create_tag(tag: Tag, _: int = Depends(check_guest_or_blocked)) -> Tag:
+@router.post("")
+def create_tag(tag: Tag, _: int = Depends(check_guest_or_blocked)) -> dict:
     raise_error_if_invalid_tag(tag.name)
-    tag.id, tag.name = insert_tag(tag.name)
-    return tag
+    insert_tag(tag.name)
+    return {}
 
 @router.delete('/{tag_id}', response_model=None)
 def delete_tag(tag_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:

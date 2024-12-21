@@ -59,17 +59,15 @@ def get_tag_by_id(tag_id: int) -> Tuple[int, str] | None:
     con.close()
     return tag
 
-def insert_tag(tag_name: str) -> Tuple[int, str]:
+def insert_tag(tag_name: str) -> None:
     con, cur = connect_to_db()
     cur.execute("SELECT * FROM tags WHERE name = %s", (tag_name,))
     if cur.fetchone():
         con.close()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Tag {tag_name} already exists")
-    cur.execute("INSERT INTO tags(name) VALUES (%s) RETURNING id",(tag_name,))
-    tag_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO tags(name) VALUES (%s)",(tag_name,))
     con.commit()
     con.close()
-    return tag_id, tag_name
 
 def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
     for tag_name in canvas.tags:
