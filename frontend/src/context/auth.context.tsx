@@ -47,6 +47,7 @@ const AuthProvider = ({ children }) => {
         cookie.removeCookie('token');
         cookie.removeCookie('refreshToken');
         cookie.removeCookie('userId');
+        setUserId(null);
         setIsAuth(false);
     }
 
