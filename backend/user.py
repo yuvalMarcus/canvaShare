@@ -14,8 +14,8 @@ access_router = APIRouter()
 def get_user(user_id: int, jwt_user_id: int = Depends(get_jwt_user_id)) -> User:
     raise_error_if_blocked(jwt_user_id)
     user = dict()
-    (user["id"], user["username"], _, user["is_blocked"], user["profile_photo"], user["coverphoto"],
-     user["about"], ) = get_user_from_db(user_id)
+    (user["id"], user["username"], _, _, user["is_blocked"], user["profile_photo"], user["cover_photo"],
+     user["about"], _) = get_user_from_db(user_id)
 
     if user_id == jwt_user_id:
         #user["tags"] = get_favorite_tags(user_id) ######### need to add this function in db_utils
@@ -30,8 +30,8 @@ def get_user(username: Optional[str] = None, jwt_user_id: int = Depends(get_jwt_
     users = []
     for db_user in get_users_from_db(username):
         user = dict()
-        (user["id"], user["username"], _, user["is_blocked"], user["profile_photo"], user["coverphoto"],
-         user["about"], ) = db_user
+        (user["id"], user["username"], _, _, user["is_blocked"], user["profile_photo"], user["cover_photo"],
+         user["about"], _) = db_user
         users.append(user)
     return users
 
