@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {objectToCamelCase} from "../utils/utils.ts";
+import {objectToCamelCase, objectToSnakeCase} from "../utils/utils.ts";
+import * as cookie from "../utils/cookie.ts";
 
 const config = {
     baseURL: 'http://localhost:8000/',
@@ -20,7 +21,10 @@ instance.interceptors.response.use((response) => {
 
 instance.interceptors.request.use((config) => {
 
-    const token = localStorage.getItem('token');
+    const token = cookie.getCookie('token');
+
+    if(config.params) config.params = objectToSnakeCase(config.params);
+    if(config.data) config.data = objectToSnakeCase(config.data);
 
     if(token) config.headers.Authorization = `Bearer ${token}`;
 
