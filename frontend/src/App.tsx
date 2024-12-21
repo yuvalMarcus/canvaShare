@@ -1,6 +1,5 @@
 import './App.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import Layout from "./components/Layout/Layout.tsx";
 import Explore from "./feature/Explore/Explore.tsx";
 import Painter from "./feature/Painter/Painter.tsx";
@@ -10,8 +9,7 @@ import Artist from "./feature/Artist/Artist.tsx";
 import Search from "./feature/Search/Search.tsx";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {useEffect} from "react";
-import {useAuth} from "./hooks/useAuth.ts";
+import AuthProvider from "./context/auth.context.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -35,7 +33,7 @@ const routers = createBrowserRouter([
               element: <Search />
           },
           {
-              path: 'artist',
+              path: 'artist/:id',
               element: <Artist />
           },
       ]
@@ -44,17 +42,18 @@ const routers = createBrowserRouter([
         path: "/painter",
         element: <Painter />,
     },
+    {
+        path: "/painter/:id",
+        element: <Painter />,
+    },
 ]);
 
-const queryClient = new QueryClient();
-
 function App() {
-
   return (
-      <QueryClientProvider client={queryClient}>
+      <AuthProvider>
           <ToastContainer />
           <RouterProvider router={routers} />
-      </QueryClientProvider>
+      </AuthProvider>
   )
 }
 
