@@ -35,7 +35,7 @@ const Register: FC = () => {
 
     const handleOnSuccess = () => {
         toast.success('created successfully', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -50,7 +50,7 @@ const Register: FC = () => {
 
     const handleOnError = () => {
         toast.error('error', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
