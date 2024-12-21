@@ -10,10 +10,10 @@ import * as api from '../../api/auth.ts';
 import {LoginPayload} from "../../types/auth.ts";
 import InputText from "../../components/Form/InputText/InputText.tsx";
 import {useMutation} from "@tanstack/react-query";
-import {useAuth} from "../../hooks/useAuth.ts";
 import {FC} from "react";
 import {Bounce, toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
+import {useAuth} from "../../context/auth.context.tsx";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'required' }),
@@ -22,7 +22,7 @@ const schema = z.object({
 
 const Login: FC = () => {
 
-    const { login } = useAuth();
+    const { setCertificate, login } = useAuth();
 
     const navigate = useNavigate();
 
@@ -36,7 +36,7 @@ const Login: FC = () => {
 
     const handleOnSuccess = () => {
         toast.success('login successfully', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -51,7 +51,7 @@ const Login: FC = () => {
 
     const handleOnError = () => {
         toast.error('error', {
-            position: "top-center",
+            position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
             closeOnClick: true,
@@ -75,7 +75,8 @@ const Login: FC = () => {
             password,
         });
 
-        login(data.token);
+        setCertificate(data.token, data.refreshToken, data.userId);
+        login();
     }
 
     return (
