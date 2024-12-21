@@ -80,9 +80,10 @@ def get_user(username: Optional[str] = None, jwt_user_id: int = Depends(get_jwt_
     return users
 
 @user_router.post("")
-def create_user(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)):
+def create_user(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     if is_admin(jwt_user_id):
-        return register(user)
+        register(user)
+        return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized user")
 
 @user_router.delete('/{user_id}')
