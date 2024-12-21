@@ -12,12 +12,35 @@ import {
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import CanvasList from "../../components/CanvasList/CanvasList.tsx";
-import {top100Films} from "../../mook.ts";
 import * as S from "../Home/Home.style.ts";
 import Button from "@mui/material/Button";
-import {Link} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
+import {useState} from "react";
+import {useQuery} from "@tanstack/react-query";
+import * as userApi from "../../api/user.ts";
+import * as tagApi from "../../api/tags.ts";
+import {useAuth} from "../../context/auth.context.tsx";
 
 const Artist = () => {
+    const [orderBy, setOrderBy] = useState<string>('date');
+    const [tags, setTags] = useState<string[]>([]);
+
+    const { userId } = useAuth();
+
+    const { id: userIdParam } = useParams();
+
+    const { data: user, isPending: isPendingData2 } = useQuery({
+        queryKey: [userId],
+        queryFn: () => userApi.getUser(userIdParam),
+    });
+
+    const { data: tagsList, isPending: isPendingData } = useQuery({
+        queryKey: [],
+        queryFn: tagApi.getTags,
+    });
+
+    const isUserProfileOwner = userId === Number(userIdParam);
+
     return (
         <>
             <S.TopController height={300} boxShadow={2}>
@@ -28,8 +51,8 @@ const Artist = () => {
             <Container>
                 <Stack flexDirection="row" alignItems="center" justifyContent="space-between" gap={3} pl={20} py={1} mb={4}>
                     <Stack flexDirection="row" gap={2}>
-                        <Typography color={grey[900]} fontWeight="bold" variant="h4" textTransform="capitalize">artist nickname</Typography>
-                        <Button variant="contained"  to='/painter' component={Link}>add canvas</Button>
+                        <Typography color={grey[900]} fontWeight="bold" variant="h4" textTransform="capitalize">{user?.username}</Typography>
+                        {isUserProfileOwner && <Button variant="contained"  to='/painter' component={Link}>add painter</Button>}
                     </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={2}>
                         <Typography whiteSpace="nowrap" color={grey[700]} fontWeight="bold" fontSize={18} textTransform="capitalize">
@@ -37,12 +60,11 @@ const Artist = () => {
                         </Typography>
                         <FormControl variant="standard">
                             <Select
-                                value={'date'}
-                                onChange={() => {}}
+                                value={orderBy}
+                                onChange={(event) => setOrderBy(event.target.value)}
                             >
                                 <MenuItem value={'date'}>Date</MenuItem>
                                 <MenuItem value={'likes'}>Like</MenuItem>
-                                <MenuItem value={'tags'}>Tags</MenuItem>
                             </Select>
                         </FormControl>
                     </Stack>
@@ -53,10 +75,10 @@ const Artist = () => {
                     <Autocomplete
                         multiple
                         id="tags-outlined"
-                        options={top100Films}
-                        getOptionLabel={(option) => option.title}
-                        defaultValue={[top100Films[13]]}
+                        options={tagsList?.tags?.map(({ name }) => name) || []}
+                        defaultValue={tags}
                         filterSelectedOptions
+                        onChange={(_, tags) => setTags(tags)}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
@@ -69,7 +91,7 @@ const Artist = () => {
             </Container>
             <Container>
                 <Box py={2}>
-                    <CanvasList />
+                    {userIdParam && <CanvasList userId={Number(userIdParam)} tags={tags.join(', ')} order={orderBy} />}
                 </Box>
             </Container>
         </>

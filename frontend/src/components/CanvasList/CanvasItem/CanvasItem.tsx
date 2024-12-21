@@ -15,13 +15,17 @@ import PreviewIcon from '@mui/icons-material/Preview';
 import CanvasModal from "../../CanvasModal/CanvasModal.tsx";
 
 interface CanvasItemProps {
+    id: number;
+    userId: number;
     name: string;
     description: string;
+    likes: number;
+    tags: string[];
     photo: string;
     details?: boolean;
 }
 
-const CanvasItem = ({ name, description, photo, details }: CanvasItemProps) => {
+const CanvasItem = ({ id, userId, name, description, likes, tags, photo, details }: CanvasItemProps) => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
 
     return (
@@ -47,7 +51,7 @@ const CanvasItem = ({ name, description, photo, details }: CanvasItemProps) => {
                     )}
                 </S.CardController>
             </S.Controller>
-            <CanvasModal name={name} description={description} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
+            <CanvasModal id={id} painterUserId={userId} name={name} description={description} likes={likes} tags={tags} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
         </>
     );
 }
