@@ -30,7 +30,7 @@ const Artist = () => {
     const { id: userIdParam } = useParams();
 
     const { data: user, isPending: isPendingData2 } = useQuery({
-        queryKey: [userId],
+        queryKey: [userIdParam],
         queryFn: () => userApi.getUser(userIdParam),
     });
 
