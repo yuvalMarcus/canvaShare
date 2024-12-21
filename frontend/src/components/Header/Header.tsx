@@ -12,6 +12,7 @@ import Search from "../Search/Search.tsx";
 import * as S from './Header.style.ts';
 import {useAuth} from "../../hooks/useAuth.ts";
 import * as api from '../../api/auth.ts';
+import User from "./User/User.tsx";
 
 const pages = [];
 
@@ -48,7 +49,7 @@ const Header = () => {
                             </S.Button>
                         ))}
                         <Box>
-                            <Search />
+                            <Search theme='dark' placeholder='Search Arts' />
                         </Box>
                     </Stack>
                     {!isAuth && (
@@ -62,9 +63,7 @@ const Header = () => {
                       </>
                     )}
                     {isAuth && (
-                        <S.Button onClick={handleLogout}>
-                            logout
-                        </S.Button>
+                        <User />
                     )}
                 </Toolbar>
             </Container>

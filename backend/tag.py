@@ -4,7 +4,7 @@ from fastapi import APIRouter,Depends
 
 from canvas import get_canvas
 from classes import Tags, Tag
-from db_utlls import *
+from db_utils import *
 
 router = APIRouter(prefix="/tag")
 

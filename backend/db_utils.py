@@ -1,7 +1,7 @@
 from typing import List, Tuple, Optional, Literal
 from fastapi import HTTPException, status
 from dotenv import load_dotenv
-from classes import Canvas, User
+from classes import Canvas
 from pathlib import Path
 import psycopg2
 import inspect
@@ -87,11 +87,6 @@ def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
         cur.execute("INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
     commit_and_close_db(con)
 
-def delete_tag(tag_id: int) -> None:
-    con, cur = connect_to_db()
-    cur.execute(f"DELETE FROM tags WHERE id = %s ", (tag_id,))
-    commit_and_close_db(con)
-
 def remove_all_tags(canvas_id: int) -> None:
     con, cur = connect_to_db()
     cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id=%s", (canvas_id,))
@@ -113,19 +108,19 @@ def raise_error_if_invalid_tag(tag_name: str) -> None:
 ############# canvas ##############
 
 def insert_canvas_to_db(user_id: int, canvas_name: str, is_public: bool,
-                        create_date: int, edit_date: int, likes: int) -> int:
+                        create_date: int, edit_date: int, likes: int, description: str, photo: str) -> int:
     con, cur = connect_to_db()
-    cur.execute("INSERT INTO canvases(user_id, name, is_public, create_date, edit_date, likes)"
-                " VALUES (%s,%s,%s,%s,%s,%s) RETURNING id",
-                (user_id, canvas_name, is_public, create_date, edit_date, likes))
+    cur.execute("INSERT INTO canvases(user_id, name, is_public, create_date, edit_date, likes, description, photo)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                (user_id, canvas_name, is_public, create_date, edit_date, likes, description, photo))
     canvas_id = cur.fetchone()[0]
     commit_and_close_db(con)
     return canvas_id
 
-def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool) -> None:
+def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool, description: str, photo:str) -> None:
     con, cur = connect_to_db()
-    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())} WHERE id=%s",
-                (canvas_name, is_public, canvas_id))
+    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())}, description = %s, photo = %s WHERE id=%s",
+                (canvas_name, is_public, description, photo, canvas_id))
     commit_and_close_db(con)
 
 def delete_canvas_from_db(canvas_id: int) -> None:
@@ -133,7 +128,7 @@ def delete_canvas_from_db(canvas_id: int) -> None:
     cur.execute("DELETE FROM canvases WHERE id=%s", (canvas_id,))
     commit_and_close_db(con)
 
-def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, int]:
+def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, int, str, str]:
     con, cur = connect_to_db()
     # return canvas if existed, else raise 404 error
     cur.execute(f"SELECT * from canvases WHERE id=%s", (canvas_id,))
@@ -146,41 +141,29 @@ def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, i
 def get_canvas_user_id(canvas_id: int) -> int:
     return get_canvas_from_db(canvas_id)[1]
 
-def get_canvases_by_user_id(user_id: int, page_num: int, order_by: str) \
-        -> List[Tuple[int, int, str, bool, int, int, int]]:
+def get_canvases_by_filters(args) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
+    filters = ""
+    params = []
+    for name, value in args:
+        if name == "user_id":
+            filters += " AND users.id=%s"
+            params.append(value)
+        elif name == "canvas_name":
+            filters += " AND canvases.name LIKE %s"
+            params.append(f'%{value}%')
     con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
-                f" AND users.user_id=%s AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
-                (user_id, CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
+    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id AND is_blocked=false"
+                + filters, (*params,))
     canvases = cur.fetchall()
     con.close()
     return canvases
 
-def get_canvases_by_name(canvas_name: str, page_num: int, order_by: str)\
-        -> List[Tuple[int, int, str, bool, int, int, int]]:
-    con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id"
-                f" AND is_blocked=false AND canvases.name LIKE %s" + order_by + " LIMIT %s OFFSET %s",
-                (f'%{canvas_name}%', CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
-    canvases = cur.fetchall()
-    con.close()
-    return canvases
-
-def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, int]]:
+def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
     con, cur = connect_to_db()
     cur.execute(f"SELECT canvases.* FROM canvases, tags_of_canvases, tags, users WHERE tags.name=%s "
                 f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id "
                 f"AND canvases.user_id=users.id AND is_blocked=false",
                 (tag.strip(),))
-    canvases = cur.fetchall()
-    con.close()
-    return canvases
-
-def get_all_canvases(page_num: int, order_by: str) -> List[Tuple[int, int, str, bool, int, int, int]]:
-    con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* FROM canvases,users  WHERE "
-                f"canvases.user_id=users.id AND is_blocked=false" + order_by + " LIMIT %s OFFSET %s",
-                (CANVASES_PER_PAGE, (page_num - 1) * CANVASES_PER_PAGE))
     canvases = cur.fetchall()
     con.close()
     return canvases
@@ -206,9 +189,17 @@ def get_num_of_likes(canvas_id: int) -> int:
     con.close()
     return num_of_likes
 
-def get_canvases_likes() -> List[Tuple[int, int]]:
+def get_canvases_likes(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> List[Tuple[int, int]]:
+    filters = ""
+    params = []
+    if canvas_id:
+        filters += " AND canvas_id=%s"
+        params.append(canvas_id)
+    if user_id:
+        filters += " AND user_id=%s"
+        params.append(user_id)
     con, cur = connect_to_db()
-    cur.execute("SELECT id, likes FROM canvases")
+    cur.execute(f"SELECT * from likes WHERE 1=1{filters}", (*params,))
     res = cur.fetchall()
     con.close()
     return res
@@ -274,30 +265,12 @@ def get_user_id(username:str) -> int | None:
     con.close()
     return res[0] if res else None
 
-
-def get_user_from_db(user_id: int) -> User:
+def get_user_email(user_id: int):
     con, cur = connect_to_db()
-    cur.execute("SELECT DISTINCT username, email, tags, is_blocked, is_admin, is_super_admin, profile_photo, cover_photo, about FROM users WHERE id=%s", (user_id,))
+    cur.execute("SELECT email FROM users WHERE id=%s", (user_id,))
     res = cur.fetchone()
-    return res
-
-    #
-    # -> Tuple[int, str, bool, bool, str, str, str]:
-    #
-    # return user if existed, else raise 404 error
-
-    #con.close()
-    #if res is None:
-        #raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found")
-    #return res
-
-def search_user_by_name(user_name: Optional[str] = None) -> List[User]:
-    con, cur = connect_to_db()
-    cur.execute("SELECT * FROM users WHERE is_blocked =false ORDER BY SIMILARITY(username,user_name) DESC LIMIT 50")
-    res = cur.fetchall()
     con.close()
-    return res
-
+    return res[0] if res else None
 
 def is_admin(user_id: int) -> bool:
     con, cur = connect_to_db()
@@ -490,6 +463,24 @@ def delete_tables_and_folders() -> None:
             pass
     con, cur = connect_to_db()
     cur.execute(f"DROP SCHEMA public CASCADE; CREATE SCHEMA public")
+    commit_and_close_db(con)
+
+def insert_initial_tags(tags: List[str]) -> None:
+    con, cur = connect_to_db()
+    for tag in tags:
+        try:
+            cur.execute(f"INSERT INTO tags (name) VALUES (%s)", (tag,))
+            con.commit()
+        except Exception:
+            con, cur = connect_to_db()
+    commit_and_close_db(con)
+
+def add_super_admin(username: str) -> None:
+    con, cur = connect_to_db()
+    cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+    user_id = cur.fetchone()[0]
+    cur.execute("INSERT INTO admins(user_id) VALUES (%s)", (user_id,))
+    cur.execute("INSERT INTO super_admins(user_id) VALUES (%s)", (user_id,))
     commit_and_close_db(con)
 
 def connect_to_db() -> tuple:

@@ -3,7 +3,7 @@ import Card from "./CanvasItem/CanvasItem.tsx";
 import {drawings} from "../../mook.ts";
 
 interface CanvasListProps {
-    cardDetails: boolean;
+    cardDetails?: boolean;
 }
 
 const CanvasList = ({cardDetails}: CanvasListProps) => {

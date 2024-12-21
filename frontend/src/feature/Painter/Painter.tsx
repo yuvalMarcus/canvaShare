@@ -6,6 +6,9 @@ import {handleDrawingPath} from "./Toolkit/Draw/draw.utils.ts";
 import ActionContent from "./Components/ActionContent/ActionContent.tsx";
 import {initCanvas} from "./painter.utils.ts";
 import Menu from "./Components/Menu/Menu.tsx";
+import CanvasProvider from "../../context/canvas.context.tsx";
+
+export const TOOL_BAR_HEIGHT = 110;
 
 const Painter = () => {
     //const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -75,18 +78,20 @@ const Painter = () => {
     };
 
     return (
-        <Stack>
-            <ToolBar />
-            <Stack flexDirection="row">
-                <Menu />
-                <Stack ref={controller} position="relative" flex={1} alignItems="center" justifyContent="center" height="calc(100vh - 50px)">
-                    {/* <ToolkitBox canvas={canvas} actionType={actionType} onClose={() => setActionType(null)} />*/}
-                    <ActionContent canvas={canvas} />
-                    {/* <CanvasMenu canvas={canvas} position={position} selectedId={selectedId} actionType={actionType} onClose={() => {}} /> */}
-                    <canvas id="canvas" onContextMenu={oncontextmenu} />
+        <CanvasProvider>
+            <Stack>
+                <ToolBar canvas={canvas} />
+                <Stack flexDirection="row">
+                    <Menu />
+                    <Stack ref={controller} position="relative" flex={1} alignItems="center" justifyContent="center" height={`calc(100vh - ${TOOL_BAR_HEIGHT}px)`}>
+                        {/* <ToolkitBox canvas={canvas} actionType={actionType} onClose={() => setActionType(null)} />*/}
+                        <ActionContent canvas={canvas} />
+                        {/* <CanvasMenu canvas={canvas} position={position} selectedId={selectedId} actionType={actionType} onClose={() => {}} /> */}
+                        <canvas id="canvas" onContextMenu={oncontextmenu} />
+                    </Stack>
                 </Stack>
             </Stack>
-        </Stack>
+        </CanvasProvider>
     )
 }
 

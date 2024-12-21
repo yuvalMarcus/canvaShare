@@ -9,7 +9,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import Draw from "../Draw/Draw.tsx";
 import Text from "../Text/Text.tsx";
 import Shape from "../Shape/Shape.tsx";
-import Photo from "../Photo/Photo.tsx";
 
 interface ToolkitBoxProps {
     canvas: MutableRefObject<Canvas | null>;
@@ -33,8 +32,8 @@ const ToolkitBox = ({canvas, actionType, onClose}: ToolkitBoxProps) => {
                     </Button>
                 </Stack>
                 {actionType === "draw" && <Draw canvas={canvas} />}
-                {actionType === "text" && <Text canvas={canvas} />}
-                {actionType === "shape" && <Shape canvas={canvas} />}
+                {actionType === "text" && <Text canvas={canvas} onClose={onClose} />}
+                {actionType === "shape" && <Shape canvas={canvas} onClose={onClose} />}
             </Box>
         </Draggable>
     )

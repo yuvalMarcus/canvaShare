@@ -5,8 +5,9 @@ class Token(BaseModel):
     token: str
 
 class Tokens(BaseModel):
-    token: Optional[str] = None
-    refresh_token: Optional[str] = None
+    user_id: int
+    token: str
+    refresh_token: str
 
 class Canvas(BaseModel):
     id: Optional[int] = None
@@ -18,11 +19,17 @@ class Canvas(BaseModel):
     edit_date: Optional[int] = None
     data: str
     likes: Optional[int] = None
+    description: Optional[str] = None
+    photo: Optional[str] = None
 
 class Canvases(BaseModel):
     canvases: List[Canvas]
 
 class Like(BaseModel):
+    canvas_id: int
+    user_id: Optional[int] = None
+
+class LikesNumber(BaseModel):
     canvas_id: int
     likes: Optional[int] = None
 

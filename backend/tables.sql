@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS canvases(id SERIAL PRIMARY KEY NOT NULL,
                                     create_date INT NOT NULL,
                                     edit_date INT NOT NULL,
                                     likes INT NOT NULL,
+                                    description VARCHAR(255) NOT NULL,
+                                    photo VARCHAR(255) NOT NULL,
                                     CHECK (create_date >= 0 AND edit_date >= 0 AND likes >= 0));
 CREATE TABLE IF NOT EXISTS reports(id SERIAL PRIMARY KEY NOT NULL,
                                    date INT NOT NULL,

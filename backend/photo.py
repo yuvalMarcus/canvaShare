@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from auth import check_guest_or_blocked
 from typing import Dict
 from uuid import uuid4
-from db_utlls import *
+from db_utils import *
 import requests
 
 router = APIRouter(prefix="/photo")
@@ -46,7 +46,7 @@ def upload_picture(save_to: Literal['profile_photo', 'cover_photo', 'canvas'],
                     os.remove(prev_photo)
                 except Exception:
                     print(f'Could not delete previous photo {prev_photo}')
-        return {"photo": photo_name}
+        return {"photo": f'http://{os.getenv('BACK_DOMAIN')}:{os.getenv('BACK_PORT')}/photo/{photo_name}'}
     except Exception:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Upload failed")
 
