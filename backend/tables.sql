@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS canvases(id SERIAL PRIMARY KEY NOT NULL,
                                     create_date INT NOT NULL,
                                     edit_date INT NOT NULL,
                                     likes INT NOT NULL,
-                                    description VARCHAR(255) NOT NULL,
+                                    description VARCHAR(255),
                                     photo VARCHAR(255) NOT NULL,
                                     CHECK (create_date >= 0 AND edit_date >= 0 AND likes >= 0));
 CREATE TABLE IF NOT EXISTS reports(id SERIAL PRIMARY KEY NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS tags_of_canvases(canvas_id INT REFERENCES canvases(id
 CREATE TABLE IF NOT EXISTS favorite_tags(user_id INT REFERENCES users(id) ON DELETE CASCADE,
                                          tag_id INT REFERENCES tags(id) ON DELETE CASCADE,
                                          PRIMARY KEY (user_id, tag_id));
-CREATE TABLE IF NOT EXISTS likes(canvas_id INT REFERENCES canvases(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS likes(id SERIAL, canvas_id INT REFERENCES canvases(id) ON DELETE CASCADE,
                                  user_id INT REFERENCES users(id) ON DELETE CASCADE,
                                  PRIMARY KEY (canvas_id, user_id));
 CREATE TABLE IF NOT EXISTS admins(user_id INT REFERENCES users(id) ON DELETE CASCADE PRIMARY KEY);
