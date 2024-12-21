@@ -14,7 +14,7 @@ def get_canvas(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id
     (canvas["id"], canvas["user_id"], canvas["name"] , canvas["is_public"], canvas["create_date"],
      canvas["edit_date"], canvas["likes"],canvas["description"], canvas["photo"]) = get_canvas_from_db(canvas_id)
     canvas["tags"] = get_canvas_tags(canvas_id)
-
+    canvas["username"], _, _, _, canvas["profile_photo"] = get_user_from_db(canvas["user_id"])[1:6]
     # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
     raise_error_if_blocked(canvas["user_id"])
 
@@ -96,7 +96,7 @@ def get_canvases(user_id: Optional[int] = None, canvas_name: Optional[str] = Non
         results.sort(key=lambda x: x[6], reverse=True)
     else:
         # sort canvases by dates from low to high
-        results.sort(key=lambda x: x[0])
+        results.sort(key=lambda x: x[0], reverse=True)
 
     return {"canvases": convert_results_to_canvases(
         results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE])}
@@ -121,6 +121,7 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
         (canvas['id'], canvas['user_id'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes'], canvas['description'], canvas['photo']) = result
         canvas['tags'] = get_canvas_tags(canvas['id'])
+        canvas["username"], _, _, _, canvas["profile_photo"] = get_user_from_db(canvas["user_id"])[1:6]
         try:
             with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
                 canvas['data'] = str(json.loads(fd.read()))

@@ -12,26 +12,25 @@ class Tokens(BaseModel):
 class Canvas(BaseModel):
     id: Optional[int] = None
     user_id: Optional[int] = None
+    username: Optional[str] = None
+    profile_photo: Optional[str] = None
     name: str
     tags: Optional[List[str]] = None
-    is_public: bool = False
+    is_public: bool
     create_date: Optional[int] = None
     edit_date: Optional[int] = None
     data: str
     likes: Optional[int] = None
     description: Optional[str] = None
-    photo: Optional[str] = None
+    photo: str
 
 class Canvases(BaseModel):
     canvases: List[Canvas]
 
 class Like(BaseModel):
+    id: Optional[int] = None
     canvas_id: int
     user_id: Optional[int] = None
-
-class LikesNumber(BaseModel):
-    canvas_id: int
-    likes: Optional[int] = None
 
 class Likes(BaseModel):
     results: List[Like]

@@ -173,26 +173,27 @@ def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, i
     con.close()
     return canvases
 
-def like_or_unlike_canvas(canvas_id: int, user_id: int, like_flag: bool) -> None:
+def like_or_unlike_canvas(user_id: int, like_flag: bool, like_id: Optional[int]=None, canvas_id: Optional[int]=None) -> None:
     con, cur = connect_to_db()
-    cur.execute("SELECT * from likes WHERE canvas_id=%s AND user_id=%s", (canvas_id, user_id))
-    res = cur.fetchone()
-    if res is None and like_flag is True:
+    if like_flag is True:
         # like canvas
-        cur.execute("INSERT INTO likes VALUES (%s,%s)", (canvas_id, user_id))
-    if res is not None and like_flag is False:
+        cur.execute("SELECT * from likes WHERE canvas_id=%s AND user_id=%s", (canvas_id, user_id))
+        res = cur.fetchone()
+        if res is None:
+            cur.execute("INSERT INTO likes(canvas_id, user_id) VALUES (%s,%s)", (canvas_id, user_id))
+    if like_flag is False:
         # unlike canvas
-        cur.execute("DELETE FROM likes WHERE canvas_id=%s AND user_id=%s ", (canvas_id, user_id))
+        cur.execute("SELECT canvas_id FROM likes WHERE id=%s", (like_id,))
+        res = cur.fetchone()
+        if res is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Like not found")
+        canvas_id = res[0]
+        cur.execute("DELETE FROM likes WHERE id=%s AND user_id=%s ", (like_id, user_id))
     con.commit()
-    cur.execute("UPDATE canvases SET likes=%s WHERE id=%s", (get_num_of_likes(canvas_id), canvas_id))
-    commit_and_close_db(con)
-
-def get_num_of_likes(canvas_id: int) -> int:
-    con, cur = connect_to_db()
     cur.execute("SELECT COUNT(*) FROM likes WHERE canvas_id=%s", (canvas_id,))
     num_of_likes = cur.fetchone()[0]
-    con.close()
-    return num_of_likes
+    cur.execute("UPDATE canvases SET likes=%s WHERE id=%s", (num_of_likes, canvas_id))
+    commit_and_close_db(con)
 
 def get_canvases_likes(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> List[Tuple[int, int]]:
     filters = ""
@@ -248,13 +249,6 @@ def is_user_exist(user_id: Optional[int] = None, username: Optional[str] = None)
         return False
     con.close()
     return True
-
-def get_username_by_id(user_id: int) -> str | None:
-    con, cur = connect_to_db()
-    cur.execute("SELECT username FROM users WHERE id=%s", (user_id,))
-    res = cur.fetchone()
-    con.close()
-    return res[0] if res is not None else None
 
 def is_user_blocked(user_id: int) -> bool:
     con, cur = connect_to_db()
