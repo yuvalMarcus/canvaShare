@@ -70,8 +70,6 @@ def insert_tag(tag_name: str) -> None:
     con.close()
 
 def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
-    for tag_name in canvas.tags:
-        raise_error_if_invalid_tag(tag_name)
     con, cur = connect_to_db()
     for tag in canvas.tags:
         # checks if tag exist in db. if not create new tag and then add this tag to canvas.
@@ -92,7 +90,7 @@ def delete_tag_from_db(tag_id: int) -> None:
 
 def remove_all_tags(canvas_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id=%s", (canvas_id,))
+    cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id = %s", (canvas_id,))
     commit_and_close_db(con)
 
 def insert_favorite_tags_to_db(user_id: int, tags_id: int) -> None:
@@ -101,11 +99,12 @@ def insert_favorite_tags_to_db(user_id: int, tags_id: int) -> None:
         cur.execute("INSERT INTO favorite_tags (user_id, tag_id) VALUES (%s,%s)", (user_id, tag_id))
     commit_and_close_db(con)
 
-def raise_error_if_invalid_tag(tag_name: str) -> None:
-    if ',' in tag_name or not (0 < len(tag_name) < 255):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Tag name must be between 0 and 255 characters and not contain commas")
-
+def get_favorite_tags(user_id: int) -> List[str]:
+    con, cur = connect_to_db()
+    cur.execute("SELECT tags.name FROM favorite_tags, tags WHERE user_id = %s AND tags.id = tag_id", (user_id,))
+    res = cur.fetchall()
+    con.close()
+    return [tag[0] for tag in res]
 
 ###################################
 ############# canvas ##############
@@ -122,19 +121,19 @@ def insert_canvas_to_db(user_id: int, canvas_name: str, is_public: bool,
 
 def update_canvas_in_db(canvas_id: int, canvas_name: str, is_public: bool, description: str, photo:str) -> None:
     con, cur = connect_to_db()
-    cur.execute(f"UPDATE canvases SET name=%s, is_public=%s, edit_date={int(time.time())}, description = %s, photo = %s WHERE id=%s",
+    cur.execute(f"UPDATE canvases SET name = %s, is_public = %s, edit_date={int(time.time())}, description = %s,"
+                f" photo = %s WHERE id = %s",
                 (canvas_name, is_public, description, photo, canvas_id))
     commit_and_close_db(con)
 
 def delete_canvas_from_db(canvas_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("DELETE FROM canvases WHERE id=%s", (canvas_id,))
+    cur.execute("DELETE FROM canvases WHERE id = %s", (canvas_id,))
     commit_and_close_db(con)
 
 def get_canvas_from_db(canvas_id: int) -> Tuple[int, int, str, bool, int, int, int, str, str]:
     con, cur = connect_to_db()
-    # return canvas if existed, else raise 404 error
-    cur.execute(f"SELECT * from canvases WHERE id=%s", (canvas_id,))
+    cur.execute(f"SELECT * from canvases WHERE id = %s", (canvas_id,))
     res = cur.fetchone()
     con.close()
     if res is None:
@@ -149,7 +148,7 @@ def get_canvases_by_filters(args) -> List[Tuple[int, int, str, bool, int, int, i
     params = []
     for name, value in args:
         if name == "user_id":
-            filters += " AND users.id=%s"
+            filters += " AND users.id = %s"
             params.append(value)
         elif name == "canvas_name":
             filters += " AND canvases.name LIKE %s"
@@ -163,7 +162,7 @@ def get_canvases_by_filters(args) -> List[Tuple[int, int, str, bool, int, int, i
 
 def get_canvases_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, int, str, str]]:
     con, cur = connect_to_db()
-    cur.execute(f"SELECT canvases.* FROM canvases, tags_of_canvases, tags, users WHERE tags.name=%s "
+    cur.execute(f"SELECT canvases.* FROM canvases, tags_of_canvases, tags, users WHERE tags.name = %s "
                 f"AND canvases.id=tags_of_canvases.canvas_id AND tags.id=tags_of_canvases.tag_id "
                 f"AND canvases.user_id=users.id AND is_blocked=false",
                 (tag.strip(),))
@@ -175,32 +174,32 @@ def like_or_unlike_canvas(user_id: int, like_flag: bool, like_id: Optional[int]=
     con, cur = connect_to_db()
     if like_flag is True:
         # like canvas
-        cur.execute("SELECT * from likes WHERE canvas_id=%s AND user_id=%s", (canvas_id, user_id))
+        cur.execute("SELECT * from likes WHERE canvas_id = %s AND user_id = %s", (canvas_id, user_id))
         res = cur.fetchone()
         if res is None:
             cur.execute("INSERT INTO likes(canvas_id, user_id) VALUES (%s,%s)", (canvas_id, user_id))
     if like_flag is False:
         # unlike canvas
-        cur.execute("SELECT canvas_id FROM likes WHERE id=%s", (like_id,))
+        cur.execute("SELECT canvas_id FROM likes WHERE id = %s", (like_id,))
         res = cur.fetchone()
         if res is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Like not found")
         canvas_id = res[0]
-        cur.execute("DELETE FROM likes WHERE id=%s AND user_id=%s ", (like_id, user_id))
+        cur.execute("DELETE FROM likes WHERE id = %s AND user_id = %s ", (like_id, user_id))
     con.commit()
-    cur.execute("SELECT COUNT(*) FROM likes WHERE canvas_id=%s", (canvas_id,))
+    cur.execute("SELECT COUNT(*) FROM likes WHERE canvas_id = %s", (canvas_id,))
     num_of_likes = cur.fetchone()[0]
-    cur.execute("UPDATE canvases SET likes=%s WHERE id=%s", (num_of_likes, canvas_id))
+    cur.execute("UPDATE canvases SET likes = %s WHERE id = %s", (num_of_likes, canvas_id))
     commit_and_close_db(con)
 
 def get_canvases_likes(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> List[Tuple[int, int]]:
     filters = ""
     params = []
     if canvas_id:
-        filters += " AND canvas_id=%s"
+        filters += " AND canvas_id = %s"
         params.append(canvas_id)
     if user_id:
-        filters += " AND user_id=%s"
+        filters += " AND user_id = %s"
         params.append(user_id)
     con, cur = connect_to_db()
     cur.execute(f"SELECT * from likes WHERE 1=1{filters}", (*params,))
@@ -229,7 +228,7 @@ def raise_error_if_blocked(user_id: int | None) -> None:
     if user_id is None:
         return # If the user is guest do not raise error
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM users WHERE id=%s AND is_blocked=False", (user_id,))
+    cur.execute("SELECT * FROM users WHERE id = %s AND is_blocked=False", (user_id,))
     if not cur.fetchall():
         con.close()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is blocked")
@@ -240,9 +239,9 @@ def is_user_exist(user_id: Optional[int] = None, username: Optional[str] = None)
         return False
     con, cur = connect_to_db()
     if username is not None:
-        cur.execute("SELECT * FROM users WHERE username=%s", (username,))
+        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
     else:
-        cur.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+        cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
     if cur.fetchone() is None:
         return False
     con.close()
@@ -250,14 +249,14 @@ def is_user_exist(user_id: Optional[int] = None, username: Optional[str] = None)
 
 def is_user_blocked(user_id: int) -> bool:
     con, cur = connect_to_db()
-    cur.execute("SELECT is_blocked FROM users WHERE id=%s", (user_id,))
+    cur.execute("SELECT is_blocked FROM users WHERE id = %s", (user_id,))
     res = cur.fetchone()
     con.close()
     return res and res[0]  # Return True if the user is blocked
 
 def get_user_from_db(user_id: int) -> Tuple[int, str, str, str, bool, str, str, str, bool]:
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+    cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
     res = cur.fetchone()
     con.close()
     if res is None:
@@ -275,28 +274,28 @@ def get_users_from_db(username: Optional[str] = None) ->  List[Tuple[int, str, s
 
 def get_user_id(username:str) -> int | None:
     con, cur = connect_to_db()
-    cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+    cur.execute("SELECT id FROM users WHERE username = %s", (username,))
     res = cur.fetchone()
     con.close()
     return res[0] if res else None
 
 def get_user_email(user_id: int):
     con, cur = connect_to_db()
-    cur.execute("SELECT email FROM users WHERE id=%s", (user_id,))
+    cur.execute("SELECT email FROM users WHERE id = %s", (user_id,))
     res = cur.fetchone()
     con.close()
     return res[0] if res else None
 
 def is_admin(user_id: int) -> bool:
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM admins WHERE user_id=%s", (user_id,))
+    cur.execute("SELECT * FROM admins WHERE user_id = %s", (user_id,))
     flag = True if cur.fetchone() else False
     con.close()
     return flag
 
 def is_super_admin(user_id: int) -> bool:
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM super_admins WHERE user_id=%s", (user_id,))
+    cur.execute("SELECT * FROM super_admins WHERE user_id = %s", (user_id,))
     flag = True if cur.fetchone() else False
     con.close()
     return flag
@@ -305,12 +304,12 @@ def is_canvas_editor(canvas_id: int, user_id: int) -> bool:
     if user_id is None:
         return False
     con, cur = connect_to_db()
-    cur.execute("SELECT user_id FROM canvases WHERE id=%s", (canvas_id,))
+    cur.execute("SELECT user_id FROM canvases WHERE id = %s", (canvas_id,))
     res = cur.fetchone()
     if res is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Canvas not found")
     creator_id = res[0]
-    cur.execute("SELECT * FROM canvas_editors WHERE canvas_id=%s AND user_id=%s", (canvas_id, user_id))
+    cur.execute("SELECT * FROM canvas_editors WHERE canvas_id = %s AND user_id = %s", (canvas_id, user_id))
     if creator_id == user_id or cur.fetchone() is not None:
         con.close()
         return True
@@ -319,7 +318,7 @@ def is_canvas_editor(canvas_id: int, user_id: int) -> bool:
 
 def get_hashed_password(user_id: int) -> str:
     con, cur = connect_to_db()
-    cur.execute("SELECT hashed_password FROM users WHERE id=%s and is_blocked=False", (user_id,))
+    cur.execute("SELECT hashed_password FROM users WHERE id = %s and is_blocked=False", (user_id,))
     res = cur.fetchone()
     con.close()
     if res is None:
@@ -335,17 +334,17 @@ def get_disabled_status(user_id: int) -> bool:
 
 def connect_user(user_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("UPDATE users SET disabled=%s WHERE id=%s", (False, user_id))
+    cur.execute("UPDATE users SET disabled = %s WHERE id = %s", (False, user_id))
     commit_and_close_db(con)
 
 def disconnect_user(user_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("UPDATE users SET disabled=%s WHERE id=%s", (True, user_id))
+    cur.execute("UPDATE users SET disabled = %s WHERE id = %s", (True, user_id))
     commit_and_close_db(con)
 
 def get_username_by_email(email: str) -> str | None:
     con, cur = connect_to_db()
-    cur.execute("SELECT username FROM users WHERE email=%s", (email,))
+    cur.execute("SELECT username FROM users WHERE email = %s", (email,))
     res = cur.fetchone()
     con.close()
     if res is not None:
@@ -356,25 +355,25 @@ def update_photo(file_path: str, user_id: int, save_to: Literal['profile_photo',
     con, cur = connect_to_db()
     prev_photo = None
     if save_to == 'profile_photo':
-        cur.execute("SELECT profile_photo FROM users WHERE id=%s", (user_id,))
+        cur.execute("SELECT profile_photo FROM users WHERE id = %s", (user_id,))
         prev_photo = cur.fetchone()
-        cur.execute("UPDATE users SET profile_photo=%s WHERE id=%s", (file_path, user_id))
+        cur.execute("UPDATE users SET profile_photo = %s WHERE id = %s", (file_path, user_id))
     elif save_to == 'cover_photo':
-        cur.execute("SELECT cover_photo FROM users WHERE id=%s", (user_id,))
+        cur.execute("SELECT cover_photo FROM users WHERE id = %s", (user_id,))
         prev_photo = cur.fetchone()
-        cur.execute("UPDATE users SET cover_photo=%s WHERE id=%s", (file_path, user_id))
+        cur.execute("UPDATE users SET cover_photo = %s WHERE id = %s", (file_path, user_id))
     commit_and_close_db(con)
     if prev_photo is not None:
         return prev_photo[0]
 
 def delete_user_from_db(user_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("DELETE FROM users WHERE id=%s", (user_id,))
+    cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
     commit_and_close_db(con)
 
 def remove_photos(user_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("SELECT profile_photo, cover_photo FROM users WHERE id=%s", (user_id,))
+    cur.execute("SELECT profile_photo, cover_photo FROM users WHERE id = %s", (user_id,))
     photos = cur.fetchone()
     if photos:
         for photo in photos:
@@ -393,11 +392,11 @@ def update_user_in_db(user_id: int, is_blocked: Optional[bool]=None, profile_pho
     args = inspect.getfullargspec(update_user_in_db).args[1:] # get this function arguments name (string) except user_id
     for i, arg in enumerate([is_blocked, profile_photo, cover_photo, about]):
         if arg is not None:
-            updates.append(f"{args[i]}=%s")
+            updates.append(f"{args[i]} = %s")
             params.append(arg)
 
     if updates:
-        query = f"UPDATE users SET {', '.join(updates)} WHERE id=%s"
+        query = f"UPDATE users SET {', '.join(updates)} WHERE id = %s"
         params.append(user_id)
         cur.execute(query, tuple(params))
         commit_and_close_db(con)
@@ -411,7 +410,7 @@ def update_admin_in_db(user_id: int, admin_flag: bool) -> None:
         if admin_flag is True:
             cur.execute("INSERT INTO admins(user_id) VALUES (%s)", (user_id,))
         else:
-            cur.execute("DELETE FROM admins WHERE user_id=%s", (user_id,))
+            cur.execute("DELETE FROM admins WHERE user_id = %s", (user_id,))
     except Exception:
         pass
     commit_and_close_db(con)
@@ -436,11 +435,11 @@ def get_db_reports() -> List[Tuple[int, int, str, int | None, int | None, str]]:
 
 def delete_report_from_db(report_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM reports WHERE id=%s", (report_id,))
+    cur.execute("SELECT * FROM reports WHERE id = %s", (report_id,))
     if cur.fetchone() is None:
         con.close()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
-    cur.execute("DELETE FROM reports WHERE id=%s", (report_id,))
+    cur.execute("DELETE FROM reports WHERE id = %s", (report_id,))
     commit_and_close_db(con)
     con.close()
 
@@ -501,7 +500,7 @@ def add_pg_trgm_extension() -> None:
 
 def add_super_admin(username: str) -> None:
     con, cur = connect_to_db()
-    cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+    cur.execute("SELECT id FROM users WHERE username = %s", (username,))
     user_id = cur.fetchone()[0]
     cur.execute("INSERT INTO admins(user_id) VALUES (%s)", (user_id,))
     cur.execute("INSERT INTO super_admins(user_id) VALUES (%s)", (user_id,))

@@ -1,5 +1,6 @@
 from auth import get_jwt_user_id,check_guest_or_blocked
 from fastapi import APIRouter,Depends
+from validation import validate_tag
 from classes import Tags, Tag
 from db_utils import *
 
@@ -20,7 +21,7 @@ def get_tag(tag_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id)) -> 
 
 @router.post("")
 def create_tag(tag: Tag, _: int = Depends(check_guest_or_blocked)) -> dict:
-    raise_error_if_invalid_tag(tag.name)
+    validate_tag(tag.name)
     insert_tag(tag.name)
     return {}
 

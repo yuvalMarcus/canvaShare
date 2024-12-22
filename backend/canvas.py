@@ -1,5 +1,6 @@
 from auth import get_jwt_user_id, check_guest_or_blocked
 from fastapi import APIRouter, Depends
+from validation import validate_canvas
 from classes import Canvases, Canvas
 from db_utils import *
 import time
@@ -33,11 +34,10 @@ def get_canvas(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id
 
 @router.post("")
 def create_canvas(canvas: Canvas, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
-    if len(canvas.name) >= 255:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
-    canvas.id = insert_canvas_to_db(user_id=jwt_user_id, canvas_name=canvas.name,
-                        is_public=canvas.is_public, create_date=int(time.time()), edit_date=0, likes=0,
-                                    description=canvas.description, photo=canvas.photo)
+    validate_canvas(canvas)
+    canvas.id = insert_canvas_to_db(user_id=jwt_user_id, canvas_name=canvas.name, is_public=canvas.is_public,
+                                    create_date=int(time.time()), edit_date=0, likes=0, description=canvas.description,
+                                    photo=canvas.photo)
     save_json_data(jwt_user_id, f'canvases/{jwt_user_id}/{canvas.id}.json', canvas.data)
     insert_canvas_tags(canvas, canvas.id)
     return {}
@@ -47,8 +47,7 @@ def update_canvas(canvas_id: int, canvas: Canvas, jwt_user_id: int = Depends(che
     raise_error_if_blocked(canvas.user_id) # Cannot edit a blocked creator's canvas
     if is_canvas_editor(canvas_id, jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    if len(canvas.name) >= 255:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Canvas name too long")
+    validate_canvas(canvas)
     canvas.user_id = get_canvas_user_id(canvas_id)
     save_json_data(canvas.user_id, f'canvases/{canvas.user_id}/{canvas_id}.json', canvas.data)
     update_canvas_in_db(canvas_id, canvas.name, canvas.is_public,canvas.description, canvas.photo)

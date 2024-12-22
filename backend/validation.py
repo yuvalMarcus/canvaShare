@@ -1,5 +1,6 @@
 from db_utils import is_user_exist, get_username_by_email
 from fastapi import HTTPException, status
+from classes import Canvas
 import re
 
 def is_valid_password(password: str) -> bool:
@@ -25,3 +26,16 @@ def is_valid_email(email: str) -> bool:
     if re.search(r"^\S+@\S+\.\S+$", email):
         return True
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email")
+
+def validate_tag(tag: str) -> None:
+    if ',' in tag or not (0 < len(tag) < 255):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Tag name must be between 0 and 255 characters and not contain commas")
+
+def validate_canvas(canvas: Canvas) -> None:
+    for param_value, param_name in [(canvas.name, 'Canvas name'),(canvas.description, 'Canvas description'),
+                                    (canvas.photo, 'Canvas photo')]:
+        if param_value and len(param_value) >= 255:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{param_name} too long")
+    for tag in canvas.tags:
+        validate_tag(tag)
