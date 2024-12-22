@@ -62,10 +62,8 @@ def get_user(user_id: int, jwt_user_id: int = Depends(get_jwt_user_id)) -> User:
      user["about"], _) = get_user_from_db(user_id)
 
     if user_id == jwt_user_id:
-        #user["tags"] = get_favorite_tags(user_id) ######### need to add this function in db_utils
-        pass
-    #user["is_admin"] = 'debug' ######## need to ask Yuval if necessary
-    #user["is_super_admin"] = 'debug' ######## need to ask Yuval if necessary
+        user["tags"] = get_favorite_tags(user_id)
+        user["email"] = get_user_email(user_id)
     return user
 
 @user_router.get("", response_model=List[User])
@@ -76,6 +74,9 @@ def get_user(username: Optional[str] = None, jwt_user_id: int = Depends(get_jwt_
         user = dict()
         (user["id"], user["username"], _, _, user["is_blocked"], user["profile_photo"], user["cover_photo"],
          user["about"], _) = db_user
+        if user["id"] == jwt_user_id:
+            user["tags"] = get_favorite_tags(user["id"])
+            user["email"] = get_user_email(user["id"])
         users.append(user)
     return users
 
@@ -84,7 +85,7 @@ def create_user(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) 
     if is_admin(jwt_user_id):
         register(user)
         return {}
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized user")
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 @user_router.delete('/{user_id}')
 def delete_user(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
@@ -101,7 +102,6 @@ def delete_user(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)
 
     remove_photos(user_id) # Remove associated profile and cover photos
     delete_user_from_db(user_id)
-    print(f"User with user_id {user_id} deleted successfully.")
     return {}
 
 @user_router.put('/{user_id}')
