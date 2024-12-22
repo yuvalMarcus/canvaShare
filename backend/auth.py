@@ -1,8 +1,7 @@
-from db_utils import is_user_exist, raise_error_if_guest, raise_error_if_blocked
+from db_utils import is_user_exist, raise_error_if_guest, raise_error_if_blocked, get_disabled_status
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, UTC
-from db_utils import get_disabled_status
 from passlib.context import CryptContext
 from jose.constants import ALGORITHMS
 from dotenv import load_dotenv

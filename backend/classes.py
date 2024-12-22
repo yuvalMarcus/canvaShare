@@ -55,7 +55,7 @@ class Tags(BaseModel):
 
 class User(BaseModel):
     id: Optional[int] = None
-    username: str
+    username: Optional[str] = None
     password: Optional[str] = None
     email: Optional[str] = None
     tags: Optional[List[str]] = None
