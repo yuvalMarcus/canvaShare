@@ -1,7 +1,7 @@
 from typing import List, Tuple, Optional, Literal
 from fastapi import HTTPException, status
-from dotenv import load_dotenv
 from classes import Canvas, User
+from dotenv import load_dotenv
 from pathlib import Path
 import psycopg2
 import inspect
@@ -93,7 +93,12 @@ def remove_all_tags(canvas_id: int) -> None:
     cur.execute(f"DELETE FROM tags_of_canvases WHERE canvas_id = %s", (canvas_id,))
     commit_and_close_db(con)
 
-def insert_favorite_tags_to_db(user_id: int, tags_id: int) -> None:
+def delete_favorite_tags(user_id: int) -> None:
+    con, cur = connect_to_db()
+    cur.execute(f"DELETE FROM favorite_tags WHERE user_id = %s", (user_id,))
+    commit_and_close_db(con)
+
+def insert_favorite_tags_to_db(user_id: int, tags_id: List[int]) -> None:
     con, cur = connect_to_db()
     for tag_id in tags_id:
         cur.execute("INSERT INTO favorite_tags (user_id, tag_id) VALUES (%s,%s)", (user_id, tag_id))
@@ -384,13 +389,15 @@ def remove_photos(user_id: int) -> None:
                     pass
     con.close()
 
-def update_user_in_db(user_id: int, is_blocked: Optional[bool]=None, profile_photo: Optional[str]=None,
+
+def update_user_in_db(user_id: int, username: Optional[str]= None, hashed_password: Optional[str]= None,
+                      email: Optional[str]= None, is_blocked: Optional[bool]=None, profile_photo: Optional[str]=None,
                       cover_photo: Optional[str]=None, about: Optional[str]=None) -> None:
     con, cur = connect_to_db()
     updates = []
     params = []
     args = inspect.getfullargspec(update_user_in_db).args[1:] # get this function arguments name (string) except user_id
-    for i, arg in enumerate([is_blocked, profile_photo, cover_photo, about]):
+    for i, arg in enumerate([username, hashed_password, email, is_blocked, profile_photo, cover_photo, about]):
         if arg is not None:
             updates.append(f"{args[i]} = %s")
             params.append(arg)
