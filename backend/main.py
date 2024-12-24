@@ -1,15 +1,17 @@
-from user import access_router, user_router, register
+import logging
+import os
+from psycopg2 import Error as psycopg2Error
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from user import access_router, user_router, register_endpoint
 from report import router as report_router
 from canvas import router as canvas_router
 from photo import router as photo_router
 from tag import router as tag_router
 from like import router as like_router
-from classes import User
-from fastapi import FastAPI
-from db_utils import *
-from auth import *
-import logging
+from models import User
+from db.initial import *
+from dotenv import load_dotenv
 import uvicorn
 
 logger = logging.getLogger()
@@ -35,10 +37,13 @@ if super_admins:
     for super_admin in [i.strip() for i in super_admins.split(',')]:
         try:
             username, password, email = super_admin.split(':')
-            register(User(username=username, password=password, email=email))
+            register_endpoint(User(username=username, password=password, email=email))
             add_super_admin(username)
-        except Exception as e:
+        except ValueError:
+            print("Failed to add super admin\nThe scheme should be username:password:email\n")
+        except (psycopg2Error, HTTPException) as e:
             print(f"Failed to add super admin\n{e}\n")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host=os.getenv('BACK_DOMAIN'), port=int(os.getenv('BACK_PORT')))
