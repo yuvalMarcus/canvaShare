@@ -24,7 +24,7 @@ def like_or_unlike_canvas(user_id: int, like_flag: bool, like_id: Optional[int]=
     cur.execute("UPDATE canvases SET likes = %s WHERE id = %s", (num_of_likes, canvas_id))
     commit_and_close_db(con)
 
-def get_canvases_likes(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> List[Tuple[int, int]]:
+def get_likes(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> List[Tuple[int, int, int]]:
     filters = ""
     params = []
     if canvas_id:

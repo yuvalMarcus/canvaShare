@@ -1,7 +1,7 @@
 from .canvases import (get_canvas, insert_canvas, update_canvas, delete_canvas, get_canvas_user_id,
                      get_canvases_by_filters, get_canvases_by_tag, is_canvas_editor)
 
-from .likes import like_or_unlike_canvas, get_canvases_likes
+from .likes import like_or_unlike_canvas, get_likes
 
 from .utils import raise_error_if_guest, raise_error_if_blocked
 

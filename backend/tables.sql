@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS tags_of_canvases(canvas_id INT REFERENCES canvases(id
 CREATE TABLE IF NOT EXISTS favorite_tags(user_id INT REFERENCES users(id) ON DELETE CASCADE,
                                          tag_id INT REFERENCES tags(id) ON DELETE CASCADE,
                                          PRIMARY KEY (user_id, tag_id));
-CREATE TABLE IF NOT EXISTS likes(id SERIAL, canvas_id INT REFERENCES canvases(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS likes(id SERIAL,
+                                 canvas_id INT REFERENCES canvases(id) ON DELETE CASCADE,
                                  user_id INT REFERENCES users(id) ON DELETE CASCADE,
                                  PRIMARY KEY (canvas_id, user_id));
 CREATE TABLE IF NOT EXISTS admins(user_id INT REFERENCES users(id) ON DELETE CASCADE PRIMARY KEY);
