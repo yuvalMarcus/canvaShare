@@ -1,12 +1,12 @@
 import os
-from typing import List, Optional, Literal
+from typing import List, Optional
 from fastapi import HTTPException, status
 from backend.models import UpdateUser, UserTuple
 from .utils import connect_to_db, commit_and_close_db
 
 __all__ = ['insert_user', 'get_user', 'get_users', 'get_user_id', 'get_user_email', 'get_hashed_password',
-           'get_disabled_status', 'connect_user', 'disconnect_user', 'get_username_by_email', 'update_user_photo',
-           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist']
+           'get_disabled_status', 'connect_user', 'disconnect_user', 'get_username_by_email', 'get_prev_photos',
+           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'is_photo_exist']
 
 def insert_user(username: str, hashed_password: str, email: str, is_blocked: bool, disabled: bool) -> int:
     con, cur = connect_to_db()
@@ -87,21 +87,21 @@ def get_username_by_email(email: str | None) -> str | None:
         return res[0]
     return None
 
-def update_user_photo(file_path: str, user_id: int, save_to: Literal['profile_photo', 'cover_photo']) -> str| None:
+def get_prev_photos(user_id: int, profile_photo: Optional[str] = None, cover_photo: Optional[str] = None) -> List[str]:
     con, cur = connect_to_db()
-    prev_photo = None
-    if save_to == 'profile_photo':
+    prev_photos = []
+    if profile_photo:
         cur.execute("SELECT profile_photo FROM users WHERE id = %s", (user_id,))
-        prev_photo = cur.fetchone()
-        cur.execute("UPDATE users SET profile_photo = %s WHERE id = %s", (file_path, user_id))
-    elif save_to == 'cover_photo':
+        res = cur.fetchone()
+        if res and res[0]:
+            prev_photos.append(res[0])
+    if cover_photo:
         cur.execute("SELECT cover_photo FROM users WHERE id = %s", (user_id,))
-        prev_photo = cur.fetchone()
-        cur.execute("UPDATE users SET cover_photo = %s WHERE id = %s", (file_path, user_id))
-    commit_and_close_db(con)
-    if prev_photo is not None:
-        return prev_photo[0]
-    return None
+        res = cur.fetchone()
+        if res and res[0]:
+            prev_photos.append(res[0])
+    con.close()
+    return prev_photos
 
 def remove_user_photos(user_id: int) -> None:
     con, cur = connect_to_db()
@@ -144,6 +144,14 @@ def is_user_exist(user_id: Optional[int] = None, username: Optional[str] = None)
         cur.execute("SELECT * FROM users WHERE username = %s", (username,))
     else:
         cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    if cur.fetchone() is None:
+        return False
+    con.close()
+    return True
+
+def is_photo_exist(photo_link: str) -> bool:
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM users WHERE profile_photo = %s OR cover_photo = %s", (photo_link, photo_link))
     if cur.fetchone() is None:
         return False
     con.close()

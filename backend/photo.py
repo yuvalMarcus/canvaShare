@@ -1,4 +1,4 @@
-from typing import Dict, Literal
+from typing import Dict
 from uuid import uuid4
 from pathlib import Path
 import shutil
@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 import requests
 from auth import check_guest_or_blocked
-from db.users import update_user_photo
+from db.users import is_photo_exist
 
 router = APIRouter(prefix="/photo")
 load_dotenv()
@@ -32,8 +32,8 @@ def get_photos_from_api_endpoint(category: str, _: int = Depends(check_guest_or_
     return {"results": results}
 
 @router.post('')
-def upload_picture_endpoint(save_to: Literal['profile_photo', 'cover_photo', 'canvas'],
-                   file: UploadFile = File(...), jwt_user_id: int = Depends(check_guest_or_blocked)) -> Dict[str, str]:
+def upload_picture_endpoint(file: UploadFile = File(...), _: int = Depends(check_guest_or_blocked))\
+        -> Dict[str, str]:
     file_extension = file.filename.split('.')[-1].lower()
     if not 0 < file.size <= 10*1024*1024:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image size must be between 0 and 10MB")
@@ -45,13 +45,6 @@ def upload_picture_endpoint(save_to: Literal['profile_photo', 'cover_photo', 'ca
         photo_name = f"{photo_id}.{file_extension}"
         with Path(f"{UPLOAD_DIR}/{photo_name}").open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        if save_to in ['profile_photo', 'cover_photo']:
-            prev_photo = update_user_photo(photo_name, jwt_user_id, save_to)
-            if prev_photo:
-                try:
-                    os.remove(prev_photo)
-                except FileNotFoundError:
-                    print(f'Could not delete previous photo {prev_photo}')
         return {"photo": f'http://{os.getenv('BACK_DOMAIN')}:{os.getenv('BACK_PORT')}/photo/{photo_name}'}
     except (FileNotFoundError, Exception) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Upload failed") from e
@@ -62,6 +55,13 @@ def uploaded_files_endpoint(photo_name: str) -> UploadFile:
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
     return FileResponse(file_path)
+
+def delete_photo(photo_link: str) -> None:
+    photo_path = f'{UPLOAD_DIR}/{photo_link.split("/")[-1]}'
+    try:
+        os.remove(photo_path)
+    except FileNotFoundError:
+        print(f'Could not delete previous photo {photo_path}')
 
 def generate_photo_uuid() -> str:
     while True:
@@ -74,3 +74,14 @@ def generate_photo_uuid() -> str:
         if not exist:
             break
     return photo_id
+
+def is_valid_photo(photo_link: str) -> None:
+    # FIXME: high vulnerability here, it is possible to remove someone else photo.
+    #   It is possible to save photo link in db that already exists in the folder.
+    #   After that, it is possible to remove someone else photo by change to other photo (auto remove prev photo).
+    #   Some links can be with uppercase letters, some with lowercase, some with query params.
+    #   Some links can be with http, some with https and some with www, some without www, etc.
+    #   It is better to save in db only the photo name and check if it exists in the folder.
+
+    if is_photo_exist(photo_link):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Photo {photo_link} already exists")

@@ -5,6 +5,7 @@ from db.tags import insert_favorite_tags, get_tags_id, get_favorite_tags, delete
 from db.utils import raise_error_if_guest, raise_error_if_blocked
 from db.admin import is_admin, is_super_admin
 from db.users import *
+from photo import delete_photo, is_valid_photo
 from auth import *
 
 user_router = APIRouter(prefix="/user")
@@ -94,7 +95,13 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
     if user_id == jwt_user_id or (is_admin(jwt_user_id) and not is_admin(user_id)):
         _ = is_valid_username(user.username) if user.username else None
         _ = is_valid_email(user.email) if user.email else None
+        _ = is_valid_photo(user.profile_photo) if user.profile_photo else None
+        _ = is_valid_photo(user.cover_photo) if user.cover_photo else None
         hashed_password = get_password_hash(user.password) if user.password else None
+        if user.profile_photo or user.cover_photo:
+            for prev_photo in get_prev_photos(user_id, user.profile_photo, user.cover_photo):
+                if prev_photo not in [user.profile_photo, user.cover_photo]:
+                    delete_photo(prev_photo)
         update_user(UpdateUser(user_id=user_id, username=user.username, hashed_password=hashed_password,
                           email=user.email, profile_photo=user.profile_photo, cover_photo=user.cover_photo,
                           about=user.about))
