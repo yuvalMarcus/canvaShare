@@ -2,10 +2,9 @@
 
 ## React - installation and running:
 1. Install npm
-2. Open terminal
-3. Navigate to frontend folder with `cd` command
-4. Install modules with the command: `npm i`
-5. Run the app with the command: `npm run dev`
+2. Open terminal and navigate to frontend folder with `cd` command
+3. Install modules with the command: `npm i`
+4. Run the app with the command: `npm run dev`
 
 ## Python - installation and running:
 1. Install python
