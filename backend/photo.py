@@ -26,8 +26,7 @@ def get_photos_from_api(category: str, _: int = Depends(check_guest_or_blocked))
     return {"results": results}
 
 @router.post('')
-def upload_picture(save_to: Literal['profile_photo', 'cover_photo', 'canvas'],
-                   file: UploadFile = File(...), jwt_user_id: int = Depends(check_guest_or_blocked)) -> Dict[str, str]:
+def upload_picture(file: UploadFile = File(...), _: int = Depends(check_guest_or_blocked)) -> Dict[str, str]:
     file_extension = file.filename.split('.')[-1].lower()
     if not (0 < file.size <= 10*1024*1024):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image size must be between 0 and 10MB")
@@ -39,13 +38,6 @@ def upload_picture(save_to: Literal['profile_photo', 'cover_photo', 'canvas'],
         photo_name = f"{photo_id}.{file_extension}"
         with Path(f"{UPLOAD_DIR}/{photo_name}").open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        if save_to in ['profile_photo', 'cover_photo']:
-            prev_photo = update_photo(photo_name, jwt_user_id, save_to)
-            if prev_photo:
-                try:
-                    os.remove(prev_photo)
-                except Exception:
-                    print(f'Could not delete previous photo {prev_photo}')
         return {"photo": f'http://{os.getenv('BACK_DOMAIN')}:{os.getenv('BACK_PORT')}/photo/{photo_name}'}
     except Exception:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Upload failed")

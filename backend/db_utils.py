@@ -407,7 +407,15 @@ def update_user_in_db(user_id: int, username: Optional[str]= None, hashed_passwo
         params.append(user_id)
         cur.execute(query, tuple(params))
         commit_and_close_db(con)
-
+"""
+        if save_to in ['profile_photo', 'cover_photo']:
+            prev_photo = update_photo(photo_name, jwt_user_id, save_to)
+            if prev_photo:
+                try:
+                    os.remove(prev_photo)
+                except Exception:
+                    print(f'Could not delete previous photo {prev_photo}')
+"""
 ####################################
 ########### admin #################
 
