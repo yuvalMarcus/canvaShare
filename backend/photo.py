@@ -3,6 +3,7 @@ from uuid import uuid4
 from pathlib import Path
 import shutil
 import os
+import logging
 from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
@@ -15,25 +16,32 @@ load_dotenv()
 API_KEY = os.getenv('API_KEY')
 UPLOAD_DIR = os.getenv('UPLOAD_DIR')
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 @router.get('')
 def get_photos_from_api_endpoint(category: str, _: int = Depends(check_guest_or_blocked)) -> Dict[str, list]:
     results = []
     if category:
         for page in range(1, 4):
             try:
-                results += requests.get(f'https://api.unsplash.com/search/photos?query={category}'
-                                        f'&client_id={API_KEY}&page={page}', timeout=30).json()['results']
-            except requests.exceptions.ConnectTimeout as e:
-                raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Connection timed out") from e
-            except requests.exceptions.JSONDecodeError as e:
-                if page == 1:
+                response = requests.get(
+                    f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}&page={page}',
+                    timeout=30)
+                response.raise_for_status()
+                results += response.json().get('results', [])
+            except (requests.exceptions.ConnectTimeout,
+                    requests.exceptions.JSONDecodeError,
+                    requests.exceptions.RequestException) as e:
+                if not results:
+                    logger.error("Error fetching photos from API: %s", e)
                     raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                                        detail="Rate Limit Exceeded (50 per hour), Try again later") from e
+                                        detail="Error fetching photos") from e
     return {"results": results}
 
 @router.post('')
-def upload_picture_endpoint(file: UploadFile = File(...), _: int = Depends(check_guest_or_blocked))\
-        -> Dict[str, str]:
+def upload_picture_endpoint(file: UploadFile = File(...), _: int = Depends(check_guest_or_blocked)) -> Dict[str, str]:
     file_extension = file.filename.split('.')[-1].lower()
     if not 0 < file.size <= 10*1024*1024:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image size must be between 0 and 10MB")
@@ -52,26 +60,21 @@ def upload_picture_endpoint(file: UploadFile = File(...), _: int = Depends(check
 @router.get("/{photo_name}", response_model=UploadFile)
 def uploaded_files_endpoint(photo_name: str) -> UploadFile:
     file_path = Path(f'{UPLOAD_DIR}/{photo_name}')
-    if not os.path.isfile(file_path):
+    if not file_path.is_file():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
     return FileResponse(file_path)
 
 def delete_photo(photo_link: str) -> None:
-    photo_path = f'{UPLOAD_DIR}/{photo_link.split("/")[-1]}'
+    photo_path = Path(f'{UPLOAD_DIR}/{photo_link.split("/")[-1]}')
     try:
-        os.remove(photo_path)
+        photo_path.unlink()
     except FileNotFoundError:
-        print(f'Could not delete previous photo {photo_path}')
+        logger.warning('Could not delete previous photo %s', photo_path)
 
 def generate_photo_uuid() -> str:
     while True:
-        exist = False
         photo_id = str(uuid4())
-        for file in Path(UPLOAD_DIR).iterdir():
-            if photo_id in file.name:
-                exist = True
-                break
-        if not exist:
+        if not any(photo_id in file.name for file in Path(UPLOAD_DIR).iterdir()):
             break
     return photo_id
 
