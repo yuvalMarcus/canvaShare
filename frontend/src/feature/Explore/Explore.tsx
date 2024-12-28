@@ -3,9 +3,19 @@ import Typography from "@mui/material/Typography";
 import CanvasList from "../../components/CanvasList/CanvasList.tsx";
 import {grey} from "@mui/material/colors";
 import ArtistsList from "../../components/ArtistsList/ArtistsList.tsx";
-import {top100Films} from "../../mook.ts";
+import {useState} from "react";
+import {useQuery} from "@tanstack/react-query";
+import * as tagApi from "../../api/tags.ts";
 
 const Explore = () => {
+    const [orderBy, setOrderBy] = useState<string>('date');
+    const [tags, setTags] = useState<string[]>([]);
+
+    const { data: tagsList, isPending: isPendingData } = useQuery({
+        queryKey: [],
+        queryFn: tagApi.getTags,
+    });
+
     return (
         <Container>
             <Stack gap={4} py={2}>
@@ -24,10 +34,10 @@ const Explore = () => {
                             <Autocomplete
                                 multiple
                                 id="tags-outlined"
-                                options={top100Films}
-                                getOptionLabel={(option) => option.title}
-                                defaultValue={[top100Films[13]]}
+                                options={tagsList?.tags?.map(({ name }) => name) || []}
+                                defaultValue={tags}
                                 filterSelectedOptions
+                                onChange={(_, tags) => setTags(tags)}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -43,17 +53,16 @@ const Explore = () => {
                             </Typography>
                             <FormControl variant="standard">
                                 <Select
-                                    value={'date'}
-                                    onChange={() => {}}
+                                    value={orderBy}
+                                    onChange={(event) => setOrderBy(event.target.value)}
                                 >
                                     <MenuItem value={'date'}>Date</MenuItem>
                                     <MenuItem value={'likes'}>Like</MenuItem>
-                                    <MenuItem value={'tags'}>Tags</MenuItem>
                                 </Select>
                             </FormControl>
                         </Stack>
                     </Stack>
-                    <CanvasList cardDetails />
+                    <CanvasList tags={tags.join(', ')} order={orderBy} cardDetails />
                 </Box>
             </Stack>
         </Container>
