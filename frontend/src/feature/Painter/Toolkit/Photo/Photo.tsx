@@ -5,7 +5,8 @@ import Button from "@mui/material/Button";
 import React, {FC, MutableRefObject, useState} from "react";
 import {METHOD_TYPE} from "./photo.config.ts";
 import SearchModal from "./SearchModal/SearchModal.tsx";
-import {Canvas} from "fabric";
+import {Canvas, Image} from "fabric";
+import UploadFileModal from "../../../../components/UploadFileModal/UploadFileModal.tsx";
 
 interface PhotoProps {
     canvas: MutableRefObject<Canvas | null>
@@ -13,13 +14,28 @@ interface PhotoProps {
 
 const Photo: FC<PhotoProps> = ({ canvas }) => {
     const [methodType, setMethodType] = useState<METHOD_TYPE | null>(null);
+    const [isUploadFileOpen, setIsUploadFileOpen] = useState<boolean>(false);
+
+    const uploadProfilePhoto = async (photo) => {
+
+        const img = await Image.fromURL(photo, { crossOrigin: 'anonymous' });
+
+        img.scaleToWidth(400);
+
+        canvas.current?.add(img);
+        canvas.current?.centerObject(img);
+        canvas.current?.renderAll();
+    }
 
     return (
         <>
             <Box pb={2}>
                 <Typography color={grey[100]} fontSize={18} textTransform="capitalize" mb={1}>select option :</Typography>
                 <Stack flexDirection="row"  gap={1}>
-                    <Button variant="contained" onClick={() => setMethodType(METHOD_TYPE.UPLOAD)}>
+                    <Button variant="contained" onClick={() => {
+                        setMethodType(METHOD_TYPE.UPLOAD);
+                        setIsUploadFileOpen(true);
+                    }}>
                         <Typography textTransform="capitalize" p={2}>upload photo</Typography>
                     </Button>
                     <Button variant="contained" onClick={() => setMethodType(METHOD_TYPE.SEARCH)}>
@@ -28,6 +44,7 @@ const Photo: FC<PhotoProps> = ({ canvas }) => {
                 </Stack>
             </Box>
             <SearchModal canvas={canvas} isOpen={methodType === METHOD_TYPE.SEARCH} onClose={() => setMethodType(null)} />
+            <UploadFileModal isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     )
 }

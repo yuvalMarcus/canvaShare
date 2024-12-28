@@ -3,11 +3,13 @@ import React, {FC, MutableRefObject, useLayoutEffect, useState} from "react";
 import {Box, FormControl, IconButton, MenuItem, Select, SelectChangeEvent, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {blue, green, grey} from "@mui/material/colors";
-import {drawingMode, setBrushColor, setBrushSize} from "./draw.utils.ts";
+import {drawingMode, setActionType, setBrushColor, setBrushSize} from "./draw.utils.ts";
 import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
 import {DRAW_TYPE, mapDrawTypeToIcon} from "./draw.config.ts";
 import {backgroundColor} from "@eslint/js";
 import Button from "@mui/material/Button";
+
+export const DEFAULT_SIZE = 10;
 
 interface DrawProps {
     canvas: MutableRefObject<Canvas | null>
@@ -15,7 +17,7 @@ interface DrawProps {
 
 const Draw: FC<DrawProps> = ({canvas}) => {
     const [selectedType, setSelectedType] = useState<DRAW_TYPE>(DRAW_TYPE.PENCIL);
-    const [size, setSize] = useState<number>(1);
+    const [size, setSize] = useState<number>(DEFAULT_SIZE);
 
     useLayoutEffect(() => {
         if(canvas.current) drawingMode(canvas.current, true);
@@ -27,6 +29,7 @@ const Draw: FC<DrawProps> = ({canvas}) => {
 
     const handleUpdateType = (value: DRAW_TYPE) => {
         setSelectedType(value);
+        setActionType(canvas.current, value);
     }
 
     const handleUpdateSize = (event: Event, newValue: number | number[]) => {
