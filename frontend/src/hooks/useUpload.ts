@@ -10,12 +10,18 @@ export const useUpload = () => {
         onError: () => {}
     })
 
-    const upload = async (photo: string, filename: string, mimeType: string) => {
+    const uploadFileCode = async (photo: string, filename: string, mimeType: string) => {
         const file = await urlToFile(photo, filename, mimeType);
         return await mutateAsync(file);
     }
 
+    const upload = async (file: File) => {
+        return await mutateAsync(file);
+    }
+
     return {
-        upload
+        uploadFileCode,
+        upload,
+        isPending,
     }
 }

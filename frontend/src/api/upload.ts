@@ -10,8 +10,5 @@ export const uploadFile = async (file: File) => {
         headers: {
             'Content-Type': 'multipart/form-data'
         },
-        params: {
-            save_to: 'canvas'
-        }
     });
 }
