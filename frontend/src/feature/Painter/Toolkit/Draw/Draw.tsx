@@ -10,6 +10,7 @@ import {backgroundColor} from "@eslint/js";
 import Button from "@mui/material/Button";
 
 export const DEFAULT_SIZE = 10;
+export const DEFAULT_COLOR = '#000000';
 
 interface DrawProps {
     canvas: MutableRefObject<Canvas | null>
