@@ -64,6 +64,7 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
         await createLike({ canvasId: id, userId });
         queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
+        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
 
     }
 
@@ -72,6 +73,7 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
         if(likeId) await deleteLike(likeId);
         queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
+        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
     }
 
     const handleDeletePainter = async () => {
@@ -109,7 +111,7 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
                     </Box>
                     <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
                         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
-                            <Button component={Link} to={`/artist/${userId}`}>
+                            <Button component={Link} to={`/artist/${painterUserId}`}>
                                 <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"}  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
                                 <Typography color={grey[900]} ml={2}>
                                     {username}
