@@ -39,6 +39,9 @@ const Painter = () => {
 
             canvas.current?.on('path:created', handleDrawingPath);
 
+            canvas.current?.on('object:added', (event) => {
+            });
+
             /*
             canvas.current?.on('selection:created', (event) => {
                 console.log('event', event)

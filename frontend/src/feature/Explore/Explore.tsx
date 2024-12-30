@@ -6,15 +6,13 @@ import ArtistsList from "../../components/ArtistsList/ArtistsList.tsx";
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import * as tagApi from "../../api/tags.ts";
+import useGetTags from "../../api/hooks/useGetTags.ts";
 
 const Explore = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
     const [tags, setTags] = useState<string[]>([]);
 
-    const { data: tagsList, isPending: isPendingData } = useQuery({
-        queryKey: [],
-        queryFn: tagApi.getTags,
-    });
+    const { data: tagsList, isPending: isPendingData } = useGetTags();
 
     return (
         <Container>

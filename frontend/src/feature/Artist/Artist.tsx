@@ -25,6 +25,7 @@ import UploadFileModal from "../../components/UploadFileModal/UploadFileModal.ts
 import {useMutation} from "@tanstack/react-query";
 import useGetUser, {GET_USER} from "../../api/hooks/useGetUser.ts";
 import {queryClient} from "../../main.tsx";
+import useGetTags from "../../api/hooks/useGetTags.ts";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -44,10 +45,7 @@ const Artist = () => {
         onError: () => {}
     })
 
-    const { data: tagsList, isPending: isPendingData } = useQuery({
-        queryKey: [],
-        queryFn: tagApi.getTags,
-    });
+    const { data: tagsList, isPending: isPendingData } = useGetTags();
 
     const uploadProfilePhoto = async (photo) => {
         if(!userIdParam || !uploadType) return;

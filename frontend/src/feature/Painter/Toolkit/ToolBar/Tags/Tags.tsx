@@ -18,6 +18,8 @@ import {TagPayload} from "../../../../../types/tags.ts";
 import InputText from "../../../../../components/Form/InputText/InputText.tsx";
 import {z} from "zod";
 import { usePainter } from '../../../../../context/painter.context.tsx';
+import useGetTags, {GET_TAGS} from "../../../../../api/hooks/useGetTags.ts";
+import {queryClient} from "../../../../../main.tsx";
 
 const schema = z.object({
     name: z.string().min(1, { message: 'required' }),
@@ -28,10 +30,7 @@ const Tags = () => {
 
     const { canvas: { tags }, handleUpload } = usePainter();
 
-    const { data, isPending: isPendingData } = useQuery({
-        queryKey: [],
-        queryFn: api.getTags,
-    });
+    const { data, isPending: isPendingData } = useGetTags();
 
     const {
         getValues,
@@ -59,6 +58,8 @@ const Tags = () => {
             theme: "colored",
             transition: Bounce,
         });
+
+        queryClient.invalidateQueries({ queryKey: [GET_TAGS] });
     }
 
     const handleOnError = () => {
