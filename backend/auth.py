@@ -1,12 +1,17 @@
-from db_utils import is_user_exist, raise_error_if_guest, raise_error_if_blocked, get_disabled_status
+from datetime import datetime, timedelta, UTC
+import os
+from dotenv import load_dotenv
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
-from datetime import datetime, timedelta, UTC
-from passlib.context import CryptContext
-from jose.constants import ALGORITHMS
-from dotenv import load_dotenv
 from jose import JWTError, jwt
-import os
+from jose.constants import ALGORITHMS
+from passlib.context import CryptContext
+from passlib.exc import UnknownHashError
+from db.users import is_user_exist, get_disabled_status
+from db.utils import raise_error_if_guest, raise_error_if_blocked
+
+__all__ = ['get_jwt_user_id', 'check_guest_or_blocked', 'verify_password', 'get_password_hash', 'generate_token',
+           'ACCESS_TOKEN_EXPIRE_TIME', 'REFRESH_TOKEN_EXPIRE_TIME']
 
 load_dotenv()
 
@@ -33,8 +38,8 @@ def get_jwt_user_id(token: str | None = Depends(oauth2_scheme)) -> int | None:
 
         if user_id is None or username is None or expiration is None:
             raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+    except JWTError as e:
+        raise credentials_exception from e
     # checks if the user exist and connected
     if is_user_exist(user_id=user_id) and get_disabled_status(user_id) == 0:
         return user_id
@@ -48,7 +53,7 @@ def check_guest_or_blocked(jwt_user_id: int | None = Depends(get_jwt_user_id)) -
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return pwd_context.verify(plain_password, hashed_password)
-    except Exception:
+    except UnknownHashError:
         return False
 
 def get_password_hash(password: str) -> str:
