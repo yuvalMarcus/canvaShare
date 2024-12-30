@@ -23,6 +23,8 @@ interface CanvasModalProps {
     isOpen: boolean;
     id: number;
     painterUserId: number;
+    username: string;
+    profilePhoto: string;
     name: string;
     description: string;
     likes: number;
@@ -31,7 +33,7 @@ interface CanvasModalProps {
     onClose: () => void;
 }
 
-const CanvasModal = ({ id, painterUserId, name, description, tags, photo, isOpen, onClose }: CanvasModalProps) => {
+const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, description, tags, photo, isOpen, onClose }: CanvasModalProps) => {
 
     const { userId } = useAuth();
 
@@ -62,6 +64,7 @@ const CanvasModal = ({ id, painterUserId, name, description, tags, photo, isOpen
         await createLike({ canvasId: id, userId });
         queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
+        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
 
     }
 
@@ -70,6 +73,7 @@ const CanvasModal = ({ id, painterUserId, name, description, tags, photo, isOpen
         if(likeId) await deleteLike(likeId);
         queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
+        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
     }
 
     const handleDeletePainter = async () => {
@@ -107,10 +111,10 @@ const CanvasModal = ({ id, painterUserId, name, description, tags, photo, isOpen
                     </Box>
                     <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
                         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
-                            <Button component={Link} to="/artist">
-                                <Avatar alt="avatar" src="/assets/p_avatar.jpg"  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
+                            <Button component={Link} to={`/artist/${painterUserId}`}>
+                                <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"}  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
                                 <Typography color={grey[900]} ml={2}>
-                                    nickname
+                                    {username}
                                 </Typography>
                             </Button>
                             <CloseIcon onClick={onClose} cursor="pointer" />

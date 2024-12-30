@@ -23,7 +23,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const { canvas: canvasItem } = usePainter();
 
-    const { upload } = useUpload();
+    const { uploadFileCode } = useUpload();
 
     const { userId } = useAuth();
 
@@ -71,7 +71,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
             quality: 0.8
         });
 
-        const { data } = photo ? await upload(photo, 'hello.png','image/jpeg') : { data: { photo: '' } };
+        const { data } = photo ? await uploadFileCode(photo, 'hello.png','image/jpeg') : { data: { photo: '' } };
 
         await mutateAsync({
             ...canvasItem,

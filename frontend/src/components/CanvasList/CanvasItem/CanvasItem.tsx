@@ -17,6 +17,8 @@ import CanvasModal from "../../CanvasModal/CanvasModal.tsx";
 interface CanvasItemProps {
     id: number;
     userId: number;
+    username: string;
+    profilePhoto: string;
     name: string;
     description: string;
     likes: number;
@@ -25,7 +27,7 @@ interface CanvasItemProps {
     details?: boolean;
 }
 
-const CanvasItem = ({ id, userId, name, description, likes, tags, photo, details }: CanvasItemProps) => {
+const CanvasItem = ({ id, userId, username, profilePhoto, name, description, likes, tags, photo, details }: CanvasItemProps) => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
 
     return (
@@ -51,7 +53,7 @@ const CanvasItem = ({ id, userId, name, description, likes, tags, photo, details
                     )}
                 </S.CardController>
             </S.Controller>
-            <CanvasModal id={id} painterUserId={userId} name={name} description={description} likes={likes} tags={tags} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
+            <CanvasModal id={id} painterUserId={userId} username={username} profilePhoto={profilePhoto} name={name} description={description} likes={likes} tags={tags} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
         </>
     );
 }

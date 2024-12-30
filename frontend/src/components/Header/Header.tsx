@@ -18,7 +18,7 @@ const pages = [];
 const Header = () => {
 
     const { isAuth, refreshTokenIsPending } = useAuth();
-
+    
     return (
         <S.Container position="fixed">
             <Container maxWidth="xl">

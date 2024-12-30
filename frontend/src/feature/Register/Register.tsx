@@ -18,7 +18,6 @@ const schema = z.object({
     username: z.string().min(4, { message: 'Required' }),
     email: z.string().email({ message: 'Email not valid' }),
     password: z.string().min(4, { message: 'Required' }),
-    confirmPassword: z.string().min(4, { message: 'Required' }),
 });
 
 const Register: FC = () => {
@@ -96,10 +95,6 @@ const Register: FC = () => {
                     <Box>
                         <InputText label="password" name="password" control={control} />
                         <Typography color={red[700]} height={30}>{errors.password?.message}</Typography>
-                    </Box>
-                    <Box>
-                        <InputText label="confirm password" name="confirmPassword" control={control} />
-                        <Typography color={red[700]} height={30}>{errors.confirmPassword?.message}</Typography>
                     </Box>
                     <Button variant="outlined" fullWidth type="submit" disabled={isPending}>
                         {isPending && (

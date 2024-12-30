@@ -24,7 +24,7 @@ const CanvasList = ({cardDetails, userId, tags, order}: CanvasListProps) => {
     } = useInfiniteQuery({
         initialPageParam: 1,
         queryKey: [GET_CANVAS, userId, tags, order],
-        queryFn: ({ pageParam }) => api.getPainters({ pageParam, userId, tags, order }),
+        queryFn: ({ pageParam }) => api.getPainters({ pageNum: pageParam, userId, tags, order }),
         getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
     })
 
@@ -41,7 +41,7 @@ const CanvasList = ({cardDetails, userId, tags, order}: CanvasListProps) => {
 
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
-            {!(isFetching || isFetchingNextPage) && results?.map(({id, userId, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
+            {!(isFetching || isFetchingNextPage) && results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
             {(isFetching || isFetchingNextPage) && (
                 <CircularProgress />
             )}
