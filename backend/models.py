@@ -20,7 +20,7 @@ class Canvas(BaseModel):
     is_public: Optional[bool] = None
     create_date: Optional[int] = None
     edit_date: Optional[int] = None
-    data: Optional[str] = None
+    data: Optional[str] | dict = None
     likes: Optional[int] = None
     description: Annotated[Optional[str], Query(max_length=250)] = None
     photo: Annotated[Optional[str], Query(max_length=100)] = None

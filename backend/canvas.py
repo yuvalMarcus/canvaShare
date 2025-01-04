@@ -34,7 +34,7 @@ def get_canvas_endpoint(canvas_id: int, jwt_user_id: int | None = Depends(get_jw
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     try:
         with open(f'canvases/{canvas["user_id"]}/{canvas["id"]}.json', 'r', encoding='utf-8') as fd:
-            canvas["data"] = str(json.loads(fd.read()))
+            canvas["data"] = json.loads(fd.read())
     except (FileNotFoundError, json.decoder.JSONDecodeError) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cannot load json data file") from e
     return canvas
@@ -128,10 +128,10 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
         canvas["username"], _, _, _, canvas["profile_photo"] = get_user(canvas["user_id"])[1:6]
         try:
             with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
-                canvas['data'] = str(json.loads(fd.read()))
+                canvas['data'] = json.loads(fd.read())
         except FileNotFoundError:
             print(f'Error: Json Data of canvas {canvas["user_id"]}/{canvas["id"]} not found')
-            canvas['data'] = '{}'
+            canvas['data'] = {}
         canvases.append(canvas)
     return canvases
 
