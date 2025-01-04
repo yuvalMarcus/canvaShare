@@ -1,8 +1,5 @@
-import os
-import sys
 from typing import List, Tuple
 from fastapi import HTTPException, status
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.models import Canvas
 from .utils import connect_to_db, commit_and_close_db
 

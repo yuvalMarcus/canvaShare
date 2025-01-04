@@ -53,7 +53,7 @@ def upload_picture_endpoint(file: UploadFile = File(...), _: int = Depends(check
         photo_name = f"{photo_id}.{file_extension}"
         with Path(f"{UPLOAD_DIR}/{photo_name}").open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        return {"photo": f'http://{os.getenv('BACK_DOMAIN')}:{os.getenv('BACK_PORT')}/photo/{photo_name}'}
+        return {"photo": f"http://{os.getenv('BACK_DOMAIN')}:{os.getenv('BACK_PORT')}/photo/{photo_name}"}
     except (FileNotFoundError, Exception) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Upload failed") from e
 

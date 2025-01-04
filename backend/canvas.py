@@ -127,7 +127,7 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
         canvas['tags'] = get_canvas_tags(canvas['id'])
         canvas["username"], _, _, _, canvas["profile_photo"] = get_user(canvas["user_id"])[1:6]
         try:
-            with open(f'canvases/{canvas['user_id']}/{canvas['id']}.json', 'r', encoding='utf-8') as fd:
+            with open(f"canvases/{canvas['user_id']}/{canvas['id']}.json", 'r', encoding='utf-8') as fd:
                 canvas['data'] = json.loads(fd.read())
         except FileNotFoundError:
             print(f'Error: Json Data of canvas {canvas["user_id"]}/{canvas["id"]} not found')
@@ -141,7 +141,7 @@ def delete_photos_of_canvas(json_path: str) -> None:
             data = json.loads(fd.read())
             for obj in data['objects']:
                 try:
-                    os.remove(f'{UPLOAD_DIR}/{obj['src'].split('/')[-1]}')
+                    os.remove(f"{UPLOAD_DIR}/{obj['src'].split('/')[-1]}")
                 except (FileNotFoundError, KeyError):
                     pass
     except (FileNotFoundError, KeyError, json.decoder.JSONDecodeError):

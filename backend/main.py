@@ -1,5 +1,7 @@
 import logging
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from psycopg2 import Error as psycopg2Error
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
