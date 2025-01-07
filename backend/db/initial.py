@@ -41,11 +41,11 @@ def delete_tables_and_folders() -> None:
     cur.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public")
     commit_and_close_db(con)
 
-def insert_initial_values(cols: List[str], table_name: str) -> None:
+def insert_initial_values(values: List[str], table_name: str) -> None:
     con, cur = connect_to_db()
-    for col in cols:
+    for value in values:
         try:
-            cur.execute(f"INSERT INTO {table_name} (name) VALUES (%s)", (col,))
+            cur.execute(f"INSERT INTO {table_name} (name) VALUES (%s)", (value,))
             con.commit()
         except psycopg2.Error:
             con, cur = connect_to_db()
