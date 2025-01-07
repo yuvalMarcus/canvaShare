@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 import psycopg2
 from .utils import connect_to_db, commit_and_close_db
 
-__all__ = ['create_tables_and_folders', 'delete_tables_and_folders', 'insert_initial_tags', 'add_pg_trgm_extension',
+__all__ = ['create_tables_and_folders', 'delete_tables_and_folders', 'insert_initial_values', 'add_pg_trgm_extension',
            'add_super_admin']
 load_dotenv()
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
@@ -41,11 +41,11 @@ def delete_tables_and_folders() -> None:
     cur.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public")
     commit_and_close_db(con)
 
-def insert_initial_tags(tags: List[str]) -> None:
+def insert_initial_values(cols: List[str], table_name: str) -> None:
     con, cur = connect_to_db()
-    for tag in tags:
+    for col in cols:
         try:
-            cur.execute("INSERT INTO tags (name) VALUES (%s)", (tag,))
+            cur.execute(f"INSERT INTO {table_name} (name) VALUES (%s)", (col,))
             con.commit()
         except psycopg2.Error:
             con, cur = connect_to_db()
@@ -61,6 +61,7 @@ def add_pg_trgm_extension() -> None:
     commit_and_close_db(con)
 
 def add_super_admin(username: str) -> None:
+    # TODO: Delele function after roles done
     con, cur = connect_to_db()
     cur.execute("SELECT id FROM users WHERE username = %s", (username,))
     res = cur.fetchone()

@@ -13,6 +13,7 @@ from tag import router as tag_router
 from like import router as like_router
 from models import User
 from db.initial import *
+from db.roles import insert_user_roles
 from dotenv import load_dotenv
 import uvicorn
 
@@ -32,7 +33,14 @@ add_pg_trgm_extension()
 
 tags = ['Christmas', 'Animals', 'Art', 'Beauty', 'Design', 'DIY And Crafts', 'Food And Drink', 'Home Decor',
             'Quotes', 'Travel', 'Tattoos', 'Fantasy', 'Arcane']
-insert_initial_tags(tags)
+insert_initial_values(tags, "tags")
+
+roles = ['admin_view']
+for obj in ['user', 'canvas', 'report', 'roles']:
+    roles.append(f'admin_{obj}_view')
+    roles.append(f'admin_{obj}_management')
+
+insert_initial_values(roles, "roles")
 
 super_admins = os.getenv("SUPER_ADMINS")
 if super_admins:
@@ -40,7 +48,8 @@ if super_admins:
         try:
             username, password, email = super_admin.split(':')
             register_endpoint(User(username=username, password=password, email=email))
-            add_super_admin(username)
+            add_super_admin(username) # TODO: Delete after roles done
+            insert_user_roles(roles, username=username)
         except ValueError:
             print("Failed to add super admin\nThe scheme should be username:password:email\n")
         except (psycopg2Error, HTTPException) as e:
