@@ -7,6 +7,7 @@ import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import * as tagApi from "../../api/tags.ts";
 import useGetTags from "../../api/hooks/useGetTags.ts";
+import useGetUsers from "../../api/hooks/useGetUsers.ts";
 
 const Explore = () => {
     const [orderBy, setOrderBy] = useState<string>('date');

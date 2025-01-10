@@ -7,26 +7,27 @@ import {grey} from "@mui/material/colors";
 import PersonIcon from '@mui/icons-material/Person';
 
 interface CanvasItemProps {
-    name: string;
-    photo: string;
+    id: string;
+    username: string;
+    profilePhoto: string;
 }
 
-const Artist = ({ name, photo }: CanvasItemProps) => {
+const Artist = ({ id, username, profilePhoto }: CanvasItemProps) => {
     const navigate = useNavigate();
 
     return (
-        <S.Controller onClick={() => navigate('/artist')}>
+        <S.Controller onClick={() => navigate(`/artist/${id}`)}>
             <S.CardController
                 flexDirection="column"
                 justifyContent="flex-end"
                 height="auto"
-                photo={photo}
+                photo={profilePhoto}
             >
                 <Stack py={1} px={2} gap={1} sx={{ backgroundColor: "rgb(0 0 0 / 80%)" }}>
                     <Stack flexDirection="row" alignItems="center" gap={1}>
                         <PersonIcon sx={{ color: grey[100] }} />
                         <Typography color={grey[100]} variant="h5">
-                            {name}
+                            {username}
                         </Typography>
                     </Stack>
                 </Stack>
