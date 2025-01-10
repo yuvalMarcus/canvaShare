@@ -11,11 +11,12 @@ import {grey} from "@mui/material/colors";
 interface SearchProps {
     theme?: 'light' | 'dark';
     placeholder: string;
+    dValue?: string;
     onClick?: (value: string) => void;
 }
 
-const Search: FC<SearchProps> = ({ theme = 'light', placeholder, onClick }) => {
-    const [value, setValue] = useState<string>('');
+const Search: FC<SearchProps> = ({ theme = 'light', placeholder, dValue, onClick }) => {
+    const [value, setValue] = useState<string>(dValue || '');
     const navigate = useNavigate();
 
     const handleClickKey = (event: React.KeyboardEvent<HTMLInputElement>) => {

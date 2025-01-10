@@ -6,7 +6,7 @@ import {
     Toolbar,
     Typography
 } from "@mui/material";
-import {Link} from "react-router-dom";
+import {Link, useNavigate, useSearchParams} from "react-router-dom";
 import {grey} from "@mui/material/colors";
 import Search from "../Search/Search.tsx";
 import * as S from './Header.style.ts';
@@ -18,6 +18,10 @@ const pages = [];
 const Header = () => {
 
     const { isAuth, refreshTokenIsPending } = useAuth();
+
+    const navigate = useNavigate();
+
+    const [searchParams] = useSearchParams();
     
     return (
         <S.Container position="fixed">
@@ -43,7 +47,7 @@ const Header = () => {
                             </S.Button>
                         ))}
                         <Box>
-                            <Search theme='dark' placeholder='Search Arts' />
+                            <Search theme='dark' placeholder='Search Paints' value={searchParams.get('text') || ''} onClick={(value) => navigate(`/search?text=${value}`)} />
                         </Box>
                     </Stack>
                     {refreshTokenIsPending && (
