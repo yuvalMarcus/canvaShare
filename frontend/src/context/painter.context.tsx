@@ -2,14 +2,13 @@ import {createContext, useContext, useLayoutEffect, useState} from 'react';
 import {CanvasPayload} from "../types/canvas.ts";
 import {ACTION_TYPE} from "../feature/Painter/painter.config.ts";
 import {useParams} from "react-router-dom";
-import {useQuery} from "@tanstack/react-query";
 import * as api from "../api/painter.ts";
 
 const defaultCanvas: CanvasPayload = {
-    name: "Untitled Canvas",
-    description: '',
-    tags: [],
-    is_public: true,
+    name: "",
+    description: "",
+    tags: null,
+    isPublic: true,
     data: null,
     photo: '',
 }
@@ -17,23 +16,30 @@ const defaultCanvas: CanvasPayload = {
 const PainterContext = createContext<{
     selectedAction: ACTION_TYPE | null,
     setSelectedAction: (value: (((prevState: (ACTION_TYPE | null)) => (ACTION_TYPE | null)) | ACTION_TYPE | null)) => void,
-    canvas: CanvasPayload,
+    selectedObjectId: string | null,
+    setSelectedObjectId: (value: (((prevState: (string | null)) => (string | null)) | string | null)) => void,
+    payload: CanvasPayload,
     handleUpload: any,
 }>({
     selectedAction: null,
     setSelectedAction: () => {},
-    canvas: defaultCanvas,
+    selectedObjectId: null,
+    setSelectedObjectId: () => {},
+    payload: defaultCanvas,
     handleUpload: () => {},
 });
 
 const PainterProvider = ({ children }) => {
-    const [canvas, setCanvas] = useState<CanvasPayload>(defaultCanvas);
+    const [payload, setPayload] = useState<CanvasPayload>(defaultCanvas);
     const [selectedAction, setSelectedAction] = useState<ACTION_TYPE | null>(null);
+    const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+
+    console.log('payload', payload)
 
     const { id: painterId } = useParams();
 
     const handleUpload = <T extends keyof CanvasPayload>(key: T, value: CanvasPayload[T]) => {
-        setCanvas(prev => ({
+        setPayload(prev => ({
             ...prev,
             [key]: value
         }))
@@ -53,7 +59,9 @@ const PainterProvider = ({ children }) => {
         <PainterContext.Provider value={{
             selectedAction,
             setSelectedAction,
-            canvas,
+            selectedObjectId,
+            setSelectedObjectId,
+            payload,
             handleUpload
         }}>
             {children}

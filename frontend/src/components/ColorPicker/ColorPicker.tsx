@@ -6,11 +6,11 @@ import React, {FC, useState} from "react";
 import Button from "@mui/material/Button";
 
 interface ColorPickerProps {
+    color: string;
     onChange: (color: string)=> void;
 }
 
-const ColorPicker:FC<ColorPickerProps> = ({ onChange }) => {
-    const [color, setColor] = useState<string>('#000000');
+const ColorPicker:FC<ColorPickerProps> = ({ color, onChange }) => {
     const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -38,10 +38,7 @@ const ColorPicker:FC<ColorPickerProps> = ({ onChange }) => {
                 }}
             >
                 <Box p={2}>
-                    <HexColorPicker color={color} onChange={(value) => {
-                        setColor(value);
-                        onChange(value);
-                    }} />
+                    <HexColorPicker color={color} onChange={onChange} />
                 </Box>
             </Popover>
         </>
