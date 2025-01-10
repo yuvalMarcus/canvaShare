@@ -10,12 +10,13 @@ import {useUpload} from "../../hooks/useUpload.ts";
 
 interface UploadFileModalProps {
     isOpen: boolean;
+    label?: string;
     onUploadFile: (url: string | null) => Promise<void>;
     accept?: Record<string, string[]>;
     onClose: () => void;
 }
 
-const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, onUploadFile, accept, onClose }) => {
+const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, label = 'file', onUploadFile, accept, onClose }) => {
     const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
         multiple: false,
         accept
@@ -45,20 +46,20 @@ const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, onUploadFile, accep
         <Modal
             open={isOpen}
             onClose={onClose}
-            aria-labelledby='upload file'
-            aria-describedby='upload file'
+            aria-labelledby={`upload ${label}`}
+            aria-describedby={`upload ${label}`}
         >
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Stack gap={1} position="absolute" top="50%" left="50%" minWidth={600} p={2} bgcolor={grey[200]} border={2} borderColor={grey[900]} boxShadow={24} sx={{
                     transform: 'translate(-50%, -50%)',
                 }}>
-                    <Typography textTransform="capitalize">upload file:</Typography>
+                    <Typography textTransform="capitalize">{`upload ${label}:`}</Typography>
                     <Box border="dotted" borderColor={hasFileError ? red[400] : grey[400]} bgcolor={grey[200]} textAlign="center" p={4} {...getRootProps({className: 'dropzone'})} sx={{cursor: "pointer"}}>
                         <input {...getInputProps()} />
                         <FileUploadIcon fontSize={"large"} sx={{
                             color: grey[600]
                         }} />
-                        <Typography color={grey[700]}>Drag 'n' drop some file here, or click to select file</Typography>
+                        <Typography color={grey[700]}>{`Drag 'n' drop some ${label} here, or click to select ${label}`}</Typography>
                     </Box>
                     <Box>
                         {file && (
@@ -67,7 +68,7 @@ const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, onUploadFile, accep
                                 <Typography color={green[600]}>{(file as File).name}</Typography>
                             </Stack>
                         )}
-                        {!file && <Typography color={grey[600]}>No video selected to translate</Typography>}
+                        {!file && <Typography color={grey[600]}>{`No ${label} selected to upload`}</Typography>}
                     </Box>
                     <Button variant="contained" disabled={isPending} type="submit">upload</Button>
                 </Stack>
