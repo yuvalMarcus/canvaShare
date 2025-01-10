@@ -14,7 +14,24 @@ import {grey} from "@mui/material/colors";
 import {top100Films} from "../../mook.ts";
 import CanvasList from "../../components/CanvasList/CanvasList.tsx";
 import SearchIcon from '@mui/icons-material/Search';
+import {useSearchParams} from "react-router-dom";
+import {useLayoutEffect, useState} from "react";
+import useGetTags from "../../api/hooks/useGetTags.ts";
+
 const Search = () => {
+    const [searchParams] = useSearchParams();
+
+    const [value, setValue] = useState<string>(searchParams.get('text') || '');
+    const [orderBy, setOrderBy] = useState<string>('date');
+    const [tags, setTags] = useState<string[]>([]);
+
+    useLayoutEffect(() => {
+        setValue(searchParams.get('text') || '');
+    }, [searchParams.get('text')])
+
+
+    const { data: tagsList, isPending: isPendingData } = useGetTags();
+
     return (
         <Container>
             <Stack gap={4} py={2}>
@@ -27,6 +44,8 @@ const Search = () => {
                             sx={{ ml: 1, flex: 1 }}
                             placeholder="Search Arts"
                             inputProps={{ 'aria-label': 'search' }}
+                            value={value}
+                            onChange={(event) => setValue(event.target.value)}
                         />
                         <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
                             <SearchIcon />
@@ -37,10 +56,10 @@ const Search = () => {
                             <Autocomplete
                                 multiple
                                 id="tags-outlined"
-                                options={top100Films}
-                                getOptionLabel={(option) => option.title}
-                                defaultValue={[top100Films[13]]}
+                                options={tagsList?.tags?.map(({ name }) => name) || []}
+                                defaultValue={tags}
                                 filterSelectedOptions
+                                onChange={(_, tags) => setTags(tags)}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -56,17 +75,16 @@ const Search = () => {
                             </Typography>
                             <FormControl variant="standard">
                                 <Select
-                                    value={'date'}
-                                    onChange={() => {}}
+                                    value={orderBy}
+                                    onChange={(event) => setOrderBy(event.target.value)}
                                 >
                                     <MenuItem value={'date'}>Date</MenuItem>
                                     <MenuItem value={'likes'}>Like</MenuItem>
-                                    <MenuItem value={'tags'}>Tags</MenuItem>
                                 </Select>
                             </FormControl>
                         </Stack>
                     </Stack>
-                    <CanvasList cardDetails />
+                    <CanvasList cardDetails tags={tags} order={orderBy} search={value} />
                 </Box>
             </Stack>
         </Container>
