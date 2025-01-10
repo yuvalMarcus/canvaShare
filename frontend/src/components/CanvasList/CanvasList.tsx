@@ -10,10 +10,11 @@ interface CanvasListProps {
     userId?: number;
     tags: string;
     order: string;
+    search?: string;
     cardDetails?: boolean;
 }
 
-const CanvasList = ({cardDetails, userId, tags, order}: CanvasListProps) => {
+const CanvasList = ({cardDetails, userId, tags, order, search}: CanvasListProps) => {
 
     const {
         data,
@@ -23,9 +24,9 @@ const CanvasList = ({cardDetails, userId, tags, order}: CanvasListProps) => {
         isFetchingNextPage,
     } = useInfiniteQuery({
         initialPageParam: 1,
-        queryKey: [GET_CANVAS, userId, tags, order],
-        queryFn: ({ pageParam }) => api.getPainters({ pageNum: pageParam, userId, tags, order }),
-        getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
+        queryKey: [GET_CANVAS, userId, tags, order, search],
+        queryFn: ({ pageParam }) => api.getPainters({ pageNum: pageParam, userId, tags, order, canvasName: search || '' }),
+        getNextPageParam: (lastPage, pages) => lastPage.canvases,
     })
 
     const { ref } = useInView({
@@ -37,7 +38,11 @@ const CanvasList = ({cardDetails, userId, tags, order}: CanvasListProps) => {
         threshold: 0,
     });
 
+    console.log('data', data)
+
     const results = data?.pages?.flatMap((item) => ([...item.canvases]));
+
+    console.log('results', results)
 
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">

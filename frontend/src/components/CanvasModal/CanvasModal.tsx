@@ -64,8 +64,6 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
         await createLike({ canvasId: id, userId });
         queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
-        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
-
     }
 
     const handleUnLike = async () => {
@@ -73,7 +71,6 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
         if(likeId) await deleteLike(likeId);
         queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
-        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
     }
 
     const handleDeletePainter = async () => {
@@ -83,7 +80,7 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
 
     const isPending = loadLikeIsPending || loadLikesIsPending || createLikeIsPending || deleteLikeIsPending;
     const hasLike = !!like?.results?.length;
-
+    
     const isUserProfileOwner = userId === painterUserId;
 
     return (

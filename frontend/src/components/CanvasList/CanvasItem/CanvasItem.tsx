@@ -45,7 +45,7 @@ const CanvasItem = ({ id, userId, username, profilePhoto, name, description, lik
                     </Stack>
                     {details && (
                         <Stack flexDirection="row" py={1} px={2} gap={1} sx={{ backgroundColor: "rgb(0 0 0 / 80%)" }}>
-                            <Avatar alt="Remy Sharp" src="/assets/p_avatar.jpg" sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
+                            <Avatar alt={`${username} avatar`} src={profilePhoto ?? "/assets/default-user.png"} sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
                             <Typography color={grey[100]} variant="h5">
                                 {name}
                             </Typography>
