@@ -3,25 +3,29 @@ import {Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Popover
 import React, {FC, MutableRefObject, useState} from "react";
 import {grey} from "@mui/material/colors";
 import PublishIcon from '@mui/icons-material/Publish';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
 import Typography from "@mui/material/Typography";
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../../../../api/painter.ts";
 import {Canvas} from "fabric";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {Bounce, toast} from "react-toastify";
 import {useUpload} from "../../../../../hooks/useUpload.ts";
 import { usePainter } from '../../../../../context/painter.context.tsx';
 import {useAuth} from "../../../../../context/auth.context.tsx";
+import useGetPainter from "../../../../../api/hooks/useGetPainter.ts";
+import SaveIcon from '@mui/icons-material/Save';
 
 interface FileProps {
     canvas: MutableRefObject<Canvas | null>;
 }
 
-
 const FileO: FC<FileProps> = ({ canvas }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const { canvas: canvasItem } = usePainter();
+    const { payload: payloadItem } = usePainter();
+
+    const { id: painterId } = useParams();
+
+    const { data: data22 } = useGetPainter(painterId ? Number(painterId) : undefined);
 
     const { uploadFileCode } = useUpload();
 
@@ -64,6 +68,14 @@ const FileO: FC<FileProps> = ({ canvas }) => {
         onError: handleOnError,
     })
 
+    const { mutateAsync: mutateAsyncu, isPending: isPendingx } = useMutation({
+        mutationFn: (payload) => api.updatePainter(Number(painterId), payload),
+        onSuccess: handleOnSuccess,
+        onError: handleOnError,
+    })
+
+    console.log('isPendingx', isPendingx)
+
     const handlePublish = async () => {
 
         const photo = canvas.current?.toDataURL({
@@ -73,11 +85,33 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
         const { data } = photo ? await uploadFileCode(photo, 'hello.png','image/jpeg') : { data: { photo: '' } };
 
-        await mutateAsync({
-            ...canvasItem,
-            photo: data.photo,
-            data: JSON.stringify(canvas.current?.toJSON())
-        });
+        if(painterId) {
+
+            const  dataToUpdate = Object.entries(payloadItem).filter(([_, value]) => Boolean(value)).reduce((prev, [key, value]) => {
+                prev[key] = value;
+                return prev;
+            }, {})
+
+            await mutateAsyncu({
+                name: dataToUpdate?.name || data22?.name,
+                description: dataToUpdate?.description || data22?.description,
+                tags: dataToUpdate?.tags || data22?.tags,
+                isPublic: true,
+                photo: data.photo,
+                data: JSON.stringify(canvas.current?.toJSON())
+            });
+
+        } else {
+
+            await mutateAsync({
+                ...payloadItem,
+                name: payloadItem.name || "Untitled Canvas",
+                tags: payloadItem.tags || [],
+                photo: data.photo,
+                data: JSON.stringify(canvas.current?.toJSON())
+            });
+
+        }
     }
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -115,7 +149,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                                 {!isPending && (
                                     <ListItemButton onClick={handlePublish}>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
-                                            <PublishIcon />
+                                            {painterId ? <SaveIcon /> : <PublishIcon />}
                                         </ListItemIcon>
                                         <ListItemText primary="Save as Publish" />
                                     </ListItemButton>
@@ -123,7 +157,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                                 {isPending && (
                                     <ListItemButton>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
-                                            <PublishIcon />
+                                            {painterId ? <SaveIcon /> : <PublishIcon />}
                                         </ListItemIcon>
                                         <ListItemText primary="Saving ..." />
                                     </ListItemButton>

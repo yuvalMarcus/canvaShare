@@ -1,14 +1,14 @@
 import {Box, IconButton, Stack} from "@mui/material";
 import {grey} from "@mui/material/colors";
 import CloseIcon from "@mui/icons-material/Close";
-import Draw from "../../Toolkit/Draw/Draw.tsx";
-import Text from "../../Toolkit/Text/Text.tsx";
-import Shape from "../../Toolkit/Shape/Shape.tsx";
 import React, {FC, MutableRefObject} from "react";
 import {Canvas} from "fabric";
-import Photo from "../../Toolkit/Photo/Photo.tsx";
 import {ACTION_TYPE} from "../../painter.config.ts";
 import { usePainter } from '../../../../context/painter.context.tsx';
+import Draw from "./Draw/Draw.tsx";
+import Text from "./Text/Text.tsx";
+import Shape from "./Shape/Shape.tsx";
+import Photo from "./Photo/Photo.tsx";
 
 interface ActionContentProps {
     canvas: MutableRefObject<Canvas | null>;

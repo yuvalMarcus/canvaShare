@@ -28,7 +28,7 @@ const ToolBar: FC<ToolBarProps> = ({ canvas }) => {
                     <Name />
                 </Stack>
                 <Box>
-                    <Button size="large" variant="text" onClick={() => navigate("/")}>
+                    <Button size="large" variant="text" onClick={() => navigate(-1)}>
                         <Typography color={grey[900]} textTransform="capitalize">close</Typography>
                     </Button>
                 </Box>

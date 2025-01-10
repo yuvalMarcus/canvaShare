@@ -4,10 +4,10 @@ import {Box, FormControl, IconButton, MenuItem, Select, SelectChangeEvent, Slide
 import Typography from "@mui/material/Typography";
 import {blue, green, grey} from "@mui/material/colors";
 import {drawingMode, setActionType, setBrushColor, setBrushSize} from "./draw.utils.ts";
-import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
 import {DRAW_TYPE, mapDrawTypeToIcon} from "./draw.config.ts";
 import {backgroundColor} from "@eslint/js";
 import Button from "@mui/material/Button";
+import ColorPicker from "../../../../../components/ColorPicker/ColorPicker.tsx";
 
 export const DEFAULT_SIZE = 10;
 export const DEFAULT_COLOR = '#000000';
@@ -19,6 +19,7 @@ interface DrawProps {
 const Draw: FC<DrawProps> = ({canvas}) => {
     const [selectedType, setSelectedType] = useState<DRAW_TYPE>(DRAW_TYPE.PENCIL);
     const [size, setSize] = useState<number>(DEFAULT_SIZE);
+    const [color, setColor] = useState<string>(DEFAULT_COLOR);
 
     useLayoutEffect(() => {
         if(canvas.current) drawingMode(canvas.current, true);
@@ -40,6 +41,7 @@ const Draw: FC<DrawProps> = ({canvas}) => {
     }
 
     const handleUpdateColor = (color: string) => {
+        setColor(color);
         setBrushColor(canvas.current, color);
     }
 
@@ -74,7 +76,7 @@ const Draw: FC<DrawProps> = ({canvas}) => {
             </Box>
             <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
                 <Typography color={grey[100]} fontSize={18}>Color:</Typography>
-                <ColorPicker onChange={handleUpdateColor} />
+                <ColorPicker color={color} onChange={handleUpdateColor} />
             </Stack>
             <Typography color={grey[100]} textTransform="capitalize" textAlign="center" py={0.5} sx={{ backgroundColor: green[700] }}>
                 draw is active

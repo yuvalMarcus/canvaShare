@@ -6,7 +6,8 @@ import React, {FC, MutableRefObject, useState} from "react";
 import {METHOD_TYPE} from "./photo.config.ts";
 import SearchModal from "./SearchModal/SearchModal.tsx";
 import {Canvas, Image} from "fabric";
-import UploadFileModal from "../../../../components/UploadFileModal/UploadFileModal.tsx";
+import {v4 as uuidv4} from "uuid";
+import UploadFileModal from "../../../../../components/UploadFileModal/UploadFileModal.tsx";
 
 interface PhotoProps {
     canvas: MutableRefObject<Canvas | null>
@@ -20,7 +21,14 @@ const Photo: FC<PhotoProps> = ({ canvas }) => {
 
         const img = await Image.fromURL(photo, { crossOrigin: 'anonymous' });
 
+
+        //img.category = 'text';
+
         img.scaleToWidth(400);
+        img.data = {
+            id: uuidv4(),
+            category: 'photo'
+        }
 
         canvas.current?.add(img);
         canvas.current?.centerObject(img);
@@ -44,7 +52,7 @@ const Photo: FC<PhotoProps> = ({ canvas }) => {
                 </Stack>
             </Box>
             <SearchModal canvas={canvas} isOpen={methodType === METHOD_TYPE.SEARCH} onClose={() => setMethodType(null)} />
-            <UploadFileModal isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
+            <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     )
 }

@@ -1,12 +1,12 @@
 import {CircularProgress, ImageList, ImageListItem, Modal, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {blue, grey} from "@mui/material/colors";
-import Search from "../../../../../components/Search/Search.tsx";
 import React, {FC, MutableRefObject, useState} from "react";
 import {Canvas, Image} from "fabric";
 import {useQuery} from "@tanstack/react-query";
-import * as api from '../../../../../api/painter.ts';
+import * as api from '../../../../../../api/painter.ts';
 import Button from "@mui/material/Button";
+import {Search} from "@mui/icons-material";
 
 interface SearchPhotosProps {
     canvas: MutableRefObject<Canvas | null>;

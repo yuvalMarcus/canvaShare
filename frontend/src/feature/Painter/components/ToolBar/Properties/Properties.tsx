@@ -7,11 +7,17 @@ import React, {useState} from "react";
 import {grey} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import {usePainter} from "../../../../../context/painter.context.tsx";
+import useGetPainter from "../../../../../api/hooks/useGetPainter.ts";
+import {useParams} from "react-router-dom";
 
 const Properties = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-    const { canvas: { description }, handleUpload } = usePainter();
+    const { id: painterId } = useParams();
+
+    const { data } = useGetPainter(painterId ? Number(painterId) : undefined);
+
+    const { payload, handleUpload } = usePainter();
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -48,7 +54,7 @@ const Properties = () => {
                         multiline
                         rows={3}
                         variant="outlined"
-                        value={description}
+                        value={payload?.description ?? data?.description}
                         onChange={event => handleUpload('description', event.target.value)}
                     />
                 </Stack>

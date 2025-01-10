@@ -5,8 +5,8 @@ import React, {FC, Fragment, MutableRefObject, useState} from "react";
 import Button from "@mui/material/Button";
 import {v4 as uuidv4} from "uuid";
 import {Canvas} from "fabric";
-import ColorPicker from "../../../../components/ColorPicker/ColorPicker.tsx";
 import {DEFAULT_COLOR, DEFAULT_SIZE, mapShapeToFabricObject, mapShapeToIcon, SHAPE_TYPE} from "./shape.config.tsx";
+import ColorPicker from "../../../../../components/ColorPicker/ColorPicker.tsx";
 
 interface ShapeProps {
     canvas: MutableRefObject<Canvas | null>;
@@ -61,15 +61,15 @@ const Shape: FC<ShapeProps> = ({ canvas, onClose }) => {
                     <Typography color={grey[100]} fontSize={18}>stroke Size:</Typography>
                     <Typography color={grey[400]} fontSize={14} component="span" mt={0.5}>{size}px</Typography>
                 </Stack>
-                <Slider min={1} max={100} value={size} onChange={handleUpdateSize} />
+                <Slider min={0} max={100}  value={size} onChange={handleUpdateSize} />
             </Box>
             <Stack position="relative" flexDirection="row" alignItems="center" gap={1} mb={2}>
                 <Typography color={grey[100]} fontSize={18}>Stroke:</Typography>
-                <ColorPicker onChange={handleUpdateStroke} />
+                <ColorPicker color={stroke} onChange={handleUpdateStroke} />
             </Stack>
             <Stack flexDirection="row" alignItems="center" gap={1} mb={2}>
                 <Typography color={grey[100]} fontSize={18}>Fill:</Typography>
-                <ColorPicker onChange={handleUpdateFill} />
+                <ColorPicker color={fill} onChange={handleUpdateFill} />
             </Stack>
             <Button variant="contained" onClick={handleCreateShape}>add new shape</Button>
         </Stack>

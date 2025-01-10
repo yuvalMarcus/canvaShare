@@ -1,27 +1,30 @@
-import React, {useLayoutEffect, useRef} from "react";
+import React, {useLayoutEffect, useRef, useState} from "react";
 import {Canvas, FabricObject} from "fabric";
-import {Box, CircularProgress, Stack} from "@mui/material";
-import ToolBar from "./Toolkit/ToolBar/ToolBar.tsx";
-import {handleDrawingPath} from "./Toolkit/Draw/draw.utils.ts";
-import ActionContent from "./Components/ActionContent/ActionContent.tsx";
+import {CircularProgress, Stack} from "@mui/material";
+import ToolBar from "./components/ToolBar/ToolBar.tsx";
+import ActionContent from "./components/ActionContent/ActionContent.tsx";
 import {initCanvas} from "./painter.utils.ts";
-import Menu from "./Components/Menu/Menu.tsx";
+import Menu from "./components/Menu/Menu.tsx";
 import PainterProvider from "../../context/painter.context.tsx";
 import * as api from "../../api/painter.ts";
 import {useParams} from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import {grey} from "@mui/material/colors";
+import {handleDrawingPath} from "./components/ActionContent/Draw/draw.utils.ts";
+import EditMenu from "./components/EditMenu/EditMenu.tsx";
 
 export const TOOL_BAR_HEIGHT = 110;
 
 FabricObject.ownDefaults.objectCaching = false;
-
+FabricObject.customProperties = ['data'];
 
 const Painter = () => {
-    //const [selectedId, setSelectedId] = useState<string | null>(null);
-    //const [position, setPosition] = useState<{ x: 0, y: 0 } | null>(null);
     const controller = useRef<HTMLDivElement | null>(null);
     const canvas = useRef<Canvas | null>(null);
+    const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+    const [painterLoading, setPainterLoading] = useState<boolean>(false);
+
+    //const { selectedObjectId, setSelectedObjectId } = usePainter();
 
     const { id: painterId } = useParams();
 
@@ -34,41 +37,32 @@ const Painter = () => {
             canvas.current = initCanvas(width, height);
 
             if(painterId) {
-                //const { data } = await api.getPainter(Number(painterId));
+                setPainterLoading(true);
+                const { data } = await api.getPainter(Number(painterId));
+
+                canvas.current?.clear();
+
+                await canvas.current?.loadFromJSON(data);
+
+                setPainterLoading(false);
             }
 
             canvas.current?.on('path:created', handleDrawingPath);
 
-            canvas.current?.on('object:added', (event) => {
-            });
-
-            /*
             canvas.current?.on('selection:created', (event) => {
-                console.log('event', event)
-                setSelectedId(event.selected[0].id);
+                console.log('event.selected[0', event.selected[0])
+                setSelectedObjectId(event.selected[0].data.id);
             });
-            */
-            /*
-            canvas.current?.on('contextmenu', (event) => {
-                //event.preventDefault();
 
-                console.log(event)
-                console.log(event.e.offsetX)
-                console.log(event.e.offsetY)
-                setPosition({
-                    x: event.e.offsetX,
-                    y: event.e.offsetY
-                })
+            canvas.current?.on('selection:updated', (event) => {
+                setSelectedObjectId(event.selected[0].data.id);
             });
-             */
+
+            canvas.current?.on('selection:cleared', (event) => {
+                setSelectedObjectId(null);
+            });
 
             canvas.current?.renderAll();
-
-            /*
-            window.addEventListener("contextmenu", (event) => {
-                console.log(event)
-            });
-             */
 
             /*
                     canvas.current?.on('mouse:wheel', function(opt) {
@@ -84,16 +78,13 @@ const Painter = () => {
              */
 
         })()
+
         return () => {
             canvas.current?.dispose();
             canvas.current = null;
         };
-    }, [controller.current]);
+    }, []);
 
-    const oncontextmenu = (event) => {
-        event.preventDefault();
-        console.log(event)
-    };
 
     return (
         <PainterProvider>
@@ -102,21 +93,22 @@ const Painter = () => {
                 <Stack flexDirection="row">
                     <Menu />
                     <Stack ref={controller} position="relative" flex={1} alignItems="center" justifyContent="center" height={`calc(100vh - ${TOOL_BAR_HEIGHT}px)`}>
-                        {/* <ToolkitBox canvas={canvas} actionType={actionType} onClose={() => setActionType(null)} />*/}
+                        {selectedObjectId && <EditMenu canvas={canvas} selectedId={selectedObjectId} />}
                         <ActionContent canvas={canvas} />
-                        {/* <CanvasMenu canvas={canvas} position={position} selectedId={selectedId} actionType={actionType} onClose={() => {}} /> */}
-                        <canvas id="canvas" onContextMenu={oncontextmenu} />
+                        <canvas id="canvas" />
                     </Stack>
                 </Stack>
-                {painterId && <Stack alignItems="center" justifyContent="center" width="100%" height="100%" position="absolute" zIndex={10}  sx={{ backgroundColor: 'rgb(0 0 0 / 60%)' }}>
+            </Stack>
+            {painterLoading && (
+                <Stack alignItems="center" justifyContent="center" width="100%" height="100%" position="absolute" top={0} zIndex={10}  sx={{ backgroundColor: 'rgb(0 0 0 / 60%)' }}>
                     <Stack alignItems="center" gap={1} bgcolor={grey[100]} p={2} sx={{ opacity: 0.8 }}>
                         <Typography color={grey[900]} fontSize={18} textTransform="capitalize">
                             loading data
                         </Typography>
                         <CircularProgress />
                     </Stack>
-                </Stack>}
-            </Stack>
+                </Stack>
+            )}
         </PainterProvider>
     )
 }

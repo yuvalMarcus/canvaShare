@@ -20,6 +20,8 @@ import {z} from "zod";
 import { usePainter } from '../../../../../context/painter.context.tsx';
 import useGetTags, {GET_TAGS} from "../../../../../api/hooks/useGetTags.ts";
 import {queryClient} from "../../../../../main.tsx";
+import useGetPainter from "../../../../../api/hooks/useGetPainter.ts";
+import {useParams} from "react-router-dom";
 
 const schema = z.object({
     name: z.string().min(1, { message: 'required' }),
@@ -28,9 +30,14 @@ const schema = z.object({
 const Tags = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-    const { canvas: { tags }, handleUpload } = usePainter();
+    const { id: painterId } = useParams();
 
-    const { data, isPending: isPendingData } = useGetTags();
+
+    const { data } = useGetPainter(painterId ? Number(painterId) : undefined);
+
+    const { payload, handleUpload } = usePainter();
+
+    const { data: tagsList, isPending: isPendingData } = useGetTags();
 
     const {
         getValues,
@@ -124,8 +131,8 @@ const Tags = () => {
                             <Autocomplete
                                 multiple
                                 id="tags-outlined"
-                                value={tags ?? []}
-                                options={data?.tags.map(({ name }) => name) || []}
+                                value={payload.tags || data?.tags || []}
+                                options={tagsList?.tags.map(({ name }) => name) || []}
                                 onChange={(_, values) => handleUpload('tags', values)}
                                 filterSelectedOptions
                                 renderInput={(params) => (

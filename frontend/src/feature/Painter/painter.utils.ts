@@ -1,4 +1,5 @@
 import { Canvas } from "fabric";
+import * as fabric from "fabric";
 
 const BOARD_PADDING = 20;
 export const initCanvas = (width: number, height: number) => (
