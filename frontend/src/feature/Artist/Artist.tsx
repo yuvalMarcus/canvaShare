@@ -62,7 +62,7 @@ const Artist = () => {
 
     return (
         <>
-            <S.TopController height={300} boxShadow={2} bgcolor={grey[800]}>
+            <S.TopController height={300} boxShadow={2}>
                 <Box position={'absolute'} overflow='hidden' height={300}>
                     <Box position={'relative'} sx={{ top: '-50%' }}>
                         <img src={user?.coverPhoto ?? ""} width={'100%'} />
@@ -140,7 +140,7 @@ const Artist = () => {
                     {userIdParam && <CanvasList userId={Number(userIdParam)} tags={tags.join(', ')} order={orderBy} />}
                 </Box>
             </Container>
-            <UploadFileModal isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
+            <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     )
 }
