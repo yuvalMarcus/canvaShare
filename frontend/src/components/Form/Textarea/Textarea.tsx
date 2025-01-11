@@ -1,7 +1,7 @@
 import { type Control, Controller } from "react-hook-form"
 import TextField from "@mui/material/TextField";
 
-interface InputTextProps {
+interface TextareaProps {
     name: string;
     control: Control;
     label: string;
@@ -9,12 +9,15 @@ interface InputTextProps {
     f_type?: string;
 }
 
-const InputText = ({ name, control, label, defaultValue, f_type}: InputTextProps) => {
+const Textarea = ({ name, control, label, defaultValue, f_type}: TextareaProps) => {
     f_type = f_type ? f_type : "text"
     return (
         <Controller
             name={name}
             control={control}
+            multiline
+            rows={2}
+            maxRows={4}
             defaultValue={defaultValue || ''}
             render={({ field: { onChange, value }, fieldState  }) => {
                 return (
@@ -25,4 +28,4 @@ const InputText = ({ name, control, label, defaultValue, f_type}: InputTextProps
     )
 }
 
-export default InputText;
+export default Textarea;

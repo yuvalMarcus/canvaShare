@@ -1,12 +1,15 @@
-import {Avatar, IconButton, Menu, MenuItem} from "@mui/material";
+import {Avatar, Drawer, IconButton, Menu, MenuItem} from "@mui/material";
 import React, {useState} from "react";
 import {useAuth} from "../../../context/auth.context.tsx";
 import * as api from "../../../api/auth.ts";
 import {useNavigate} from "react-router-dom";
 import useGetUser from "../../../api/hooks/useGetUser.ts";
 import {grey} from "@mui/material/colors";
+import UserAccount from "../../UserAccount/UserAccount.tsx";
 
 export const User  = () => {
+    const [openD, setOpenD] = useState(false);
+
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -26,7 +29,17 @@ export const User  = () => {
     const { logout } = useAuth();
 
     const handleProfile = async () => {
-        navigate(`artist/${userId}`)
+        navigate(`/artist/${userId}`)
+        handleClose();
+    }
+
+    const handleAccount = async () => {
+        setOpenD(true);
+        handleClose();
+    }
+
+    const handleAdmin = async () => {
+        navigate(`/admin`)
         handleClose();
     }
 
@@ -57,9 +70,13 @@ export const User  = () => {
                 }}
             >
                 <MenuItem onClick={handleProfile}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My Account</MenuItem>
+                <MenuItem onClick={handleAccount}>My Account</MenuItem>
+                <MenuItem onClick={handleAdmin}>Admin</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
+            <Drawer open={openD} anchor="right" onClose={() => setOpenD(false)}>
+                <UserAccount />
+            </Drawer>
         </>
     )
 }
