@@ -131,7 +131,7 @@ def convert_db_user_to_user(db_user: UserTuple, user_id: int) -> User:
     user = {}
     (user["id"], user["username"], _, _, user["is_blocked"], user["profile_photo"], user["cover_photo"],
      user["about"], _) = db_user
-    if user["id"] == user_id:
+    if user["id"] == user_id or is_admin(user_id):
         user["tags"] = get_favorite_tags(user["id"])
         user["email"] = get_user_email(user["id"])
     return user

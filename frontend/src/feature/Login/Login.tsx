@@ -62,7 +62,7 @@ const Login: FC = () => {
         if (statusCode && String(statusCode).startsWith("4"))
             serverErrorMessage = serverErrorMessage ? serverErrorMessage : "Incorrect username or password";
         else
-            serverErrorMessage = "Unexpected error <br>Please try again later";
+            serverErrorMessage = "Unexpected error, please try again later";
         setErrorMessage(serverErrorMessage);
         setErrorSeverity("error");
     }
