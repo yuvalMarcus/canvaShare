@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { extendTheme } from '@mui/material/styles';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
@@ -7,7 +6,7 @@ import { AppProvider, Navigation } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import {Outlet, useNavigate} from "react-router-dom";
-import User from "../../components/Header/User/User.tsx";
+import Admin from "../../components/Header/Admin/Admin.tsx";
 
 const NAVIGATION: Navigation = [
     {
@@ -25,8 +24,8 @@ const NAVIGATION: Navigation = [
         icon: <GroupIcon />,
     },
     {
-        segment: 'paintings',
-        title: 'Paintings',
+        segment: 'canvases',
+        title: 'Canvases',
         icon: <ColorLensIcon />,
     },
 ];
@@ -64,7 +63,7 @@ const AdminLayout = () => {
             theme={demoTheme}
         >
             <DashboardLayout slots={{
-                toolbarAccount: () => <User />
+                toolbarAccount: () => <Admin />
             }}>
                 <PageContainer>
                     <Outlet />

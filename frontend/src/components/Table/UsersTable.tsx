@@ -34,7 +34,7 @@ const UsersTable = () => {
     }
 
     return (
-        <Box py={8} px={50}>
+        <Box>
             {(!isPending && !deleteMutation.isPending && !!data) && (
                 <EnhancedTable rows={rows} orderByValue={'username'} tableHeader={tableHeader} tableTitle={'Users'}
                                handleDelete={handleDelete} handleEdit={handleEdit} uniqueProperty={'id'}/>

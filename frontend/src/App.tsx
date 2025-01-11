@@ -13,6 +13,8 @@ import AuthProvider from "./context/auth.context.tsx";
 import ProtectedRoute from "./route/ProtectedRoute.tsx";
 import AdminLayout from "./feature/Admin/AdminLayout.tsx";
 import Dashboard from "./feature/Admin/Dashboard/Dashboard.tsx";
+import CanvasesTable from "./components/Table/CanvasesTable.tsx";
+import UsersTable from "./components/Table/UsersTable.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -63,11 +65,11 @@ const routers = createBrowserRouter([
                     },
                     {
                         path: 'users',
-                        element: <>Users</>
+                        element: <UsersTable />
                     },
                     {
-                        path: 'paintings',
-                        element: <>Paintings</>
+                        path: 'canvases',
+                        element: <CanvasesTable />
                     },
                     {
                         path: '*',

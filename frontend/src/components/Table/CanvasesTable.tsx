@@ -32,7 +32,7 @@ const CanvasesTable = () => {
         return {id, username, photo, name, isPublic, likes, createDate, editDate, description}}) || []
 
     return (
-        <Box py={8} px={40}>
+        <Box>
             {(!isPending && !!data) && (
                 <EnhancedTable rows={rows} orderByValue={'id'} tableHeader={tableHeader} tableTitle={'Canvases'}
                                handleDelete={handleDelete} handleEdit={handleEdit} uniqueProperty={'id'}/>
