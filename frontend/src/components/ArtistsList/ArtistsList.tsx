@@ -1,7 +1,7 @@
 import {CircularProgress, Stack} from "@mui/material";
 import Card from "./Artist/Artist.tsx";
 import {artists} from "../../mook.ts";
-import useGetUsers from "../../api/hooks/useGetUsers.ts";
+import useGetUsers from "../../api/hooks/user/useGetUsers.ts";
 
 const ArtistsList = () => {
 

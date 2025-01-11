@@ -16,16 +16,14 @@ import * as S from "../Home/Home.style.ts";
 import Button from "@mui/material/Button";
 import {Link, useParams} from "react-router-dom";
 import {useState} from "react";
-import {useQuery} from "@tanstack/react-query";
 import * as userApi from "../../api/user.ts";
-import * as tagApi from "../../api/tags.ts";
 import {useAuth} from "../../context/auth.context.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import UploadFileModal from "../../components/UploadFileModal/UploadFileModal.tsx";
 import {useMutation} from "@tanstack/react-query";
-import useGetUser, {GET_USER} from "../../api/hooks/useGetUser.ts";
+import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import {queryClient} from "../../main.tsx";
-import useGetTags from "../../api/hooks/useGetTags.ts";
+import useGetTags from "../../api/hooks/tag/useGetTags.ts";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -98,7 +96,7 @@ const Artist = () => {
                 <Stack flexDirection="row" alignItems="center" justifyContent="space-between" gap={3} pl={20} py={1} mb={4}>
                     <Stack flexDirection="row" gap={2}>
                         <Typography color={user?.username ? grey[900] : grey[500]} fontWeight="bold" variant="h4" textTransform="capitalize">{user?.username ?? 'username'}</Typography>
-                        {isUserProfileOwner && <Button variant="contained"  to='/painter' component={Link}>add paint</Button>}
+                        {isUserProfileOwner && <Button variant="contained"  to='/canvas' component={Link}>add canvas</Button>}
                     </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={2}>
                         <Typography whiteSpace="nowrap" color={grey[700]} fontWeight="bold" fontSize={18} textTransform="capitalize">

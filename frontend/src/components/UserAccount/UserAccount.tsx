@@ -12,7 +12,7 @@ import InputText from "../Form/InputText/InputText.tsx";
 import Button from "@mui/material/Button";
 import {z} from "zod";
 import {useAuth} from "../../context/auth.context.tsx";
-import useGetUser from "../../api/hooks/useGetUser.ts";
+import useGetUser from "../../api/hooks/user/useGetUser.ts";
 import Textarea from "../Form/Textarea/Textarea.tsx";
 import * as userApi from "../../api/user.ts";
 

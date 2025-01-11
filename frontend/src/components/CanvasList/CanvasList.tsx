@@ -1,7 +1,7 @@
 import {Box, CircularProgress, Stack} from "@mui/material";
 import Card from "./CanvasItem/CanvasItem.tsx";
 import {useInfiniteQuery} from "@tanstack/react-query";
-import * as api from "../../api/painter.ts";
+import * as api from "../../api/canvas.ts";
 import {useInView} from "react-intersection-observer";
 
 export const GET_CANVAS = 'getCanvas';
@@ -25,7 +25,7 @@ const CanvasList = ({cardDetails, userId, tags, order, search}: CanvasListProps)
     } = useInfiniteQuery({
         initialPageParam: 1,
         queryKey: [GET_CANVAS, userId, tags, order, search],
-        queryFn: ({ pageParam }) => api.getPainters({ pageNum: pageParam, userId, tags, order, canvasName: search || '' }),
+        queryFn: ({ pageParam }) => api.getCanvases({ pageNum: pageParam, userId, tags, order, canvasName: search || '' }),
         getNextPageParam: (lastPage, pages) => lastPage.canvases,
     })
 

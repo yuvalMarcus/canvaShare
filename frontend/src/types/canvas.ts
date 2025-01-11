@@ -6,3 +6,15 @@ export interface CanvasPayload {
     isPublic: boolean;
     photo: string | null;
 }
+
+export interface canvasTable {
+    id: number
+    username: string
+    photo: string
+    name: string
+    isPublic: boolean
+    likes: number
+    createDate: number
+    editDate: number
+    description: string
+}

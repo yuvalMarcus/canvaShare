@@ -3,7 +3,7 @@ import React, {useState} from "react";
 import {useAuth} from "../../../context/auth.context.tsx";
 import * as api from "../../../api/auth.ts";
 import {useNavigate} from "react-router-dom";
-import useGetUser from "../../../api/hooks/useGetUser.ts";
+import useGetUser from "../../../api/hooks/user/useGetUser.ts";
 import {grey} from "@mui/material/colors";
 import UserAccount from "../../UserAccount/UserAccount.tsx";
 

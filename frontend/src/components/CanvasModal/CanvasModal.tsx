@@ -11,18 +11,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import {useMutation, useQuery} from "@tanstack/react-query";
 import * as likeApi from "../../api/like.ts";
-import * as painterApi from "../../api/painter.ts";
+import * as canvasApi from "../../api/canvas.ts";
 import {queryClient} from "../../main.tsx";
 import {GET_CANVAS} from "../CanvasList/CanvasList.tsx";
 import {useAuth} from "../../context/auth.context.tsx";
-import {getPainter} from "../../api/painter.ts";
+import {getCanvas} from "../../api/canvas.ts";
 
 const GET_LIKE = 'getLike';
 const GET_LIKES = 'getLikes';
 interface CanvasModalProps {
     isOpen: boolean;
     id: number;
-    painterUserId: number;
+    canvasUserId: number;
     username: string;
     profilePhoto: string;
     name: string;
@@ -33,7 +33,7 @@ interface CanvasModalProps {
     onClose: () => void;
 }
 
-const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, description, tags, photo, isOpen, onClose }: CanvasModalProps) => {
+const CanvasModal = ({ id, canvasUserId, username, profilePhoto, name, description, tags, photo, isOpen, onClose }: CanvasModalProps) => {
 
     const { userId } = useAuth();
 
@@ -56,8 +56,8 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
         mutationFn: likeApi.deleteLike,
     });
 
-    const { mutateAsync: deletePainter, isPending : deletePainterIsPending } = useMutation({
-        mutationFn: painterApi.deletePainter,
+    const { mutateAsync: deleteCanvas, isPending : deleteCanvasIsPending } = useMutation({
+        mutationFn: canvasApi.deleteCanvas,
     });
 
     const handleLike = async () => {
@@ -73,15 +73,15 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
     }
 
-    const handleDeletePainter = async () => {
-        if(id) await deletePainter(id);
+    const handleDeleteCanvas = async () => {
+        if(id) await deleteCanvas(id);
         queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
     }
 
     const isPending = loadLikeIsPending || loadLikesIsPending || createLikeIsPending || deleteLikeIsPending;
     const hasLike = !!like?.results?.length;
     
-    const isUserProfileOwner = userId === painterUserId;
+    const isUserProfileOwner = userId === canvasUserId;
 
     return (
         <Modal
@@ -97,10 +97,10 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
                     <Box position="relative" width={1000} height={800} sx={{ backgroundImage: `url(${photo})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                         {isUserProfileOwner && (
                             <Stack flexDirection="row" position="absolute" zIndex={10} sx={{ backgroundColor: grey[900] }}>
-                                <IconButton component={Link} to={`/painter/${id}`}>
+                                <IconButton component={Link} to={`/canvas/${id}`}>
                                     <EditIcon sx={{ color: grey[100] }} />
                                 </IconButton>
-                                <IconButton onClick={handleDeletePainter}>
+                                <IconButton onClick={handleDeleteCanvas}>
                                     <DeleteIcon sx={{ color: grey[100] }} />
                                 </IconButton>
                             </Stack>
@@ -108,7 +108,7 @@ const CanvasModal = ({ id, painterUserId, username, profilePhoto, name, descript
                     </Box>
                     <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
                         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
-                            <Button component={Link} to={`/artist/${painterUserId}`}>
+                            <Button component={Link} to={`/artist/${canvasUserId}`}>
                                 <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"}  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
                                 <Typography color={grey[900]} ml={2}>
                                     {username}

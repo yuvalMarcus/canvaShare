@@ -53,7 +53,7 @@ const CanvasItem = ({ id, userId, username, profilePhoto, name, description, lik
                     )}
                 </S.CardController>
             </S.Controller>
-            <CanvasModal id={id} painterUserId={userId} username={username} profilePhoto={profilePhoto} name={name} description={description} likes={likes} tags={tags} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
+            <CanvasModal id={id} canvasUserId={userId} username={username} profilePhoto={profilePhoto} name={name} description={description} likes={likes} tags={tags} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
         </>
     );
 }

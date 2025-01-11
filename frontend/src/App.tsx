@@ -2,7 +2,7 @@ import './App.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Layout from "./components/Layout/Layout.tsx";
 import Explore from "./feature/Explore/Explore.tsx";
-import Painter from "./feature/Painter/Painter.tsx";
+import Canvas from "./feature/Canvas/Canvas.tsx";
 import Register from "./feature/Register/Register.tsx";
 import Login from "./feature/Login/Login.tsx";
 import Artist from "./feature/Artist/Artist.tsx";
@@ -13,8 +13,8 @@ import AuthProvider from "./context/auth.context.tsx";
 import ProtectedRoute from "./route/ProtectedRoute.tsx";
 import AdminLayout from "./feature/Admin/AdminLayout.tsx";
 import Dashboard from "./feature/Admin/Dashboard/Dashboard.tsx";
-import CanvasesTable from "./components/Table/CanvasesTable.tsx";
-import UsersTable from "./components/Table/UsersTable.tsx";
+import CanvasesTable from "./feature/Admin/Canvases/CanvasesTable.tsx";
+import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -44,12 +44,12 @@ const routers = createBrowserRouter([
       ]
   },
     {
-        path: "/painter",
-        element: <Painter />,
+        path: "/canvas",
+        element: <Canvas />,
     },
     {
-        path: "/painter/:id",
-        element: <Painter />,
+        path: "/canvas/:id",
+        element: <Canvas />,
     },
     {
         path: "/admin",

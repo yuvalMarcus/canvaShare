@@ -21,7 +21,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteDialog from '../Table/DeleteDialog.tsx'
 import { visuallyHidden } from '@mui/utils';
 import ImageModal from '../ImageModal/ImageModal.tsx'
-import {HeadCell} from  '../../types/yarinTypes/table.ts'
+import {HeadCell} from '../../types/table.ts'
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     if (b[orderBy] < a[orderBy]) {
@@ -161,10 +161,11 @@ interface EnhancedTableProps {
     handleDelete: (id: number) => void
     handleEdit: (id: number) => void
     uniqueProperty: string;
+    nameProperty: string;
 }
 
 const EnhancedTable = ({rows, orderByValue, tableHeader,
-                           tableTitle, handleDelete, handleEdit, uniqueProperty}: EnhancedTableProps) => {
+                           tableTitle, handleDelete, handleEdit, uniqueProperty, nameProperty}: EnhancedTableProps) => {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<string>(orderByValue);
     const [selected, setSelected] = React.useState<readonly number[]>([]);
@@ -309,7 +310,7 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                             <IconButton onClick={() => handleEdit(row[uniqueProperty])}>
                                                 <EditIcon />
                                             </IconButton>
-                                            <DeleteDialog id={row[uniqueProperty]} handleDelete={handleDelete}/>
+                                            <DeleteDialog id={row[uniqueProperty]} name={row[nameProperty]} handleDelete={handleDelete}/>
                                         </TableCell>
                                     </TableRow>
                                 );
