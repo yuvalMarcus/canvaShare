@@ -6,9 +6,9 @@ const Admin = () => {
 
     return (
         <>
-            <UsersTable />
             <CanvasesTable />
             <Test />
+            <UsersTable />
         </>
     );
 };

@@ -18,9 +18,10 @@ import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import AlertDialog from '../Table/AlertDialog.tsx'
+import DeleteDialog from '../Table/DeleteDialog.tsx'
 import { visuallyHidden } from '@mui/utils';
 import ImageModal from '../ImageModal/ImageModal.tsx'
+import {HeadCell} from  '../../types/yarinTypes/table.ts'
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     if (b[orderBy] < a[orderBy]) {
@@ -43,14 +44,6 @@ function getComparator<Key extends keyof any>(order: Order, orderBy: Key,): (
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-interface HeadCell {
-    disablePadding: boolean;
-    id: string;
-    label: string;
-    numeric: boolean;
-    type: string;
-}
-
 interface EnhancedTableHeadProps {
     numSelected: number;
     onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void;
@@ -58,11 +51,11 @@ interface EnhancedTableHeadProps {
     order: Order;
     orderBy: string;
     rowCount: number;
-    headCells: HeadCell[];
+    tableHeader: HeadCell[];
 }
 
 function EnhancedTableHead(props: EnhancedTableHeadProps) {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, headCells } =
+    const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, tableHeader } =
         props;
     const createSortHandler =
         (property: string) => (event: React.MouseEvent<unknown>) => {
@@ -83,10 +76,10 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
                         }}
                     />
                 </TableCell>
-                {headCells.map((headCell) => (
+                {tableHeader.map((headCell) => (
                     <TableCell
-                        key={headCell.id}
-                        align={headCell.numeric ? 'right' : 'left'}
+                        key={`header-${headCell.id}`}
+                        align={headCell.align}
                         padding={headCell.disablePadding ? 'none' : 'normal'}
                         sortDirection={orderBy === headCell.id ? order : false}
                     >
@@ -105,7 +98,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
                     </TableCell>
                 ))}
                 <TableCell
-                    key='management'
+                    key='header-management'
                 ></TableCell>
             </TableRow>
         </TableHead>
@@ -163,14 +156,14 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 interface EnhancedTableProps {
     rows: any[];
     orderByValue: string;
-    headCells: HeadCell[];
+    tableHeader: HeadCell[];
     tableTitle: string;
-    handleDelete: (id: string) => void
-    handleEdit: (id: string) => void
+    handleDelete: (id: number) => void
+    handleEdit: (id: number) => void
     uniqueProperty: string;
 }
 
-const EnhancedTable = ({rows, orderByValue, headCells,
+const EnhancedTable = ({rows, orderByValue, tableHeader,
                            tableTitle, handleDelete, handleEdit, uniqueProperty}: EnhancedTableProps) => {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<string>(orderByValue);
@@ -179,7 +172,7 @@ const EnhancedTable = ({rows, orderByValue, headCells,
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
     const handleRequestSort = (
-        event: React.MouseEvent<unknown>,
+        _event: React.MouseEvent<unknown>,
         property: string,
     ) => {
         const isAsc = orderBy === property && order === 'asc';
@@ -196,7 +189,7 @@ const EnhancedTable = ({rows, orderByValue, headCells,
         setSelected([]);
     };
 
-    const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+    const handleClick = (_event: React.MouseEvent<unknown>, id: number) => {
         const selectedIndex = selected.indexOf(id);
         let newSelected: readonly number[] = [];
 
@@ -215,7 +208,7 @@ const EnhancedTable = ({rows, orderByValue, headCells,
         setSelected(newSelected);
     };
 
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_event: unknown, newPage: number) => {
         setPage(newPage);
     };
 
@@ -253,7 +246,7 @@ const EnhancedTable = ({rows, orderByValue, headCells,
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
                             rowCount={rows.length}
-                            headCells={headCells}
+                            tableHeader={tableHeader}
                         />
                         <TableBody>
                             {visibleRows.map((row, index) => {
@@ -263,11 +256,11 @@ const EnhancedTable = ({rows, orderByValue, headCells,
                                     <TableRow
                                         hover
                                         tabIndex={-1}
-                                        key={row[uniqueProperty]}
+                                        key={`row-${index}`}
                                         selected={isItemSelected}
                                         sx={{ cursor: 'pointer' }}
                                     >
-                                        <TableCell padding="checkbox" key={`row-${index}`}>
+                                        <TableCell key={`row-${index}-col-0`} padding="checkbox">
                                             <Checkbox
                                                 onClick={(event) => handleClick(event, row[uniqueProperty])}
                                                 role="checkbox"
@@ -281,11 +274,11 @@ const EnhancedTable = ({rows, orderByValue, headCells,
                                         </TableCell>
                                         {Object.keys(row).map((param, i) => {
                                             if (i === 0)
-                                                return (<TableCell key={`col-${i}`} component="th" id={labelId} scope="row" padding="none">
+                                                return (<TableCell key={`row-${index}-col-${i+1}`} component="th" id={labelId} scope="row" padding="none">
                                                     {row[param]}
                                                 </TableCell>)
-                                            else if (headCells[i].type == 'password')
-                                                return (<TableCell key={`col-${i}`} align='left'>
+                                            else if (tableHeader[i].type == 'password')
+                                                return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>
                                                     <TextField
                                                         disabled
                                                         id="outlined-password-input"
@@ -295,31 +288,28 @@ const EnhancedTable = ({rows, orderByValue, headCells,
                                                         size="small"
                                                         sx={{ width: '15ch' }}
                                                     /></TableCell>)
-                                            else if (headCells[i].type == 'image')
-                                                return (<TableCell key={`col-${i}`} align='left'>
+                                            else if (tableHeader[i].type == 'image')
+                                                return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>
                                                             <ImageModal link={row[param]}/>
                                                         </TableCell>)
-                                            else if (headCells[i].type == 'bool')
-                                                return (<TableCell key={`col-${i}`} align='left'>{String(row[param])}</TableCell>)
+                                            else if (tableHeader[i].type == 'bool')
+                                                return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>{String(row[param])}</TableCell>)
 
-                                            else if (headCells[i].type == 'date'){
+                                            else if (tableHeader[i].type == 'date'){
                                                 const date = String(new Date(row[param]*1000))
-                                                return (<TableCell key={`col-${i}`} align='left'>
+                                                return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>
                                                     <Tooltip title={date}>
                                                         <Box>{row[param]}</Box>
                                                     </Tooltip></TableCell>)}
                                             else
-                                                return (<TableCell key={`col-${i}`}
-                                                    align={headCells[i].numeric ? 'right' : 'left'}>{row[param]}</TableCell>)
+                                                return (<TableCell key={`row-${index}-col-${i+1}`}
+                                                    align={tableHeader[i].align}>{row[param]}</TableCell>)
                                         })}
-                                        <TableCell key='management' align='right'>
-                                            <Tooltip title="Edit">
-                                                <IconButton onClick={() => handleEdit(row[uniqueProperty])}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <AlertDialog item={row[uniqueProperty]}
-                                                         handleDelete={() => handleDelete(row[uniqueProperty])}/>
+                                        <TableCell key={`row-${index}-col-management`} align='right'>
+                                            <IconButton onClick={() => handleEdit(row[uniqueProperty])}>
+                                                <EditIcon />
+                                            </IconButton>
+                                            <DeleteDialog id={row[uniqueProperty]} handleDelete={handleDelete}/>
                                         </TableCell>
                                     </TableRow>
                                 );
