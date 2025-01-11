@@ -4,7 +4,7 @@ import * as api from "../api/auth.ts";
 import * as cookie from "../utils/cookie.ts";
 
 const AuthContext = createContext<{
-    isAuth: boolean;
+    isAuth: boolean | null;
     userId: number | null;
     setCertificate: (token: string, refreshToken: string, userId: number) => void;
     login: () => void;
@@ -12,7 +12,7 @@ const AuthContext = createContext<{
     refreshToken: () => void;
     refreshTokenIsPending: boolean;
 }>({
-    isAuth: false,
+    isAuth: null,
     userId: null,
     setCertificate: () => {},
     login: () => {},
@@ -22,7 +22,7 @@ const AuthContext = createContext<{
 });
 
 const AuthProvider = ({ children }) => {
-    const [isAuth, setIsAuth] = useState<boolean>(false);
+    const [isAuth, setIsAuth] = useState<boolean>(null);
     const [userId, setUserId] = useState<number | null>(null);
 
     const { mutateAsync, isPending } = useMutation({

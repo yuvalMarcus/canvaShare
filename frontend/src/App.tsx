@@ -10,6 +10,9 @@ import Search from "./feature/Search/Search.tsx";
 import {ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import AuthProvider from "./context/auth.context.tsx";
+import ProtectedRoute from "./route/ProtectedRoute.tsx";
+import AdminLayout from "./feature/Admin/AdminLayout.tsx";
+import Dashboard from "./feature/Admin/Dashboard/Dashboard.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -46,6 +49,34 @@ const routers = createBrowserRouter([
         path: "/painter/:id",
         element: <Painter />,
     },
+    {
+        path: "/admin",
+        element: <ProtectedRoute />,
+        children: [
+            {
+                path: '*',
+                element: <AdminLayout />,
+                children: [
+                    {
+                        index: true,
+                        element: <Dashboard />
+                    },
+                    {
+                        path: 'users',
+                        element: <>Users</>
+                    },
+                    {
+                        path: 'paintings',
+                        element: <>Paintings</>
+                    },
+                    {
+                        path: '*',
+                        element: <Dashboard />
+                    },
+                ]
+            },
+        ]
+    }
 ]);
 
 function App() {
