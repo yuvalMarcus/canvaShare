@@ -1,8 +1,8 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import * as api from "../../api/yarin.ts";
+import {queryClient} from "../../main.tsx";
 
 const useDeleteUser = () => {
-    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (id: number) => api.deleteUser(id),
         onSuccess: () => {},
