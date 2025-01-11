@@ -34,7 +34,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
     const navigate = useNavigate();
 
     const handleOnSuccess = () => {
-        toast.success('canvas save successfully', {
+        toast.success('paint saved successfully', {
             position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
@@ -105,7 +105,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
             await mutateAsync({
                 ...payloadItem,
-                name: payloadItem.name || "Untitled Canvas",
+                name: payloadItem.name || "Untitled Paint",
                 tags: payloadItem.tags || [],
                 photo: data.photo,
                 data: JSON.stringify(canvas.current?.toJSON())
@@ -159,7 +159,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             {canvasId ? <SaveIcon /> : <PublishIcon />}
                                         </ListItemIcon>
-                                        <ListItemText primary="Saving ..." />
+                                        <ListItemText primary="Saving..." />
                                     </ListItemButton>
                                 )}
                             </ListItem>

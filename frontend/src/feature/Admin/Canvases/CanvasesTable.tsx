@@ -34,7 +34,7 @@ const CanvasesTable = () => {
     return (
         <Box>
             {(!isPending && !!data) && (
-                <EnhancedTable rows={rows} orderByValue={'id'} tableHeader={tableHeader} tableTitle={'Canvases'}
+                <EnhancedTable rows={rows} orderByValue={'id'} tableHeader={tableHeader} tableTitle={'Paints'}
                                handleDelete={handleDelete} handleEdit={handleEdit} uniqueProperty='id' nameProperty='name' />
             )}
         </Box>

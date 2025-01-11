@@ -126,7 +126,7 @@ const Tags = () => {
             >
                 <Stack width={600} p={2} gap={2}>
                     <Stack gap={1}>
-                        <Typography textTransform="capitalize">select stages</Typography>
+                        <Typography textTransform="capitalize">select tags</Typography>
                         {!isPendingData && (
                             <Autocomplete
                                 multiple
@@ -146,7 +146,7 @@ const Tags = () => {
                         )}
                     </Stack>
                     <Stack gap={1}>
-                        <Typography textTransform="capitalize">add tage</Typography>
+                        <Typography textTransform="capitalize">add tag</Typography>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <Stack flexDirection="row" gap={2}>
                                 <InputText label="Add new tag" name="name" control={control} />
