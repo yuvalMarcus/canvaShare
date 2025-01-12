@@ -17,7 +17,7 @@ interface TextProps {
 }
 
 const Text: FC<TextProps> = ({ canvas, selectedId, onClose }) => {
-    const object = canvas.current?.getObjects().find(({data}) => data.id === selectedId);
+    const object = canvas.current?.getObjects().find(({data}) => data?.id === selectedId);
 
     const [fontWeight, setFontWeight] = useState<FONT_WEIGHT>(object?.fontWeight);
     const [textDecoration, setTextDecoration] = useState<TEXT_DECORATION>(object?.underline ? TEXT_DECORATION.UNDERLINE : TEXT_DECORATION.NONE);

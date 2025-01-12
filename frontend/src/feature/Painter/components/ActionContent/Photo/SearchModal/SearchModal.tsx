@@ -6,7 +6,7 @@ import {Canvas, Image} from "fabric";
 import {useQuery} from "@tanstack/react-query";
 import * as api from '../../../../../../api/painter.ts';
 import Button from "@mui/material/Button";
-import {Search} from "@mui/icons-material";
+import Search from "../../../../../../components/Search/Search.tsx";
 
 interface SearchPhotosProps {
     canvas: MutableRefObject<Canvas | null>;

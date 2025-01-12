@@ -10,7 +10,7 @@ interface PhotoProps {
 }
 
 const Photo: FC<PhotoProps> = ({ canvas, selectedId, onClose }) => {
-    const object = canvas.current?.getObjects().find(({data}) => data.id === selectedId);
+    const object = canvas.current?.getObjects().find(({data}) => data?.id === selectedId);
     const handleRemovePhoto = () => {
         if(!object) return;
 
