@@ -15,6 +15,7 @@ import AdminLayout from "./feature/Admin/AdminLayout.tsx";
 import Dashboard from "./feature/Admin/Dashboard/Dashboard.tsx";
 import CanvasesTable from "./components/Table/CanvasesTable.tsx";
 import UsersTable from "./components/Table/UsersTable.tsx";
+import Page404 from "./feature/Page404/Page404.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -78,6 +79,10 @@ const routers = createBrowserRouter([
                 ]
             },
         ]
+    },
+    {
+        path: '*',
+        element: <Page404 />
     }
 ]);
 
