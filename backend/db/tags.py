@@ -8,7 +8,7 @@ def get_tags() -> List[dict]:
     cur.execute("SELECT * FROM tags")
     tags = cur.fetchall()
     con.close()
-    return [{'id': tag[0], 'name': tag[1]} for tag in tags]
+    return tags
 
 def get_canvas_tags(canvas_id: int) -> List[str]:
     con, cur = connect_to_db()

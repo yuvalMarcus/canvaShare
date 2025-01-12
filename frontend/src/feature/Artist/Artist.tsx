@@ -11,7 +11,7 @@ import {
     TextField
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
-import CanvasList, {GET_CANVAS} from "../../components/CanvasList/CanvasList.tsx";
+import PaintList, {GET_PAINT} from "../../components/PaintList/PaintList.tsx";
 import * as S from "../Home/Home.style.ts";
 import Button from "@mui/material/Button";
 import {Link, useParams} from "react-router-dom";
@@ -24,6 +24,8 @@ import {useMutation} from "@tanstack/react-query";
 import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import {queryClient} from "../../main.tsx";
 import useGetTags from "../../api/hooks/tag/useGetTags.ts";
+import ReportModal from "../../components/ReportModal/ReportModal.tsx";
+import * as React from "react";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -53,7 +55,7 @@ const Artist = () => {
             } })
         setUploadType(null);
         queryClient.invalidateQueries({ queryKey: [GET_USER] });
-        queryClient.invalidateQueries({ queryKey: [GET_CANVAS] });
+        queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
     }
 
     const isUserProfileOwner = userId === Number(userIdParam);
@@ -96,7 +98,8 @@ const Artist = () => {
                 <Stack flexDirection="row" alignItems="center" justifyContent="space-between" gap={3} pl={20} py={1} mb={4}>
                     <Stack flexDirection="row" gap={2}>
                         <Typography color={user?.username ? grey[900] : grey[500]} fontWeight="bold" variant="h4" textTransform="capitalize">{user?.username ?? 'username'}</Typography>
-                        {isUserProfileOwner && <Button variant="contained"  to='/canvas' component={Link}>add paint</Button>}
+                        {isUserProfileOwner && <Button variant="contained"  to='/paint' component={Link}>add paint</Button>}
+                        {!isUserProfileOwner && userId && (<ReportModal type='artist' id={userId} />)}
                     </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={2}>
                         <Typography whiteSpace="nowrap" color={grey[700]} fontWeight="bold" fontSize={18} textTransform="capitalize">
@@ -135,7 +138,7 @@ const Artist = () => {
             </Container>
             <Container>
                 <Box py={2}>
-                    {userIdParam && <CanvasList userId={Number(userIdParam)} tags={tags.join(', ')} order={orderBy} />}
+                    {userIdParam && <PaintList userId={Number(userIdParam)} tags={tags.join(', ')} order={orderBy} />}
                 </Box>
             </Container>
             <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />

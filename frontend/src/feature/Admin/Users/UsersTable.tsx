@@ -1,9 +1,11 @@
-import EnhancedTable from "../../../components/Table/Table.tsx"
-import {Box} from "@mui/material";
-import getUsers from '../../../api/hooks/user/useGetUsers.ts'
-import {userTable as user} from '../../../types/user.ts'
-import {HeadCell} from '../../../types/table.ts'
 import deleteUser from "../../../api/hooks/user/useDeleteUser.ts";
+import createUser from "../../../api/hooks/user/useCreateUser.ts";
+import updateUser from "../../../api/hooks/user/useUpdateUser.ts";
+import getUsers from '../../../api/hooks/user/useGetUsers.ts'
+import EnhancedTable from "../../../components/Table/Table.tsx"
+import {UserPayload, userTable as user} from '../../../types/user.ts'
+import {HeadCell} from '../../../types/table.ts'
+import {Box} from "@mui/material";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -14,30 +16,39 @@ const tableHeader: HeadCell[] = [
     {id: 'password', align: 'left', disablePadding: false, label: 'Password', type: 'password'},
 ];
 
-
 const UsersTable = () => {
-    const deleteMutation = deleteUser();
-    const { data, isPending } = getUsers();
+    const {mutate: deleteMutate, isPending: deleteIsPending} = deleteUser();
+    const {mutate: createMutate, isPending: createIsPending} = createUser();
+    const {mutate: updateMutate, isPending: updateIsPending} = updateUser();
+    const { data, isPending: getIsPending } = getUsers();
+
     const rows =
-        !isPending
+        !getIsPending
         && Array.isArray(data)
         && data?.map(({id, username, email, profilePhoto, coverPhoto, password}: user) =>
         {return {id, username, email, profilePhoto, coverPhoto, password}}) || []
 
-    const handleDelete = (id: number) => {
-        console.log('Delete', id)
-        deleteMutation.mutate(id);
-    }
-
-    const handleEdit = (id: number) => {
-        console.log('Edit', id)
+    const handleCreate = (payload: UserPayload) => {
+        createMutate(payload);
     }
 
     return (
         <Box>
-            {(!isPending && !deleteMutation.isPending && !!data) && (
-                <EnhancedTable rows={rows} orderByValue={'username'} tableHeader={tableHeader} tableTitle={'Users'}
-                               handleDelete={handleDelete} handleEdit={handleEdit} uniqueProperty='id' nameProperty='username'/>
+            {(!getIsPending
+                && !deleteIsPending
+                && !createIsPending
+                && !updateIsPending
+                && !!data)
+                && (<EnhancedTable rows={rows}
+                                   orderByValue={'username'}
+                                   tableHeader={tableHeader}
+                                   tableTitle={'Users'}
+                                   handleDelete={(id: number) => {
+                                       deleteMutate(id);}}
+                                   handleUpdate={(id: number, payload: UserPayload) => {
+                                       updateMutate({ id: id, payload })}}
+                                   uniqueProperty='id'
+                                   nameProperty='username'/>
             )}
         </Box>
     )};

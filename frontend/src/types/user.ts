@@ -6,3 +6,12 @@ export interface userTable {
     coverPhoto: string;
     password: string;
 }
+
+export interface UserPayload {
+    username: string;
+    email: string;
+    password?: string;
+    tags?: string[];
+    about?: string;
+    roles?: number[];
+}

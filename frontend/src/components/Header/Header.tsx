@@ -46,7 +46,7 @@ const Header = () => {
                             </S.Button>
                         ))}
                         <Box>
-                            <Search theme='dark' placeholder='Search Canvases' value={searchParams.get('text') || ''} onClick={(value) => navigate(`/search?text=${value}`)} />
+                            <Search theme='dark' placeholder='Search Paints' value={searchParams.get('text') || ''} onClick={(value) => navigate(`/search?text=${value}`)} />
                         </Box>
                     </Stack>
                     {refreshTokenIsPending && (

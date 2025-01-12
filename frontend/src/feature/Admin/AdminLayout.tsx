@@ -2,6 +2,7 @@ import { extendTheme } from '@mui/material/styles';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
+import ReportIcon from '@mui/icons-material/Report';
 import { AppProvider, Navigation } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
@@ -24,14 +25,19 @@ const NAVIGATION: Navigation = [
         icon: <GroupIcon />,
     },
     {
-        segment: 'canvases',
-        title: 'Canvases',
+        segment: 'paints',
+        title: 'Paints',
         icon: <ColorLensIcon />,
+    },
+    {
+        segment: 'reports',
+        title: 'Reports',
+        icon: <ReportIcon />,
     },
 ];
 
 const demoTheme = extendTheme({
-    colorSchemes: { light: true },
+    colorSchemes: { light: true, dark: true },
     colorSchemeSelector: 'class',
     breakpoints: {
         values: {

@@ -1,5 +1,6 @@
 import instance from "../server/axios";
-import {LoginPayload, RefreshTokenPayload, RegisterPayload} from "../types/auth.ts";
+import {LoginPayload, RefreshTokenPayload} from "../types/auth.ts";
+import {RegisterPayload} from "../types/auth.ts";
 import axios from "axios";
 
 export const login = async ({ username, password }: LoginPayload): Promise<axios.AxiosResponse<{ token: string }>> => {

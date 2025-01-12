@@ -1,6 +1,6 @@
 import {Autocomplete, Box, Container, FormControl, MenuItem, Select, Stack, TextField} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import CanvasList from "../../components/CanvasList/CanvasList.tsx";
+import PaintList from "../../components/PaintList/PaintList.tsx";
 import {grey} from "@mui/material/colors";
 import ArtistsList from "../../components/ArtistsList/ArtistsList.tsx";
 import {useState} from "react";
@@ -61,7 +61,7 @@ const Explore = () => {
                             </FormControl>
                         </Stack>
                     </Stack>
-                    <CanvasList tags={tags.join(', ')} order={orderBy} cardDetails />
+                    <PaintList tags={tags.join(', ')} order={orderBy} cardDetails />
                 </Box>
             </Stack>
         </Container>

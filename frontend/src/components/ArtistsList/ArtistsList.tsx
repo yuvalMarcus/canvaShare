@@ -7,8 +7,6 @@ const ArtistsList = () => {
 
     const { data: users, isPending } = useGetUsers();
 
-    console.log('users', users)
-
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
             {!isPending && (

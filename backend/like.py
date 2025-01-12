@@ -7,6 +7,9 @@ from db.utils import raise_error_if_blocked
 from db.likes import like_or_unlike_canvas, get_likes
 
 router = APIRouter(prefix="/like")
+ID_COL_IN_LIKES = 0
+CANVAS_ID_COL_IN_LIKES = 1
+USER_ID_COL_IN_LIKES = 2
 
 @router.post('')
 def like_endpoint(like_obj: Like, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
@@ -24,5 +27,7 @@ def unlike_endpoint(like_id: int, jwt_user_id: int = Depends(check_guest_or_bloc
 def get_likes_endpoint(canvas_id: Optional[int] = None, user_id: Optional[int] = None) -> Likes:
     results = []
     for like_obj in get_likes(canvas_id, user_id):
-        results.append({"id": like_obj[0], "canvas_id": like_obj[1], "user_id": like_obj[2]})
+        results.append({"id": like_obj[ID_COL_IN_LIKES],
+                        "canvas_id": like_obj[CANVAS_ID_COL_IN_LIKES],
+                        "user_id": like_obj[USER_ID_COL_IN_LIKES]})
     return {"results": results}

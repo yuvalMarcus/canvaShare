@@ -8,7 +8,7 @@ import {grey, red} from "@mui/material/colors";
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import * as api from "../../api/auth.ts";
 import {useMutation} from "@tanstack/react-query";
-import {RegisterPayload} from "../../types/auth.ts";
+import {UserPayload} from "../../types/user.ts";
 import {FC, useState} from "react";
 import InputText from "../../components/Form/InputText/InputText.tsx";
 import {Bounce, toast} from "react-toastify";
@@ -72,7 +72,7 @@ const Register: FC = () => {
         onError: handleOnError
     })
 
-    const onSubmit = async ({ username, email, password, tags }: RegisterPayload) => {
+    const onSubmit = async ({ username, email, password, tags }: UserPayload) => {
         await mutateAsync({
             username,
             email,
