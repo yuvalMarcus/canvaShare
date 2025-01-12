@@ -20,7 +20,7 @@ FabricObject.customProperties = ['data'];
 
 const Paint = () => {
     const controller = useRef<HTMLDivElement | null>(null);
-    const paint = useRef<FabricCanvas | null>(null);
+    const canvas = useRef<FabricCanvas | null>(null);
     const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
     const [paintLoading, setPaintLoading] = useState<boolean>(false);
 
@@ -34,34 +34,34 @@ const Paint = () => {
 
             const { width, height } = controller.current?.getBoundingClientRect();
 
-            paint.current = initPaint(width, height);
+            canvas.current = initPaint(width, height);
 
             if(paintId) {
                 setPaintLoading(true);
                 const { data } = await api.getPaint(Number(paintId));
 
-                paint.current?.clear();
+                canvas.current?.clear();
 
-                await paint.current?.loadFromJSON(data);
+                await canvas.current?.loadFromJSON(data);
 
                 setPaintLoading(false);
             }
 
-            paint.current?.on('path:created', handleDrawingPath);
+            canvas.current?.on('path:created', handleDrawingPath);
 
-            paint.current?.on('selection:created', (event) => {
+            canvas.current?.on('selection:created', (event) => {
                 setSelectedObjectId(event.selected[0].data.id);
             });
 
-            paint.current?.on('selection:updated', (event) => {
+            canvas.current?.on('selection:updated', (event) => {
                 setSelectedObjectId(event.selected[0].data.id);
             });
 
-            paint.current?.on('selection:cleared', (event) => {
+            canvas.current?.on('selection:cleared', (event) => {
                 setSelectedObjectId(null);
             });
 
-            paint.current?.renderAll();
+            canvas.current?.renderAll();
 
             /*
                     paint.current?.on('mouse:wheel', function(opt) {
@@ -79,8 +79,8 @@ const Paint = () => {
         })()
 
         return () => {
-            paint.current?.dispose();
-            paint.current = null;
+            canvas.current?.dispose();
+            canvas.current = null;
         };
     }, []);
 
@@ -88,12 +88,12 @@ const Paint = () => {
     return (
         <PaintProvider>
             <Stack>
-                <ToolBar paint={paint} />
+                <ToolBar paint={canvas} />
                 <Stack flexDirection="row">
                     <Menu />
                     <Stack ref={controller} position="relative" flex={1} alignItems="center" justifyContent="center" height={`calc(100vh - ${TOOL_BAR_HEIGHT}px)`}>
-                        {selectedObjectId && <EditMenu paint={paint} selectedId={selectedObjectId} />}
-                        <ActionContent paint={paint} />
+                        {selectedObjectId && <EditMenu paint={canvas} selectedId={selectedObjectId} />}
+                        <ActionContent paint={canvas} />
                         <canvas id="paint" />
                     </Stack>
                 </Stack>
