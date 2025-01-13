@@ -3,6 +3,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ReportIcon from '@mui/icons-material/Report';
+import TagIcon from '@mui/icons-material/Tag';
 import { AppProvider, Navigation } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
@@ -33,6 +34,11 @@ const NAVIGATION: Navigation = [
         segment: 'reports',
         title: 'Reports',
         icon: <ReportIcon />,
+    },
+    {
+        segment: 'tags',
+        title: 'Tags',
+        icon: <TagIcon />,
     },
 ];
 

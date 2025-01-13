@@ -17,6 +17,7 @@ import PaintsTable from "./feature/Admin/Paints/PaintsTable.tsx";
 import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
 import ReportsTable from "./feature/Admin/Reports/ReportsTable.tsx";
 import Page404 from "./feature/Page404/Page404.tsx";
+import TagsTable from "./feature/Admin/Tags/TagsTable.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -76,6 +77,10 @@ const routers = createBrowserRouter([
                     {
                         path: 'reports',
                         element: <ReportsTable />
+                    },
+                    {
+                        path: 'tags',
+                        element: <TagsTable />
                     },
                     {
                         path: '*',
