@@ -13,5 +13,5 @@ export interface UserPayload {
     password?: string;
     tags?: string[];
     about?: string;
-    roles?: number[];
+    roles?: string[];
 }
