@@ -21,7 +21,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteDialog from '../Table/DeleteDialog.tsx'
 import { visuallyHidden } from '@mui/utils';
 import ImageModal from '../ImageModal/ImageModal.tsx'
-import {HeadCell} from  '../../types/yarinTypes/table.ts'
+import {HeadCell} from '../../types/table.ts'
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     if (b[orderBy] < a[orderBy]) {
@@ -159,12 +159,13 @@ interface EnhancedTableProps {
     tableHeader: HeadCell[];
     tableTitle: string;
     handleDelete: (id: number) => void
-    handleEdit: (id: number) => void
+    handleUpdate?: (id: number, payload: any) => void
     uniqueProperty: string;
+    nameProperty: string;
 }
 
 const EnhancedTable = ({rows, orderByValue, tableHeader,
-                           tableTitle, handleDelete, handleEdit, uniqueProperty}: EnhancedTableProps) => {
+                           tableTitle, handleDelete, handleUpdate, uniqueProperty, nameProperty}: EnhancedTableProps) => {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<string>(orderByValue);
     const [selected, setSelected] = React.useState<readonly number[]>([]);
@@ -306,10 +307,11 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                     align={tableHeader[i].align}>{row[param]}</TableCell>)
                                         })}
                                         <TableCell key={`row-${index}-col-management`} align='right'>
-                                            <IconButton onClick={() => handleEdit(row[uniqueProperty])}>
+                                            {handleUpdate && (
+                                            <IconButton>
                                                 <EditIcon />
-                                            </IconButton>
-                                            <DeleteDialog id={row[uniqueProperty]} handleDelete={handleDelete}/>
+                                            </IconButton>)}
+                                            <DeleteDialog id={row[uniqueProperty]} name={row[nameProperty]} handleDelete={handleDelete}/>
                                         </TableCell>
                                     </TableRow>
                                 );

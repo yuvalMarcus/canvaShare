@@ -163,3 +163,11 @@ cython_debug/
 # pylint
 .pylintrc
 
+.DS_Store
+.idea/
+
+canvases/
+myenv/
+test-env/
+test_main.py
+uploaded_files/

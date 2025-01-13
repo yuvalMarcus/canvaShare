@@ -17,6 +17,10 @@ load_dotenv()
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 CANVASES_PER_PAGE = 50
 router = APIRouter(prefix="/canvas")
+ID_COL_IN_CANVASES = 0
+LIKES_COL_IN_CANVASES = 6
+USERNAME_COL_IN_USERS = 1
+COVER_COL_IN_USERS = 6
 
 @router.get("/{canvas_id}", response_model=Canvas)
 def get_canvas_endpoint(canvas_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Canvas:
@@ -25,12 +29,12 @@ def get_canvas_endpoint(canvas_id: int, jwt_user_id: int | None = Depends(get_jw
     (canvas["id"], canvas["user_id"], canvas["name"] , canvas["is_public"], canvas["create_date"],
      canvas["edit_date"], canvas["likes"],canvas["description"], canvas["photo"]) = get_canvas(canvas_id)
     canvas["tags"] = get_canvas_tags(canvas_id)
-    canvas["username"], _, _, _, canvas["profile_photo"] = get_user(canvas["user_id"])[1:6]
+    canvas["username"], _, _, _, canvas["profile_photo"] = get_user(canvas["user_id"])[USERNAME_COL_IN_USERS:COVER_COL_IN_USERS]
     # If the creator of the canvas is blocked, then their canvas is also blocked from viewing.
     raise_error_if_blocked(canvas["user_id"])
 
     # If canvas is private (draft), only creator, editors and admins should get it
-    if canvas["is_public"] == 0 and is_canvas_editor(canvas_id, jwt_user_id) is False and is_admin(jwt_user_id) is False:
+    if canvas["is_public"] == False and is_canvas_editor(canvas_id, jwt_user_id) is False and is_admin(jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     try:
         with open(f'canvases/{canvas["user_id"]}/{canvas["id"]}.json', 'r', encoding='utf-8') as fd:
@@ -89,7 +93,7 @@ def get_canvases_endpoint(canvas: CanvasQueries = Depends(), order: Optional[str
     if canvas.user_id:
         filters.append(('user_id', canvas.user_id))
     if canvas.canvas_name:
-        filters.append(('canvas_name', canvas.canvas_name))
+        filters.append(('canvas_name', canvas.canvas_name.lower()))
     if canvas.tags:
         for tag in canvas.tags.split(','):
             tags_results += get_canvases_by_tag(tag)
@@ -98,10 +102,10 @@ def get_canvases_endpoint(canvas: CanvasQueries = Depends(), order: Optional[str
         results = get_canvases_by_filters(filters)
     if order == 'likes':
         # sort canvases by likes from high to low
-        results.sort(key=lambda x: x[6], reverse=True)
+        results.sort(key=lambda x: x[LIKES_COL_IN_CANVASES], reverse=True)
     else:
         # sort canvases by dates from low to high
-        results.sort(key=lambda x: x[0], reverse=True)
+        results.sort(key=lambda x: x[ID_COL_IN_CANVASES], reverse=True)
     return {"canvases": convert_results_to_canvases(
         results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE])}
 
@@ -125,7 +129,7 @@ def convert_results_to_canvases(results: list) -> List[Canvas]:
         (canvas['id'], canvas['user_id'], canvas['name'], canvas['is_public'], canvas['create_date'],
          canvas['edit_date'], canvas['likes'], canvas['description'], canvas['photo']) = result
         canvas['tags'] = get_canvas_tags(canvas['id'])
-        canvas["username"], _, _, _, canvas["profile_photo"] = get_user(canvas["user_id"])[1:6]
+        canvas["username"], _, _, _, canvas["profile_photo"] = get_user(canvas["user_id"])[USERNAME_COL_IN_USERS:COVER_COL_IN_USERS]
         try:
             with open(f"canvases/{canvas['user_id']}/{canvas['id']}.json", 'r', encoding='utf-8') as fd:
                 canvas['data'] = json.loads(fd.read())

@@ -2,7 +2,7 @@ import './App.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Layout from "./components/Layout/Layout.tsx";
 import Explore from "./feature/Explore/Explore.tsx";
-import Painter from "./feature/Painter/Painter.tsx";
+import Paint from "./feature/Paint/Paint.tsx";
 import Register from "./feature/Register/Register.tsx";
 import Login from "./feature/Login/Login.tsx";
 import Artist from "./feature/Artist/Artist.tsx";
@@ -13,8 +13,9 @@ import AuthProvider from "./context/auth.context.tsx";
 import ProtectedRoute from "./route/ProtectedRoute.tsx";
 import AdminLayout from "./feature/Admin/AdminLayout.tsx";
 import Dashboard from "./feature/Admin/Dashboard/Dashboard.tsx";
-import CanvasesTable from "./components/Table/CanvasesTable.tsx";
-import UsersTable from "./components/Table/UsersTable.tsx";
+import PaintsTable from "./feature/Admin/Paints/PaintsTable.tsx";
+import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
+import ReportsTable from "./feature/Admin/Reports/ReportsTable.tsx";
 import Page404 from "./feature/Page404/Page404.tsx";
 
 const routers = createBrowserRouter([
@@ -45,12 +46,12 @@ const routers = createBrowserRouter([
       ]
   },
     {
-        path: "/painter",
-        element: <Painter />,
+        path: "/paint",
+        element: <Paint />,
     },
     {
-        path: "/painter/:id",
-        element: <Painter />,
+        path: "/paint/:id",
+        element: <Paint />,
     },
     {
         path: "/admin",
@@ -69,8 +70,12 @@ const routers = createBrowserRouter([
                         element: <UsersTable />
                     },
                     {
-                        path: 'canvases',
-                        element: <CanvasesTable />
+                        path: 'paints',
+                        element: <PaintsTable />
+                    },
+                    {
+                        path: 'reports',
+                        element: <ReportsTable />
                     },
                     {
                         path: '*',

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Typography from '@mui/material/Typography';
 import {Stack} from "@mui/material";
 import {useNavigate} from "react-router-dom";
@@ -6,13 +5,13 @@ import * as S from './Artist.style.ts';
 import {grey} from "@mui/material/colors";
 import PersonIcon from '@mui/icons-material/Person';
 
-interface CanvasItemProps {
+interface PaintItemProps {
     id: string;
     username: string;
     profilePhoto: string;
 }
 
-const Artist = ({ id, username, profilePhoto }: CanvasItemProps) => {
+const Artist = ({ id, username, profilePhoto }: PaintItemProps) => {
     const navigate = useNavigate();
 
     return (

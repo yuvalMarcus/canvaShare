@@ -29,7 +29,7 @@ def get_user(user_id: int) -> UserTuple:
 
 def get_users(username: Optional[str] = None) ->  List[UserTuple]:
     filters = "" if username is None else " AND SIMILARITY(username, %s) > 0.2 ORDER BY SIMILARITY(username, %s) DESC LIMIT 50"
-    params = [] if username is None else [username, username]
+    params = [] if username is None else [username.lower(), username.lower()]
     con, cur = connect_to_db()
     cur.execute("SELECT * FROM users WHERE is_blocked=false" + filters, (*params,))
     res = cur.fetchall()

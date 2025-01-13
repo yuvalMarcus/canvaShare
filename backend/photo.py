@@ -15,6 +15,9 @@ router = APIRouter(prefix="/photo")
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
 UPLOAD_DIR = os.getenv('UPLOAD_DIR')
+FILE_MAX_SIZE = 10*1024*1024
+FILE_MIN_SIZE = 0
+TIMEOUT = 30
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +31,7 @@ def get_photos_from_api_endpoint(category: str, _: int = Depends(check_guest_or_
             try:
                 response = requests.get(
                     f'https://api.unsplash.com/search/photos?query={category}&client_id={API_KEY}&page={page}',
-                    timeout=30)
+                    timeout=TIMEOUT)
                 response.raise_for_status()
                 results += response.json().get('results', [])
             except (requests.exceptions.ConnectTimeout,
@@ -43,8 +46,9 @@ def get_photos_from_api_endpoint(category: str, _: int = Depends(check_guest_or_
 @router.post('')
 def upload_picture_endpoint(file: UploadFile = File(...), _: int = Depends(check_guest_or_blocked)) -> Dict[str, str]:
     file_extension = file.filename.split('.')[-1].lower()
-    if not 0 < file.size <= 10*1024*1024:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Image size must be between 0 and 10MB")
+    if not FILE_MIN_SIZE < file.size <= FILE_MAX_SIZE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Image size must be between {FILE_MIN_SIZE} and {FILE_MAX_SIZE}MB")
     if isinstance(file.filename, str) and (file_extension not in ["jpg", "jpeg", "png", "webp"] or '/' in file.filename):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid file type. Please upload an image in format jpg, jpeg, webp or png")

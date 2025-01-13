@@ -49,8 +49,8 @@ def get_canvases_by_filters(args) -> List[Tuple[int, int, str, bool, int, int, i
             filters += " AND users.id = %s"
             params.append(value)
         elif name == "canvas_name":
-            filters += " AND canvases.name LIKE %s"
-            params.append(f'%{value}%')
+            filters += " AND SIMILARITY(canvases.name, %s) > 0.2"
+            params.append(value)
     con, cur = connect_to_db()
     cur.execute("SELECT canvases.* from canvases, users WHERE canvases.user_id=users.id AND is_blocked=false"
                 + filters, (*params,))

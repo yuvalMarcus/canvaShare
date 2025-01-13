@@ -10,6 +10,8 @@ from auth import *
 
 user_router = APIRouter(prefix="/user")
 access_router = APIRouter()
+USERNAME_COL_IN_USERS = 1
+EMAIL_COL_IN_USERS = 3
 
 @access_router.post('/register')
 def register_endpoint(user: User) -> dict:
@@ -47,7 +49,7 @@ def refresh_token_endpoint(token: Token):
     jwt_user_id = get_jwt_user_id(token.token) # validate token
     raise_error_if_guest(jwt_user_id)
     raise_error_if_blocked(jwt_user_id)
-    username = get_user(jwt_user_id)[1]
+    username = get_user(jwt_user_id)[USERNAME_COL_IN_USERS]
     return {"user_id": jwt_user_id,
             "token": generate_token(jwt_user_id, username, ACCESS_TOKEN_EXPIRE_TIME),
             "refresh_token": generate_token(jwt_user_id, username, REFRESH_TOKEN_EXPIRE_TIME)
@@ -67,6 +69,9 @@ def get_users_endpoint(username: Optional[str] = None, jwt_user_id: int = Depend
 def create_user_endpoint(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     if is_admin(jwt_user_id):
         register_endpoint(user)
+        if user.roles:
+            print('Username:', user.username, ', roles:', user.roles)
+        # add_roles(user)
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
@@ -82,7 +87,8 @@ def delete_user_endpoint(user_id: int, jwt_user_id: int = Depends(check_guest_or
     # Prevent regular admins from deleting other admins
     if is_admin(user_id) and not is_super_admin(jwt_user_id):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admins cannot delete each other")
-
+    if is_super_admin(user_id):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Super admin cannot be deleted")
     remove_user_photos(user_id) # Remove associated profile and cover photos
     delete_user(user_id)
     return {}
@@ -93,8 +99,8 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
     if not is_user_exist(user_id=user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if user_id == jwt_user_id or (is_admin(jwt_user_id) and not is_admin(user_id)):
-        _ = is_valid_username(user.username) if user.username else None
-        _ = is_valid_email(user.email) if user.email else None
+        _ = is_valid_username(user.username, user_id) if user.username else None
+        _ = is_valid_email(user.email, user_id) if user.email else None
         _ = is_valid_photo(user.profile_photo) if user.profile_photo else None
         _ = is_valid_photo(user.cover_photo) if user.cover_photo else None
         hashed_password = get_password_hash(user.password) if user.password else None
@@ -111,15 +117,21 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
-def is_valid_username(username: str | None) -> None:
+def is_valid_username(username: str | None, user_id: int=None) -> None:
     if username is None:
         raise HTTPException(status_code=status.HTTP_400_BAD, detail="Username cannot be empty")
+    if user_id and get_user(user_id)[USERNAME_COL_IN_USERS] == username:
+        # User trying to update his username to same username
+        return
     if is_user_exist(username=username) is True:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User {username} already exists")
 
-def is_valid_email(email: str | None) -> None:
+def is_valid_email(email: str | None, user_id: int=None) -> None:
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email cannot be empty")
+    if user_id and get_user(user_id)[EMAIL_COL_IN_USERS] == email:
+        # User trying to update his email to same username
+        return
     if get_username_by_email(email) is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email already exists")
 

@@ -1,6 +1,6 @@
 import {Navigate, Outlet} from "react-router-dom";
 import {useAuth} from "../context/auth.context.tsx";
-import useGetUser from "../api/hooks/useGetUser.ts";
+import useGetUser from "../api/hooks/user/useGetUser.ts";
 
 const ProtectedRoute = ({ roles }) => {
 

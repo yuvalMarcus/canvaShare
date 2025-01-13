@@ -71,6 +71,7 @@ class User(BaseModel):
     profile_photo: Annotated[Optional[str], Query(max_length=100)] = None
     cover_photo: Annotated[Optional[str], Query(max_length=100)] = None
     about: Annotated[Optional[str], Query(max_length=250)] = None
+    roles: Optional[List[str]] = None
 
 class UpdateUser(BaseModel):
     user_id: int

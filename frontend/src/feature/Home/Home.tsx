@@ -1,4 +1,4 @@
-import CanvasList from "../../components/CanvasList/CanvasList.tsx";
+import PaintList from "../../components/PaintList/PaintList.tsx";
 import {Box, Container} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {grey} from "@mui/material/colors";
@@ -16,7 +16,7 @@ const Home = () => {
                     <Typography variant="h4" color={grey[600]} mb={2}>
                         List of Arts
                     </Typography>
-                    <CanvasList cardDetails />
+                    <PaintList cardDetails />
                 </Box>
             </Container>
         </>

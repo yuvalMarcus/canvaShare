@@ -12,11 +12,11 @@ import {
 import Typography from "@mui/material/Typography";
 import {grey} from "@mui/material/colors";
 import {top100Films} from "../../mook.ts";
-import CanvasList from "../../components/CanvasList/CanvasList.tsx";
+import PaintList from "../../components/PaintList/PaintList.tsx";
 import SearchIcon from '@mui/icons-material/Search';
 import {useSearchParams} from "react-router-dom";
 import {useLayoutEffect, useState} from "react";
-import useGetTags from "../../api/hooks/useGetTags.ts";
+import useGetTags from "../../api/hooks/tag/useGetTags.ts";
 
 const Search = () => {
     const [searchParams] = useSearchParams();
@@ -84,7 +84,7 @@ const Search = () => {
                             </FormControl>
                         </Stack>
                     </Stack>
-                    <CanvasList cardDetails tags={tags} order={orderBy} search={value} />
+                    <PaintList cardDetails tags={tags} order={orderBy} search={value} />
                 </Box>
             </Stack>
         </Container>

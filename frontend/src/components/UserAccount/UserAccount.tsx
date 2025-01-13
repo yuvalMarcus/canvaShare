@@ -1,27 +1,24 @@
 import {Box, CircularProgress, Stack} from "@mui/material";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useNavigate, useParams} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {Bounce, toast} from "react-toastify";
-import {useMutation} from "@tanstack/react-query";
-import * as api from "../../api/auth.ts";
-import {RegisterPayload} from "../../types/auth.ts";
-import {grey, red} from "@mui/material/colors";
+import {red} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import InputText from "../Form/InputText/InputText.tsx";
 import Button from "@mui/material/Button";
 import {z} from "zod";
 import {useAuth} from "../../context/auth.context.tsx";
-import useGetUser from "../../api/hooks/useGetUser.ts";
+import useGetUser from "../../api/hooks/user/useGetUser.ts";
 import Textarea from "../Form/Textarea/Textarea.tsx";
-import * as userApi from "../../api/user.ts";
+import updateUser from "../../api/hooks/user/useUpdateUser.ts";
+import {UserPayload} from "../../types/user.ts";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'Required' }),
     email: z.string().email({ message: 'Email not valid' }),
     about: z.string(),
 });
-
 
 const UserAccount = () => {
     const {
@@ -38,8 +35,6 @@ const UserAccount = () => {
     const { data: user } = useGetUser(userId);
 
     const navigate = useNavigate();
-
-    console.log('user', user)
 
     const handleOnSuccess = () => {
         toast.success('created successfully', {
@@ -59,14 +54,9 @@ const UserAccount = () => {
     const handleOnError = (e) => {
     }
 
-    const { mutateAsync, isSuccess, isPending, isError, isPaused, isIdle } = useMutation({
-        mutationFn: userApi.updateUser,
-        onSuccess: () => {},
-        onError: () => {}
-    })
+    const {mutateAsync, isPending} = updateUser();
 
-    const onSubmit = async (payload) => {
-
+    const onSubmit = async (payload: UserPayload) => {
         await mutateAsync({ id: Number(userId), payload })
     }
 
@@ -94,7 +84,7 @@ const UserAccount = () => {
                     )}
                     {!isPending && (
                         <Typography textAlign="center">
-                            update
+                            Update
                         </Typography>
                     )}
                 </Button>
