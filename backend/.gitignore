@@ -165,11 +165,9 @@ cython_debug/
 
 .DS_Store
 .idea/
-backend/.DS_Store
-backend/.idea/
-backend/canvases/
-backend/myenv/
-backend/test-env/
-backend/test_main.py
-backend/uploaded_files/
-favicon_logoai.zip
+
+canvases/
+myenv/
+test-env/
+test_main.py
+uploaded_files/
