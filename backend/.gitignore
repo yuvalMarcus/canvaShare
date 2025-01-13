@@ -163,3 +163,13 @@ cython_debug/
 # pylint
 .pylintrc
 
+.DS_Store
+.idea/
+backend/.DS_Store
+backend/.idea/
+backend/canvases/
+backend/myenv/
+backend/test-env/
+backend/test_main.py
+backend/uploaded_files/
+favicon_logoai.zip
