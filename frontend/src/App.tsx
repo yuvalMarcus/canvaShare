@@ -16,6 +16,7 @@ import Dashboard from "./feature/Admin/Dashboard/Dashboard.tsx";
 import PaintsTable from "./feature/Admin/Paints/PaintsTable.tsx";
 import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
 import ReportsTable from "./feature/Admin/Reports/ReportsTable.tsx";
+import Page404 from "./feature/Page404/Page404.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -83,6 +84,10 @@ const routers = createBrowserRouter([
                 ]
             },
         ]
+    },
+    {
+        path: '*',
+        element: <Page404 />
     }
 ]);
 
@@ -90,7 +95,7 @@ function App() {
   return (
       <AuthProvider>
           <ToastContainer />
-          <RouterProvider router={routers}/>
+          <RouterProvider router={routers} />
       </AuthProvider>
   )
 }

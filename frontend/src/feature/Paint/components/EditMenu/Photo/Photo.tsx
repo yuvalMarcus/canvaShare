@@ -1,5 +1,5 @@
 import {Stack} from "@mui/material";
-import React, {FC, MutableRefObject} from "react";
+import {FC, MutableRefObject} from "react";
 import Button from "@mui/material/Button";
 import {Canvas} from "fabric";
 
@@ -10,7 +10,7 @@ interface PhotoProps {
 }
 
 const Photo: FC<PhotoProps> = ({ paint, selectedId, onClose }) => {
-    const object = paint.current?.getObjects().find(({data}) => data.id === selectedId);
+    const object = paint.current?.getObjects().find(({data}) => data?.id === selectedId);
     const handleRemovePhoto = () => {
         if(!object) return;
 
