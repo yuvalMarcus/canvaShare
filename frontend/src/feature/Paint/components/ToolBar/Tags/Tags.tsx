@@ -51,9 +51,8 @@ const Tags = () => {
 
     const handleOnSuccess = () => {
         const name = getValues('name');
-        handleUpload('tags', [...tags, name]);
+        handleUpload('tags', [...(payload?.tags ?? []), name]);
         setValue('name', '');
-
         toast.success('tag add successfully', {
             position: "bottom-center",
             autoClose: 5000,
