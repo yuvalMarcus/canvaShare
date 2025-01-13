@@ -3,6 +3,7 @@ import Card from "./PaintItem/PaintItem.tsx";
 import {useInfiniteQuery} from "@tanstack/react-query";
 import * as api from "../../api/paint.ts";
 import {useInView} from "react-intersection-observer";
+import ResultNotFound from "../ResultNotFound/ResultNotFound.tsx"
 
 export const GET_PAINT = 'getPaint';
 
@@ -45,6 +46,9 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
             {!(isFetching || isFetchingNextPage) && results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
             {(isFetching || isFetchingNextPage) && (
                 <CircularProgress />
+            )}
+            {!isFetching && !isFetchingNextPage && !results?.length && (
+                <ResultNotFound/>
             )}
             <Box ref={ref} />
         </Stack>

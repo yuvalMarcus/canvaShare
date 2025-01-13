@@ -79,7 +79,7 @@ const Draw: FC<DrawProps> = ({paint}) => {
                 <ColorPicker color={color} onChange={handleUpdateColor} />
             </Stack>
             <Typography color={grey[100]} textTransform="capitalize" textAlign="center" py={0.5} sx={{ backgroundColor: green[700] }}>
-                draw is active
+                drawing
             </Typography>
         </Stack>
     )

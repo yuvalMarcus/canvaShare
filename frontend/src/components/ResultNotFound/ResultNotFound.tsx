@@ -9,7 +9,7 @@ const ResultNotFound = () => {
             <Typography variant="h4">
                 Result not found!</Typography>
             <Typography variant="h6">
-                We couldn't find any canvases matching your filter</Typography>
+                We couldn't find any paints matching your filter</Typography>
         </Stack>
     );
 };

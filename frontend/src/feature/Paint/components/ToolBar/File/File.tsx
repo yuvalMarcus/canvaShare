@@ -149,7 +149,7 @@ const FileO: FC<FileProps> = ({ paint }) => {
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             {paintId ? <SaveIcon /> : <PublishIcon />}
                                         </ListItemIcon>
-                                        <ListItemText primary="Save as Publish" />
+                                        <ListItemText primary="Publish" />
                                     </ListItemButton>
                                 )}
                                 {isPending && (
