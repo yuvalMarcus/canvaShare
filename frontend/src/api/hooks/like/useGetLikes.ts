@@ -7,7 +7,6 @@ const useGetLikes = (canvasId: number, userId: number | null) => {
     const { data, isPending } = useQuery({
         queryKey: [GET_LIKES, canvasId],
         queryFn: () => {
-            console.log(canvasId, userId)
             if (canvasId && userId)
                 return likeApi.getLikes({canvas_id: canvasId, user_id: userId})
             return likeApi.getLikes({canvas_id: canvasId})

@@ -54,7 +54,7 @@ const Properties = () => {
                         multiline
                         rows={3}
                         variant="outlined"
-                        value={payload?.description ?? data?.description}
+                        value={payload?.description ? payload?.description : data?.description}
                         onChange={event => handleUpload('description', event.target.value)}
                     />
                 </Stack>

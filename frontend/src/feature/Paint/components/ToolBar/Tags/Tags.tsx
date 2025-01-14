@@ -40,7 +40,6 @@ const Tags = () => {
     } = useForm({resolver: zodResolver(schema),});
 
     const { mutateAsync: createTag, isPending } = useCreateTag(handleUpload, payload, getValues, setValue);
-
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
