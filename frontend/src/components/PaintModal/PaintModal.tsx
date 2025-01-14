@@ -1,4 +1,3 @@
-import * as React from "react";
 import {Link} from "react-router-dom";
 import {Avatar, Box, CircularProgress, IconButton, Modal, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
