@@ -8,7 +8,7 @@ const useLogin = () => {
     return useMutation({
         mutationFn: api.login,
         onSuccess: () => {
-            toast.success('Login successfully');
+            toast.success('Successfully logged in');
             navigate("/");
             },
         onError: (e) => {
