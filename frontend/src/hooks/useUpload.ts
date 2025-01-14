@@ -5,7 +5,7 @@ import {toast} from "react-toastify";
 
 export const useUpload = () => {
 
-    const { mutateAsync, isSuccess, isPending, isError, isPaused, isIdle } = useMutation({
+    const { mutateAsync, isPending} = useMutation({
         mutationFn: api.uploadFile,
         onSuccess: () => {},
         onError: (e) => {

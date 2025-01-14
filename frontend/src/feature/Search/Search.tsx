@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {grey} from "@mui/material/colors";
-import {top100Films} from "../../mook.ts";
 import PaintList from "../../components/PaintList/PaintList.tsx";
 import SearchIcon from '@mui/icons-material/Search';
 import {useSearchParams} from "react-router-dom";
@@ -23,14 +22,14 @@ const Search = () => {
 
     const [value, setValue] = useState<string>(searchParams.get('text') || '');
     const [orderBy, setOrderBy] = useState<string>('date');
-    const [tags, setTags] = useState<string[]>([]);
+    const [tags, setTags] = useState<string>('');
 
     useLayoutEffect(() => {
         setValue(searchParams.get('text') || '');
     }, [searchParams.get('text')])
 
 
-    const { data: tagsList, isPending: isPendingData } = useGetTags();
+    const { data: tagsList } = useGetTags();
 
     return (
         <Container>
@@ -57,9 +56,9 @@ const Search = () => {
                                 multiple
                                 id="tags-outlined"
                                 options={tagsList?.tags?.map(({ name }) => name) || []}
-                                defaultValue={tags}
+                                defaultValue={[]}
                                 filterSelectedOptions
-                                onChange={(_, tags) => setTags(tags)}
+                                onChange={(_, tags) => setTags(tags.join(','))}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
