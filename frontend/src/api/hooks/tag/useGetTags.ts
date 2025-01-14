@@ -5,15 +5,14 @@ export const GET_TAGS = 'getTags';
 
 const useGetTags = () => {
 
-    const { data, isPending, isError } = useQuery({
+    const { data, isPending } = useQuery({
         queryKey: [GET_TAGS],
         queryFn: () => api.getTags(),
     });
 
     return {
         data,
-        isPending,
-        isError
+        isPending
     }
 }
 

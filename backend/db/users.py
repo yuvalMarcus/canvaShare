@@ -27,11 +27,12 @@ def get_user(user_id: int) -> UserTuple:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return res
 
-def get_users(username: Optional[str] = None) ->  List[UserTuple]:
+def get_users(username: Optional[str] = None, admin_request=False) ->  List[UserTuple]:
     filters = "" if username is None else " AND SIMILARITY(username, %s) > 0.2 ORDER BY SIMILARITY(username, %s) DESC LIMIT 50"
     params = [] if username is None else [username.lower(), username.lower()]
     con, cur = connect_to_db()
-    cur.execute("SELECT * FROM users WHERE is_blocked=false" + filters, (*params,))
+    blocked = "" if admin_request else " AND is_blocked=false"
+    cur.execute("SELECT * FROM users WHERE 1=1" + blocked + filters, (*params,))
     res = cur.fetchall()
     con.close()
     return res
@@ -52,7 +53,7 @@ def get_user_email(user_id: int) -> str | None:
 
 def get_hashed_password(user_id: int) -> str:
     con, cur = connect_to_db()
-    cur.execute("SELECT hashed_password FROM users WHERE id = %s and is_blocked=False", (user_id,))
+    cur.execute("SELECT hashed_password FROM users WHERE id = %s and is_blocked=false", (user_id,))
     res = cur.fetchone()
     con.close()
     if res is None:

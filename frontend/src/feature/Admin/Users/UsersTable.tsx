@@ -25,11 +25,19 @@ const UsersTable = () => {
     const rows =
         !getIsPending
         && Array.isArray(data)
-        && data?.map(({id, username, email, profilePhoto, coverPhoto, password}: user) =>
-        {return {id, username, email, profilePhoto, coverPhoto, password}}) || []
+        && data?.map(({id, username, email, profilePhoto, coverPhoto, password, isBlocked}: user) =>
+        {return {id, username, email, profilePhoto, coverPhoto, password, isBlocked}}) || []
 
     const handleCreate = (payload: UserPayload) => {
         createMutate(payload);
+    }
+
+    const handleBlock = (id: number) => {
+        updateMutate({ id: id, payload: {isBlocked: true} })
+    }
+
+    const handleUnBlock = (id: number) => {
+        updateMutate({ id: id, payload: {isBlocked: false} })
     }
 
     return (
@@ -47,6 +55,8 @@ const UsersTable = () => {
                                        deleteMutate(id);}}
                                    handleUpdate={(id: number, payload: UserPayload) => {
                                        updateMutate({ id: id, payload })}}
+                                   handleBlock={handleBlock}
+                                   handleUnBlock={handleUnBlock}
                                    uniqueProperty='id'
                                    nameProperty='username'/>
             )}

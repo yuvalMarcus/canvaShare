@@ -1,8 +1,6 @@
 import {Box, CircularProgress, Stack} from "@mui/material";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useNavigate} from "react-router-dom";
-import {Bounce, toast} from "react-toastify";
 import {red} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import InputText from "../Form/InputText/InputText.tsx";
@@ -33,26 +31,6 @@ const UserAccount = () => {
     const { userId } = useAuth();
 
     const { data: user } = useGetUser(userId);
-
-    const navigate = useNavigate();
-
-    const handleOnSuccess = () => {
-        toast.success('created successfully', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
-        navigate("/login");
-    }
-
-    const handleOnError = (e) => {
-    }
 
     const {mutateAsync, isPending} = updateUser();
 

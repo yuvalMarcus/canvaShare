@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import {FormControl, FormControlLabel, Radio, RadioGroup, Stack} from "@mui/material";
 import createReport from "../../api/hooks/report/useCreateReport.ts"
 import {ReportPayload} from "../../types/report.ts"
-import Snackbar, {SnackbarCloseReason} from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
 
 const boxStyle = {
@@ -41,21 +40,10 @@ const reports = [
 
 export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: number}) {
     const [open, setOpen] = useState(false);
-    const [reported, setReported] = useState(false)
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [value, setValue] = useState('');
     const {mutate: createMutate} = createReport();
-
-    const handleCloseSnackbar = (
-        _event: React.SyntheticEvent | Event,
-        reason?: SnackbarCloseReason,
-    ) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setReported(false);
-    };
 
     const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setValue((event.target as HTMLInputElement).value);
@@ -70,7 +58,6 @@ export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: 
             description: value
         };
         createMutate(report);
-        setReported(true);
         handleClose();
     };
 
@@ -82,8 +69,7 @@ export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: 
                     open={open}
                     onClose={handleClose}
                     aria-labelledby="modal-modal-title"
-                    aria-describedby="modal-modal-description"
-                >
+                    aria-describedby="modal-modal-description">
                     <Box sx={boxStyle}>
                         <List sx={listStyle}>
                             <Stack flexDirection="row" justifyContent='space-between' p={1}>
@@ -95,7 +81,6 @@ export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: 
                                 </Stack>
                             </Stack>
                             <Divider component="li"/>
-
                             <form onSubmit={handleSubmit}>
                                 <FormControl sx={{m: 3}} variant="standard">
                                     <RadioGroup
@@ -117,7 +102,6 @@ export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: 
                         </List>
                     </Box>
                 </Modal>
-            <Snackbar open={reported} autoHideDuration={3000} message="Reported" onClose={handleCloseSnackbar}/>
         </div>
     );
 }
