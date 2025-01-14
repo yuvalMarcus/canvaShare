@@ -16,7 +16,6 @@ export const refreshToken = async ({ refreshToken }: RefreshTokenPayload): Promi
     });
 }
 
-
 export const register = async ({ username, email, password ,tags }: RegisterPayload): Promise<axios.AxiosResponse<void>> => {
     return await instance.post('register', {
         username,

@@ -1,7 +1,6 @@
 import {createContext, useContext, useLayoutEffect, useState} from 'react';
-import {useMutation} from "@tanstack/react-query";
-import * as api from "../api/auth.ts";
 import * as cookie from "../utils/cookie.ts";
+import userRefreshToken from "../api/hooks/auth/useRefreshToken.ts";
 
 const AuthContext = createContext<{
     isAuth: boolean | null;
@@ -24,10 +23,7 @@ const AuthContext = createContext<{
 const AuthProvider = ({ children }) => {
     const [isAuth, setIsAuth] = useState<boolean>(null);
     const [userId, setUserId] = useState<number | null>(null);
-
-    const { mutateAsync, isPending } = useMutation({
-        mutationFn: api.refreshToken,
-    })
+    const {mutateAsync, isPending} = userRefreshToken();
 
     const setCertificate = (token, refreshToken, userId) => {
         cookie.setCookie('userId', userId, 1);
@@ -52,22 +48,16 @@ const AuthProvider = ({ children }) => {
     }
 
     const refreshToken = async () => {
-
         const refreshToken = cookie.getCookie('refreshToken');
-
         if (!refreshToken) return;
-
         const { data } = await mutateAsync({ refreshToken });
-
         setCertificate(data.token, data.refreshToken, data.userId);
         login();
     }
 
     useLayoutEffect( () => {
         (async () => {
-
             if (login()) return;
-
             await refreshToken();
         })();
     }, []);

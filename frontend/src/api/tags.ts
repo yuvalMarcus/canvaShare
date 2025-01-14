@@ -10,3 +10,7 @@ export const getTags = async (): Promise<axios.AxiosResponse> => {
 export const createTag = async (payload: TagPayload): Promise<axios.AxiosResponse> => {
     return await instance.post('tag', payload);
 }
+
+export const deleteTag = async (id: number) =>{
+    await instance.delete(`tag/${id}`);
+}

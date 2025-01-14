@@ -6,6 +6,7 @@ import {useNavigate} from "react-router-dom";
 import useGetUser from "../../../api/hooks/user/useGetUser.ts";
 import {grey} from "@mui/material/colors";
 import UserAccount from "../../UserAccount/UserAccount.tsx";
+import {toast} from "react-toastify";
 
 export const User  = () => {
     const [openD, setOpenD] = useState(false);
@@ -47,6 +48,8 @@ export const User  = () => {
         await api.logout();
         logout();
         handleClose();
+        toast.success('Logout successfully');
+        navigate("/");
     }
 
     return (

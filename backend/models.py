@@ -26,7 +26,9 @@ class Canvas(BaseModel):
     photo: Annotated[Optional[str], Query(max_length=100)] = None
 
 class Canvases(BaseModel):
-    canvases: List[Canvas]
+    next: Optional[int] = None
+    prev: Optional[int] = None
+    results: List[Canvas]
 
 class CanvasQueries(BaseModel):
     user_id: Optional[int] = None

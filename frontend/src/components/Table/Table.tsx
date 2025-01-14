@@ -21,6 +21,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteDialog from '../Table/DeleteDialog.tsx'
 import { visuallyHidden } from '@mui/utils';
 import ImageModal from '../ImageModal/ImageModal.tsx'
+import LockPersonIcon from '@mui/icons-material/LockPerson';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import {HeadCell} from '../../types/table.ts'
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -160,12 +162,15 @@ interface EnhancedTableProps {
     tableTitle: string;
     handleDelete: (id: number) => void
     handleUpdate?: (id: number, payload: any) => void
+    handleBlock?: (id: number) => void
+    handleUnBlock?: (id: number) => void
     uniqueProperty: string;
     nameProperty: string;
 }
 
 const EnhancedTable = ({rows, orderByValue, tableHeader,
-                           tableTitle, handleDelete, handleUpdate, uniqueProperty, nameProperty}: EnhancedTableProps) => {
+                           tableTitle, handleDelete, handleUpdate, handleBlock, handleUnBlock, uniqueProperty,
+                           nameProperty}: EnhancedTableProps) => {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<string>(orderByValue);
     const [selected, setSelected] = React.useState<readonly number[]>([]);
@@ -274,6 +279,8 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                             />
                                         </TableCell>
                                         {Object.keys(row).map((param, i) => {
+                                            if (i >= tableHeader.length)
+                                                return
                                             if (i === 0)
                                                 return (<TableCell key={`row-${index}-col-${i+1}`} component="th" id={labelId} scope="row" padding="none">
                                                     {row[param]}
@@ -307,6 +314,20 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                     align={tableHeader[i].align}>{row[param]}</TableCell>)
                                         })}
                                         <TableCell key={`row-${index}-col-management`} align='right'>
+                                            {!row['isBlocked'] && handleBlock && (
+                                                <Tooltip title='Block'>
+                                                    <IconButton onClick={() => handleBlock(row[uniqueProperty])}>
+                                                        <LockPersonIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
+                                            {row['isBlocked'] && handleUnBlock && (
+                                                <Tooltip title='UnBlock'>
+                                                    <IconButton onClick={() => handleUnBlock(row[uniqueProperty])}>
+                                                        <LockOpenIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
                                             {handleUpdate && (
                                             <IconButton>
                                                 <EditIcon />

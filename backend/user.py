@@ -63,7 +63,8 @@ def get_user_endpoint(user_id: int, jwt_user_id: int = Depends(get_jwt_user_id))
 @user_router.get("", response_model=List[User])
 def get_users_endpoint(username: Optional[str] = None, jwt_user_id: int = Depends(get_jwt_user_id)) -> List[User]:
     raise_error_if_blocked(jwt_user_id)
-    return [convert_db_user_to_user(db_user, jwt_user_id) for db_user in get_users(username)]
+    return [convert_db_user_to_user(db_user, jwt_user_id) for db_user in get_users(username,
+                                                                                   admin_request=is_admin(jwt_user_id))]
 
 @user_router.post("")
 def create_user_endpoint(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
@@ -103,6 +104,7 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
         _ = is_valid_email(user.email, user_id) if user.email else None
         _ = is_valid_photo(user.profile_photo) if user.profile_photo else None
         _ = is_valid_photo(user.cover_photo) if user.cover_photo else None
+        is_blocked = user.is_blocked if is_admin(jwt_user_id) else None
         hashed_password = get_password_hash(user.password) if user.password else None
         if user.profile_photo or user.cover_photo:
             for prev_photo in get_prev_photos(user_id, user.profile_photo, user.cover_photo):
@@ -110,7 +112,7 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
                     delete_photo(prev_photo)
         update_user(UpdateUser(user_id=user_id, username=user.username, hashed_password=hashed_password,
                           email=user.email, profile_photo=user.profile_photo, cover_photo=user.cover_photo,
-                          about=user.about))
+                          about=user.about, is_blocked=is_blocked))
         if user.tags:
             delete_favorite_tags(user_id)
             insert_favorite_tags(user_id, get_tags_id(user.tags))

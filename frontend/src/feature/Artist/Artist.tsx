@@ -11,27 +11,25 @@ import {
     TextField
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
-import PaintList, {GET_PAINT} from "../../components/PaintList/PaintList.tsx";
+import PaintList from "../../components/PaintList/PaintList.tsx";
 import * as S from "../Home/Home.style.ts";
 import Button from "@mui/material/Button";
 import {Link, useParams} from "react-router-dom";
 import {useState} from "react";
-import * as userApi from "../../api/user.ts";
 import {useAuth} from "../../context/auth.context.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import UploadFileModal from "../../components/UploadFileModal/UploadFileModal.tsx";
-import {useMutation} from "@tanstack/react-query";
-import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
-import {queryClient} from "../../main.tsx";
+import useGetUser from "../../api/hooks/user/useGetUser.ts";
 import useGetTags from "../../api/hooks/tag/useGetTags.ts";
 import ReportModal from "../../components/ReportModal/ReportModal.tsx";
-import * as React from "react";
+import updateUser from "../../api/hooks/user/useUpdateUser.ts";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
     const [tags, setTags] = useState<string[]>([]);
     const [isUploadFileOpen, setIsUploadFileOpen] = useState<boolean>(false);
     const [uploadType, setUploadType] = useState<'profile' | 'cover' | null>(null);
+    const {mutateAsync: updateMutate} = updateUser();
 
     const { userId } = useAuth();
 
@@ -39,23 +37,15 @@ const Artist = () => {
 
     const { data: user } = useGetUser(userIdParam);
 
-    const { mutateAsync, isSuccess, isPending, isError, isPaused, isIdle } = useMutation({
-        mutationFn: userApi.updateUser,
-        onSuccess: () => {},
-        onError: () => {}
-    })
-
-    const { data: tagsList, isPending: isPendingData } = useGetTags();
+    const { data: tagsList } = useGetTags();
 
     const uploadProfilePhoto = async (photo) => {
         if(!userIdParam || !uploadType) return;
 
-        await mutateAsync({ id: Number(userIdParam), payload: {
+        await updateMutate({ id: Number(userIdParam), payload: {
                 [`${uploadType}Photo`]: photo
             } })
         setUploadType(null);
-        queryClient.invalidateQueries({ queryKey: [GET_USER] });
-        queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
     }
 
     const isUserProfileOwner = userId === Number(userIdParam);

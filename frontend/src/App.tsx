@@ -7,7 +7,7 @@ import Register from "./feature/Register/Register.tsx";
 import Login from "./feature/Login/Login.tsx";
 import Artist from "./feature/Artist/Artist.tsx";
 import Search from "./feature/Search/Search.tsx";
-import {ToastContainer} from "react-toastify";
+import {Bounce, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import AuthProvider from "./context/auth.context.tsx";
 import ProtectedRoute from "./route/ProtectedRoute.tsx";
@@ -17,6 +17,7 @@ import PaintsTable from "./feature/Admin/Paints/PaintsTable.tsx";
 import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
 import ReportsTable from "./feature/Admin/Reports/ReportsTable.tsx";
 import Page404 from "./feature/Page404/Page404.tsx";
+import TagsTable from "./feature/Admin/Tags/TagsTable.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -78,6 +79,10 @@ const routers = createBrowserRouter([
                         element: <ReportsTable />
                     },
                     {
+                        path: 'tags',
+                        element: <TagsTable />
+                    },
+                    {
                         path: '*',
                         element: <Dashboard />
                     },
@@ -94,7 +99,14 @@ const routers = createBrowserRouter([
 function App() {
   return (
       <AuthProvider>
-          <ToastContainer />
+          <ToastContainer autoClose={2000}
+                          hideProgressBar={true}
+                          pauseOnHover={false}
+                          position="bottom-left"
+                          closeOnClick={true}
+                          theme={"colored"}
+                          transition={Bounce}
+          />
           <RouterProvider router={routers} />
       </AuthProvider>
   )
