@@ -6,7 +6,7 @@ from .utils import connect_to_db, commit_and_close_db
 
 __all__ = ['insert_user', 'get_user', 'get_users', 'get_user_id', 'get_user_email', 'get_hashed_password',
            'get_disabled_status', 'connect_user', 'disconnect_user', 'get_username_by_email', 'get_prev_photos',
-           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'is_photo_exist']
+           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'is_photo_exist', 'get_popular_users']
 
 def insert_user(username: str, hashed_password: str, email: str, is_blocked: bool, disabled: bool) -> int:
     con, cur = connect_to_db()
@@ -33,6 +33,17 @@ def get_users(username: Optional[str] = None, admin_request=False) ->  List[User
     con, cur = connect_to_db()
     blocked = "" if admin_request else " AND is_blocked=false"
     cur.execute("SELECT * FROM users WHERE 1=1" + blocked + filters, (*params,))
+    res = cur.fetchall()
+    con.close()
+    return res
+
+def get_popular_users(limit: Optional[int]=None):
+    limit = 1 if isinstance(limit, int) and limit < 1 else limit
+    filters = ' limit %s' if limit else ''
+    params = [limit] if limit else []
+    con, cur = connect_to_db()
+    cur.execute("""WITH canvas_likes AS (SELECT user_id, sum(likes) as likessum FROM canvases group by user_id)
+SELECT users.* FROM users, canvas_likes WHERE users.id=canvas_likes.user_id ORDER BY likessum DESC""" + filters, (*params,))
     res = cur.fetchall()
     con.close()
     return res
