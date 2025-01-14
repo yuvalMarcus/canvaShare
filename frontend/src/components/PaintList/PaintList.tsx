@@ -15,7 +15,6 @@ interface PaintListProps {
 }
 
 const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) => {
-
     const {
         data,
         fetchNextPage,
@@ -26,9 +25,12 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
         initialPageParam: 1,
         queryKey: [GET_PAINT, userId, tags, order, search],
         queryFn: ({ pageParam }) => api.getPaints({ pageNum: pageParam, userId, tags, order, canvasName: search || '' }),
-        getNextPageParam: (lastPage, pages) => lastPage.canvases,
+        getNextPageParam: (lastPage, allPages) => {
+            if (Math.floor(lastPage.canvases.length/50) == 0)
+                return undefined;
+            return allPages.length + 1;
+        },
     })
-
     const { ref } = useInView({
         onChange: (inView) => {
             if (!inView) return;
@@ -39,10 +41,9 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
     });
 
     const results = data?.pages?.flatMap((item) => ([...item.canvases]));
-
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
-            {!(isFetching || isFetchingNextPage) && results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
+            {results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
             {(isFetching || isFetchingNextPage) && (
                 <CircularProgress />
             )}
