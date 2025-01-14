@@ -115,8 +115,8 @@ def get_canvases_endpoint(canvas: CanvasQueries = Depends(), order: Optional[str
         results.sort(key=lambda x: x[ID_COL_IN_CANVASES], reverse=True)
         filters_and_sort += '&order=dates'
 
-    prev_link = f"{page_num-1}".replace(' ', '') if page_num > 1 else None
-    next_link = f"{page_num+1}".replace(' ', '') if len(results) > page_num * CANVASES_PER_PAGE else None
+    prev_link = page_num - 1 if page_num > 1 else None
+    next_link = page_num + 1 if len(results) > page_num * CANVASES_PER_PAGE else None
     return {"next": next_link,
             "prev": prev_link,
             "results": convert_results_to_canvases(
