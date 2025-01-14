@@ -6,14 +6,10 @@ import Button from "@mui/material/Button";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {grey, red} from "@mui/material/colors";
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
-import * as api from "../../api/auth.ts";
-import {useMutation} from "@tanstack/react-query";
 import {UserPayload} from "../../types/user.ts";
-import {FC, useState} from "react";
+import {FC} from "react";
 import InputText from "../../components/Form/InputText/InputText.tsx";
-import {Bounce, toast} from "react-toastify";
-import {useNavigate} from "react-router-dom";
-import Alert from "@mui/material/Alert";
+import useRegister from "../../api/hooks/auth/useRegister.ts";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'Required' }),
@@ -22,10 +18,7 @@ const schema = z.object({
 });
 
 const Register: FC = () => {
-
-    const [errorSeverity, setErrorSeverity] = useState('false');
-    const [errorMessage, setErrorMessage] = useState('');
-
+    const {mutateAsync: register, isPending} = useRegister();
     const {
         handleSubmit,
         formState: { errors },
@@ -34,46 +27,8 @@ const Register: FC = () => {
         resolver: zodResolver(schema),
     });
 
-    const navigate = useNavigate();
-
-    const handleOnSuccess = () => {
-        toast.success('created successfully', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
-        navigate("/login");
-    }
-
-    const handleOnError = (e) => {
-        let serverErrorMessage = e?.response?.data?.detail;
-        if (Array.isArray(serverErrorMessage)) {
-            const field = serverErrorMessage[0]?.loc[1];
-            if (field) serverErrorMessage = `Invalid ${field}`;
-        }
-        const statusCode = e?.response?.status;
-        if (statusCode && String(statusCode).startsWith("4"))
-            serverErrorMessage = serverErrorMessage ? serverErrorMessage : "Error";
-        else
-            serverErrorMessage = "Unexpected error <br>Please try again later";
-        setErrorMessage(serverErrorMessage);
-        setErrorSeverity("error");
-    }
-
-    const { mutateAsync, isSuccess, isPending, isError, isIdle } = useMutation({
-        mutationFn: api.register,
-        onSuccess: handleOnSuccess,
-        onError: handleOnError
-    })
-
     const onSubmit = async ({ username, email, password, tags }: UserPayload) => {
-        await mutateAsync({
+        await register({
             username,
             email,
             password,
@@ -88,13 +43,6 @@ const Register: FC = () => {
                     <AppRegistrationIcon fontSize="large" />
                     <Typography variant="h4" textAlign="center" color={grey[700]}>Register</Typography>
                 </Stack>
-                {errorMessage &&(
-                    <Box sx={{ mb: 3 }}>
-                        <Alert variant="outlined" severity={errorSeverity}>
-                            {errorMessage}
-                        </Alert>
-                    </Box>
-                )}
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Box>
                         <InputText label="username" name="username" control={control} />

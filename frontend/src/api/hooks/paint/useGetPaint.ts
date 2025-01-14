@@ -5,7 +5,7 @@ export const GET_PAINT = 'getPaint';
 
 const useGetPaint = (id?: number) => {
 
-    const { data, isPending, isError } = useQuery({
+    const { data, isPending } = useQuery({
         queryKey: [GET_PAINT, id],
         queryFn: () => api.getPaint(id),
         enabled: !!id
@@ -13,8 +13,7 @@ const useGetPaint = (id?: number) => {
 
     return {
         data,
-        isPending,
-        isError
+        isPending
     }
 }
 

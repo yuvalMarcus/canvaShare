@@ -10,10 +10,10 @@ import React, {useState} from "react";
 import {grey, red} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import * as api from "../../../../../api/tags.ts";
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {Bounce, toast} from "react-toastify";
+import {toast} from "react-toastify";
 import {TagPayload} from "../../../../../types/tags.ts";
 import InputText from "../../../../../components/Form/InputText/InputText.tsx";
 import {z} from "zod";
@@ -53,33 +53,16 @@ const Tags = () => {
         const name = getValues('name');
         handleUpload('tags', [...(payload?.tags ?? []), name]);
         setValue('name', '');
-        toast.success('tag add successfully', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
-
         queryClient.invalidateQueries({ queryKey: [GET_TAGS] });
     }
 
-    const handleOnError = () => {
-        toast.error('error', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
+    const handleOnError = (e) => {
+        let error_msg;
+        if (e?.status == 422)
+            error_msg = "Invalid tag";
+        else
+            error_msg = e?.response?.data?.detail;
+        toast.error(error_msg);
     }
 
     const { mutateAsync, isPending } = useMutation({
@@ -103,7 +86,7 @@ const Tags = () => {
     const onSubmit = async ({ name }: TagPayload) => {
         await mutateAsync({
             name,
-        });
+        }).catch(e => {});
     }
 
     return (

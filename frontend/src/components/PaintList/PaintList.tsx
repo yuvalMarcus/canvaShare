@@ -41,9 +41,10 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
     });
 
     const results = data?.pages?.flatMap((item) => ([...item.canvases]));
+
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
-            {results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
+            {!(isFetching || isFetchingNextPage) && results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
             {(isFetching || isFetchingNextPage) && (
                 <CircularProgress />
             )}

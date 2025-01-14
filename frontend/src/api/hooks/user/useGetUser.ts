@@ -5,7 +5,7 @@ export const GET_USER = 'getUser';
 
 const useGetUser = (id?: string | number) => {
 
-    const { data, isPending, isError } = useQuery({
+    const { data, isPending } = useQuery({
         queryKey: [GET_USER, id],
         queryFn: () => userApi.getUser(id),
         enabled: !!id
@@ -13,8 +13,7 @@ const useGetUser = (id?: string | number) => {
 
     return {
         data,
-        isPending,
-        isError
+        isPending
     }
 }
 

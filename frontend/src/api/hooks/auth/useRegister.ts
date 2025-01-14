@@ -1,16 +1,15 @@
 import {useMutation} from "@tanstack/react-query";
+import * as api from "../../auth.ts";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
-import * as api from "../../user.ts";
-import {queryClient} from "../../../main.tsx";
-import {GET_USERS} from "./useGetUsers.ts";
 
-const useUpdateUser = () => {
+const useRegister = () => {
     const navigate = useNavigate();
     return useMutation({
-        mutationFn: api.updateUser,
+        mutationFn: api.register,
         onSuccess: () => {
-            navigate(0);
+            toast.success('Register successfully');
+            navigate("/login");
             },
         onError: (e) => {
             let error_msg;
@@ -20,13 +19,9 @@ const useUpdateUser = () => {
             }
             else
                 error_msg = e?.response?.data?.detail;
-            toast.error(error_msg);
+            toast.error(error_msg, {autoClose: 4000});
         },
-        onSettled: async (_, error) => {
-            if (!error)
-                await queryClient.invalidateQueries({queryKey: [GET_USERS]})
-        }
     })
 }
 
-export default useUpdateUser;
+export default useRegister;

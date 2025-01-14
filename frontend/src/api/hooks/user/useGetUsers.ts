@@ -5,15 +5,14 @@ export const GET_USERS = 'getUsers';
 
 const useGetUsers = () => {
 
-    const { data, isPending, isError } = useQuery({
+    const { data, isPending } = useQuery({
         queryKey: [GET_USERS],
         queryFn: () => userApi.getUsers(),
     });
 
     return {
         data,
-        isPending,
-        isError
+        isPending
     }
 }
 

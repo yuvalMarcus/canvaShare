@@ -8,7 +8,7 @@ import {useMutation} from "@tanstack/react-query";
 import * as api from "../../../../../api/paint.ts";
 import {Canvas} from "fabric";
 import {useNavigate, useParams} from "react-router-dom";
-import {Bounce, toast} from "react-toastify";
+import {toast} from "react-toastify";
 import {useUpload} from "../../../../../hooks/useUpload.ts";
 import { usePaint } from '../../../../../context/paint.context.tsx';
 import {useAuth} from "../../../../../context/auth.context.tsx";
@@ -34,32 +34,19 @@ const FileO: FC<FileProps> = ({ paint }) => {
     const navigate = useNavigate();
 
     const handleOnSuccess = () => {
-        toast.success('paint saved successfully', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
+        toast.success('Paint saved successfully');
         navigate(`/artist/${userId}`);
     }
 
-    const handleOnError = () => {
-        toast.error('error', {
-            position: "bottom-center",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-        });
+    const handleOnError = (e) => {
+        let error_msg;
+        if (e?.status == 422){
+            const field = e?.response?.data?.detail[0].loc[1]
+            error_msg = `Invalid ${field}`;
+        }
+        else
+            error_msg = e?.response?.data?.detail;
+        toast.error(error_msg);
     }
 
     const { mutateAsync, isSuccess, isPending } = useMutation({
@@ -97,7 +84,7 @@ const FileO: FC<FileProps> = ({ paint }) => {
                 isPublic: true,
                 photo: data.photo,
                 data: JSON.stringify(paint.current?.toJSON())
-            });
+            }).catch(e => {});
 
         } else {
 
@@ -107,7 +94,7 @@ const FileO: FC<FileProps> = ({ paint }) => {
                 tags: payloadItem.tags || [],
                 photo: data.photo,
                 data: JSON.stringify(paint.current?.toJSON())
-            });
+            }).catch(e => {});
 
         }
     }
