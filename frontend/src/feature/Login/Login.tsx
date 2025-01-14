@@ -38,7 +38,7 @@ const Login: FC = () => {
     });
 
     const handleOnSuccess = () => {
-        toast.success('login successfully', {
+        toast.success('Successfully logged in', {
             position: "bottom-center",
             autoClose: 5000,
             hideProgressBar: false,
