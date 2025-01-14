@@ -22,8 +22,8 @@ const PaintsTable = () => {
     const { data, isPending: getIsPending } = getPaints();
 
     const rows = !getIsPending
-        && Array.isArray(data?.canvases)
-        && data.canvases.map(({id, username, photo, name, isPublic, likes, createDate, editDate, description}: paint) => {
+        && Array.isArray(data?.results)
+        && data.results.map(({id, username, photo, name, isPublic, likes, createDate, editDate, description}: paint) => {
         return {id, username, photo, name, isPublic, likes, createDate, editDate, description}}) || []
 
     const handleDelete = (id: number) => {

@@ -85,29 +85,42 @@ def delete_canvas_endpoint(canvas_id: int, jwt_user_id: int = Depends(check_gues
     return {}
 
 @router.get("", response_model=Canvases)
-def get_canvases_endpoint(canvas: CanvasQueries = Depends(), order: Optional[str] = None, page_num: Optional[int] = None,
+def get_canvases_endpoint(canvas: CanvasQueries = Depends(), order: Optional[str] = None, page_num: Optional[int | str] = None,
                  jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Canvases:
     raise_error_if_blocked(jwt_user_id)
     tags_results, filters = [], []
+    filters_and_sort = ""
+    page_num = int(page_num.split('&')[0]) if page_num and page_num.split('&')[0].isnumeric() else None
     page_num = 1 if page_num is None or page_num < 1 else page_num
     if canvas.user_id:
         filters.append(('user_id', canvas.user_id))
+        filters_and_sort += f'&user_id={canvas.user_id}'
     if canvas.canvas_name:
-        filters.append(('canvas_name', canvas.canvas_name.lower()))
+        canvas_name = canvas.canvas_name.lower()
+        filters.append(('canvas_name', canvas_name))
+        filters_and_sort += f'&canvas_name={canvas_name}'
     if canvas.tags:
         for tag in canvas.tags.split(','):
             tags_results += get_canvases_by_tag(tag)
+        filters_and_sort += f'&tags={canvas.tags}'
         results = list(set(get_canvases_by_filters(filters)) & set(tags_results))
     else:
         results = get_canvases_by_filters(filters)
     if order == 'likes':
         # sort canvases by likes from high to low
         results.sort(key=lambda x: x[LIKES_COL_IN_CANVASES], reverse=True)
+        filters_and_sort += '&order=likes'
     else:
         # sort canvases by dates from low to high
         results.sort(key=lambda x: x[ID_COL_IN_CANVASES], reverse=True)
-    return {"canvases": convert_results_to_canvases(
-        results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE])}
+        filters_and_sort += '&order=dates'
+
+    prev_link = f"{page_num-1}".replace(' ', '') if page_num > 1 else None
+    next_link = f"{page_num+1}".replace(' ', '') if len(results) > page_num * CANVASES_PER_PAGE else None
+    return {"next": next_link,
+            "prev": prev_link,
+            "results": convert_results_to_canvases(
+                results[page_num * CANVASES_PER_PAGE - CANVASES_PER_PAGE:page_num * CANVASES_PER_PAGE])}
 
 def save_json_data(user_id: int, canvas_path: str, data: str) -> None:
     Path(f"canvases/{user_id}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix

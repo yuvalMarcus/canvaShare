@@ -25,11 +25,8 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
         initialPageParam: 1,
         queryKey: [GET_PAINT, userId, tags, order, search],
         queryFn: ({ pageParam }) => api.getPaints({ pageNum: pageParam, userId, tags, order, canvasName: search || '' }),
-        getNextPageParam: (lastPage, allPages) => {
-            if (Math.floor(lastPage.canvases.length/50) == 0)
-                return undefined;
-            return allPages.length + 1;
-        },
+        getNextPageParam: (lastPage) => lastPage.next,
+        getPreviousPageParam: (firstPage) => firstPage.prev
     })
     const { ref } = useInView({
         onChange: (inView) => {
@@ -40,7 +37,7 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
         threshold: 0,
     });
 
-    const results = data?.pages?.flatMap((item) => ([...item.canvases]));
+    const results = data?.pages?.flatMap((item) => ([...item.results]));
 
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
