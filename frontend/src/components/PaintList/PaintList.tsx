@@ -1,34 +1,22 @@
 import {Box, CircularProgress, Stack} from "@mui/material";
 import Card from "./PaintItem/PaintItem.tsx";
-import {useInfiniteQuery} from "@tanstack/react-query";
-import * as api from "../../api/paint.ts";
 import {useInView} from "react-intersection-observer";
 import ResultNotFound from "../ResultNotFound/ResultNotFound.tsx"
-
-export const GET_PAINT = 'getPaint';
+import {FC} from "react";
+import useGetPaints2 from "../../api/hooks/paint/useGetPaints2.ts";
 
 interface PaintListProps {
     userId?: number;
-    tags: string;
+    tags: string[];
     order: string;
     search?: string;
     cardDetails?: boolean;
 }
 
-const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) => {
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetching,
-        isFetchingNextPage,
-    } = useInfiniteQuery({
-        initialPageParam: 1,
-        queryKey: [GET_PAINT, userId, tags, order, search],
-        queryFn: ({ pageParam }) => api.getPaints({ pageNum: pageParam, userId, tags, order, canvasName: search || '' }),
-        getNextPageParam: (lastPage) => lastPage.next,
-        getPreviousPageParam: (firstPage) => firstPage.prev
-    })
+const PaintList: FC<PaintListProps> = ({cardDetails, userId, tags, order, search}) => {
+
+    const { data, hasNextPage, fetchNextPage, isFetching, isFetchingNextPage } = useGetPaints2({ userId, tags, order, search });
+
     const { ref } = useInView({
         onChange: (inView) => {
             if (!inView) return;
@@ -41,16 +29,20 @@ const PaintList = ({cardDetails, userId, tags, order, search}: PaintListProps) =
     const results = data?.pages?.flatMap((item) => ([...item.results]));
 
     return (
-        <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
-            {results?.map(({id, userId, username, profilePhoto, name, description, likes, tags, photo}) => <Card key={id} id={id} userId={userId} username={username} profilePhoto={profilePhoto} details={cardDetails} name={name} description={description} likes={likes} tags={tags} photo={photo || '/assets/photo1.jpg'} />)}
+        <Box>
+            {!isFetching && !!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
+                {results?.map((paint) => <Card key={paint.id} {...paint} />)}
+            </Stack>}
             {(isFetching || isFetchingNextPage) && (
-                <CircularProgress />
+                <Stack flexDirection="row" justifyContent="center">
+                    <CircularProgress />
+                </Stack>
             )}
             {!isFetching && !isFetchingNextPage && !results?.length && (
                 <ResultNotFound/>
             )}
             <Box ref={ref} />
-        </Stack>
+        </Box>
     );
 }
 

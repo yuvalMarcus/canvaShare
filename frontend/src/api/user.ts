@@ -1,15 +1,21 @@
 import axios from "axios";
 import instance from "../server/axios.ts";
 import {UserPayload} from "../types/user.ts";
+import Axios from "../server/axios.ts";
 
 export const getUsers = async (): Promise<axios.AxiosResponse> => {
     const res = await instance.get('user');
     return res.data;
 }
 
-export const getUser = async (id?: number | string): Promise<axios.AxiosResponse> => {
-    const res = await instance.get(`user/${id}`);
-    return res.data;
+export const getUser = async (id?: number | string, onError?: () => void): Promise<axios.AxiosResponse> => {
+    try {
+        const res = await instance.get(`user/${id}`);
+        return res.data;
+    } catch (e) {
+        onError?.();
+        return new Promise(new Axios({}));
+    }
 }
 
 export const createUser = async (payload: UserPayload): Promise<axios.AxiosResponse> => {

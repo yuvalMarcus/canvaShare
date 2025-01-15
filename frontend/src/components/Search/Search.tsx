@@ -1,6 +1,5 @@
 import React, {FC, useState} from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import {useNavigate} from "react-router-dom";
 import {
     IconButton,
     InputBase,
@@ -17,12 +16,10 @@ interface SearchProps {
 
 const Search: FC<SearchProps> = ({ theme = 'light', placeholder, dValue, onClick }) => {
     const [value, setValue] = useState<string>(dValue || '');
-    const navigate = useNavigate();
 
     const handleClickKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
         const key = event.key;
         if(key === 'Enter') {
-            //navigate('/search');
             onClick?.(value);
         }
     }

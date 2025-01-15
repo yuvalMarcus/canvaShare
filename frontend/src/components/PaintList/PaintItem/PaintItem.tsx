@@ -1,14 +1,7 @@
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import {useState} from "react";
-import {Avatar, Box, Modal, Stack} from "@mui/material";
-import {Link} from "react-router-dom";
+import {Avatar, Stack} from "@mui/material";
 import * as S from './PaintItem.style.ts';
-import {CardController} from "./PaintItem.style.ts";
 import {grey} from "@mui/material/colors";
 import PreviewIcon from '@mui/icons-material/Preview';
 import PaintModal from "../../PaintModal/PaintModal.tsx";
@@ -26,8 +19,10 @@ interface PaintItemProps {
     details?: boolean;
 }
 
-const PaintItem = ({ id, userId, username, profilePhoto, name, description, likes, tags, photo, details }: PaintItemProps) => {
+const PaintItem = (props: PaintItemProps) => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
+
+    const { username, profilePhoto, name, photo, details } = props;
 
     return (
         <>
@@ -37,7 +32,7 @@ const PaintItem = ({ id, userId, username, profilePhoto, name, description, like
                     flexDirection="column"
                     justifyContent="flex-end"
                     height="auto"
-                    photo={photo}
+                    photo={photo || '/assets/photo1.jpg'}
                 >
                     <Stack alignItems="center" justifyContent="center" position="absolute" zIndex={10} top={0} right={0} width={30} height={30} sx={{ backgroundColor: grey[800] }}>
                         <PreviewIcon sx={{ color: grey[100] }} />
@@ -52,7 +47,7 @@ const PaintItem = ({ id, userId, username, profilePhoto, name, description, like
                     )}
                 </S.CardController>
             </S.Controller>
-            <PaintModal id={id} paintUserId={userId} username={username} profilePhoto={profilePhoto} name={name} description={description} likes={likes} tags={tags} photo={photo} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
+            <PaintModal id={props.id} {...props} isOpen={modalIsOpen} onClose={() => setModalIsOpen(false)} />
         </>
     );
 }

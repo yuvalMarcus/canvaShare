@@ -8,20 +8,19 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import {useMutation, useQuery} from "@tanstack/react-query";
-import * as likeApi from "../../api/like.ts";
-import * as paintApi from "../../api/paint.ts";
 import {queryClient} from "../../main.tsx";
-import {GET_PAINT} from "../PaintList/PaintList.tsx";
 import {useAuth} from "../../context/auth.context.tsx";
 import ReportModal from "../ReportModal/ReportModal.tsx";
+import useCreateLike from "../../api/hooks/like/useCreateLike.ts";
+import useRemoveLike from "../../api/hooks/like/useRemoveLike.ts";
+import useGetLikes, {GET_LIKES} from "../../api/hooks/like/useGetLikes.ts";
+import useRemovePaint2 from "../../api/hooks/paint/useRemovePaint2.ts";
+import {GET_PAINT} from "../../api/hooks/paint/useGetPaint.ts";
 
-const GET_LIKE = 'getLike';
-const GET_LIKES = 'getLikes';
 interface PaintModalProps {
     isOpen: boolean;
     id: number;
-    paintUserId: number;
+    userId: number;
     username: string;
     profilePhoto: string;
     name: string;
@@ -32,55 +31,43 @@ interface PaintModalProps {
     onClose: () => void;
 }
 
-const PaintModal = ({ id, paintUserId, username, profilePhoto, name, description, tags, photo, isOpen, onClose }: PaintModalProps) => {
+const PaintModal = ({ id, userId, username, profilePhoto, name, description, tags, photo, isOpen, onClose }: PaintModalProps) => {
 
-    const { userId } = useAuth();
+    const { userId: userAuthId } = useAuth();
 
+    const { data: like, isPending: loadLikeIsPending } = useGetLikes(id, userAuthId ?? -1);
 
-    const { data: like, loadLikeIsPending } = useQuery({
-        queryKey: [GET_LIKE, id, userId],
-        queryFn: () => likeApi.getLikes({ canvas_id: id, user_id: userId }),
-    });
+    const { data: likes, isPending: loadLikesIsPending } = useGetLikes(id, userId);
 
-    const { data: likes, loadLikesIsPending } = useQuery({
-        queryKey: [GET_LIKES, id],
-        queryFn: () => likeApi.getLikes({ canvas_id: id }),
-    });
+    const { create, isPending: createLikeIsPending } = useCreateLike({});
 
-    const { mutateAsync: createLike, isPending: createLikeIsPending } = useMutation({
-        mutationFn: likeApi.createLike,
-    });
+    const { remove, isPending: deleteLikeIsPending } = useRemoveLike({});
 
-    const { mutateAsync: deleteLike, isPending : deleteLikeIsPending } = useMutation({
-        mutationFn: likeApi.deleteLike,
-    });
-
-    const { mutateAsync: deletePaint, isPending : deletePaintIsPending } = useMutation({
-        mutationFn: paintApi.deletePaint,
-    });
+    const { remove: removePaint } = useRemovePaint2({});
 
     const handleLike = async () => {
-        await createLike({ canvasId: id, userId });
-        queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
+        if (!id || !userAuthId) return;
+
+        await create({ canvasId: id, userId: userAuthId });
+
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
     }
 
     const handleUnLike = async () => {
         const likeId = like?.results.at(0).id;
-        if(likeId) await deleteLike(likeId);
-        queryClient.invalidateQueries({ queryKey: [GET_LIKE] });
+        if(likeId) await remove(likeId);
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
     }
 
     const handleDeletePaint = async () => {
-        if(id) await deletePaint(id);
+        if(id) await removePaint(id);
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
     }
 
     const isPending = loadLikeIsPending || loadLikesIsPending || createLikeIsPending || deleteLikeIsPending;
     const hasLike = !!like?.results?.length;
     
-    const isUserProfileOwner = userId === paintUserId;
+    const isUserProfileOwner = userAuthId === userId;
 
     return (
         <Modal
@@ -107,7 +94,7 @@ const PaintModal = ({ id, paintUserId, username, profilePhoto, name, description
                     </Box>
                     <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
                         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
-                            <Button component={Link} to={`/artist/${paintUserId}`}>
+                            <Button component={Link} to={`/artist/${userId}`}>
                                 <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"}  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
                                 <Typography color={grey[900]} ml={2}>
                                     {username}

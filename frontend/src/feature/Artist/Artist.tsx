@@ -1,14 +1,10 @@
 import Typography from "@mui/material/Typography";
 import {
-    Autocomplete,
     Avatar,
-    Box,
+    Box, CircularProgress,
     Container,
-    FormControl, IconButton,
-    MenuItem,
-    Select,
+    IconButton,
     Stack,
-    TextField
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import PaintList from "../../components/PaintList/PaintList.tsx";
@@ -19,32 +15,44 @@ import {useState} from "react";
 import {useAuth} from "../../context/auth.context.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import UploadFileModal from "../../components/UploadFileModal/UploadFileModal.tsx";
-import useGetUser from "../../api/hooks/user/useGetUser.ts";
-import useGetTags from "../../api/hooks/tag/useGetTags.ts";
+import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import ReportModal from "../../components/ReportModal/ReportModal.tsx";
-import updateUser from "../../api/hooks/user/useUpdateUser.ts";
+import OrderBy from "../../components/OrderBy/OrderBy.tsx";
+import Tags from "../../components/Tags/Tags.tsx";
+import useUpdateUser2 from "../../api/hooks/user/useUpdateUser2.ts";
+import {toast} from "react-toastify";
+import {queryClient} from "../../main.tsx";
+import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
     const [tags, setTags] = useState<string[]>([]);
     const [isUploadFileOpen, setIsUploadFileOpen] = useState<boolean>(false);
     const [uploadType, setUploadType] = useState<'profile' | 'cover' | null>(null);
-    const {mutateAsync: updateMutate} = updateUser();
-
-    const { userId } = useAuth();
 
     const { id: userIdParam } = useParams();
 
-    const { data: user } = useGetUser(userIdParam);
+    const handleOnSuccess = () => {
+        toast.success('Image uploaded successfully');
+        queryClient.invalidateQueries({queryKey: [GET_USER, userIdParam]});
+        queryClient.invalidateQueries({queryKey: [GET_USERS]});
+    }
 
-    const { data: tagsList } = useGetTags();
+    const handleOnError = () => {
+        toast.error('Image upload failed');
+    }
+
+    const { update } = useUpdateUser2({ onSuccess: handleOnSuccess, onError: handleOnError });
+
+    const { userId } = useAuth();
+
+    const { data: user, isPending, isRefetching } = useGetUser(userIdParam);
 
     const uploadProfilePhoto = async (photo) => {
         if(!userIdParam || !uploadType) return;
 
-        await updateMutate({ id: Number(userIdParam), payload: {
-                [`${uploadType}Photo`]: photo
-            } })
+        update(Number(userIdParam), { [`${uploadType}Photo`]: photo });
+
         setUploadType(null);
     }
 
@@ -53,14 +61,19 @@ const Artist = () => {
     return (
         <>
             <S.TopController height={300} boxShadow={2}>
-                <Box position={'absolute'} overflow='hidden' height={300}>
-                    <Box position={'relative'} sx={{ top: '-50%' }}>
-                        <img src={user?.coverPhoto ?? ""} width={'100%'} />
+                <Box position='absolute' overflow='hidden' height={300}>
+                    <Box position='relative' top='-50%'>
+                        <img src={user?.coverPhoto ?? ""} width='100%'  alt='profile cover photo'/>
                     </Box>
                 </Box>
                 <Container sx={{ height: '100%', position: "relative", zIndex: 10 }}>
                     <Box position="absolute" bottom={-75}>
-                        <Avatar alt="Remy Sharp" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ width: 150, height: 150, boxShadow: 4, backgroundColor: grey[100] }} />
+                        {isPending || isRefetching && (
+                            <Stack width={150} height={150} zIndex={10} bgcolor={grey[900]} borderRadius='100%' justifyContent="center" alignItems="center">
+                                <CircularProgress />
+                            </Stack>
+                        )}
+                        {!isRefetching && <Avatar alt="Remy Sharp" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ width: 150, height: 150, boxShadow: 4, backgroundColor: grey[100] }} />}
                         {isUserProfileOwner && (
                             <Box position="absolute" top={0} right={0} zIndex={10} bgcolor={grey[100]} borderRadius="100%" boxShadow={1}>
                                 <IconButton onClick={() => {
@@ -91,44 +104,17 @@ const Artist = () => {
                         {isUserProfileOwner && <Button variant="contained"  to='/paint' component={Link}>add paint</Button>}
                         {!isUserProfileOwner && userId && (<ReportModal type='artist' id={userId} />)}
                     </Stack>
-                    <Stack flexDirection="row" alignItems="center" gap={2}>
-                        <Typography whiteSpace="nowrap" color={grey[700]} fontWeight="bold" fontSize={18} textTransform="capitalize">
-                            Order By :
-                        </Typography>
-                        <FormControl variant="standard">
-                            <Select
-                                value={orderBy}
-                                onChange={(event) => setOrderBy(event.target.value)}
-                            >
-                                <MenuItem value={'date'}>Date</MenuItem>
-                                <MenuItem value={'likes'}>Like</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Stack>
+                    <OrderBy value={orderBy} onChange={setOrderBy} />
                 </Stack>
             </Container>
             <Container>
                 <Box py={2}>
-                    <Autocomplete
-                        multiple
-                        id="tags-outlined"
-                        options={tagsList?.tags?.map(({ name }) => name) || []}
-                        defaultValue={tags}
-                        filterSelectedOptions
-                        onChange={(_, tags) => setTags(tags)}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Tags List"
-                                placeholder="Tags"
-                            />
-                        )}
-                    />
+                    <Tags tags={tags} onChange={setTags} />
                 </Box>
             </Container>
             <Container>
                 <Box py={2}>
-                    {userIdParam && <PaintList userId={Number(userIdParam)} tags={tags.join(', ')} order={orderBy} />}
+                    {userIdParam && <PaintList userId={Number(userIdParam)} tags={tags} order={orderBy} />}
                 </Box>
             </Container>
             <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />

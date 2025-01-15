@@ -17,6 +17,7 @@ interface UploadFileModalProps {
 }
 
 const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, label = 'file', onUploadFile, accept, onClose }) => {
+
     const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
         multiple: false,
         accept

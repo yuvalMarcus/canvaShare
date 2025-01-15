@@ -1,13 +1,9 @@
 import {
-    Autocomplete,
     Box,
     Container,
-    FormControl,
-    IconButton, InputBase,
-    MenuItem,
-    Select,
+    IconButton,
+    InputBase,
     Stack,
-    TextField
 } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {grey} from "@mui/material/colors";
@@ -15,21 +11,20 @@ import PaintList from "../../components/PaintList/PaintList.tsx";
 import SearchIcon from '@mui/icons-material/Search';
 import {useSearchParams} from "react-router-dom";
 import {useLayoutEffect, useState} from "react";
-import useGetTags from "../../api/hooks/tag/useGetTags.ts";
+import OrderBy from "../../components/OrderBy/OrderBy.tsx";
+import Tags from "../../components/Tags/Tags.tsx";
 
 const Search = () => {
     const [searchParams] = useSearchParams();
 
     const [value, setValue] = useState<string>(searchParams.get('text') || '');
     const [orderBy, setOrderBy] = useState<string>('date');
-    const [tags, setTags] = useState<string>('');
+    const [tags, setTags] = useState<string[]>([]);
 
     useLayoutEffect(() => {
         setValue(searchParams.get('text') || '');
     }, [searchParams.get('text')])
 
-
-    const { data: tagsList } = useGetTags();
 
     return (
         <Container>
@@ -52,36 +47,9 @@ const Search = () => {
                     </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={4} mb={4}>
                         <Stack flex={1}>
-                            <Autocomplete
-                                multiple
-                                id="tags-outlined"
-                                options={tagsList?.tags?.map(({ name }) => name) || []}
-                                defaultValue={[]}
-                                filterSelectedOptions
-                                onChange={(_, tags) => setTags(tags.join(','))}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Tags List"
-                                        placeholder="Tags"
-                                    />
-                                )}
-                            />
+                            <Tags tags={tags} onChange={setTags} />
                         </Stack>
-                        <Stack flexDirection="row" alignItems="center" gap={2}>
-                            <Typography whiteSpace="nowrap" color={grey[700]} fontWeight="bold" fontSize={18} textTransform="capitalize">
-                                Order By :
-                            </Typography>
-                            <FormControl variant="standard">
-                                <Select
-                                    value={orderBy}
-                                    onChange={(event) => setOrderBy(event.target.value)}
-                                >
-                                    <MenuItem value={'date'}>Date</MenuItem>
-                                    <MenuItem value={'likes'}>Like</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Stack>
+                        <OrderBy value={orderBy} onChange={setOrderBy} />
                     </Stack>
                     <PaintList cardDetails tags={tags} order={orderBy} search={value} />
                 </Box>

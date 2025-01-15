@@ -99,10 +99,10 @@ const routers = createBrowserRouter([
 function App() {
   return (
       <AuthProvider>
-          <ToastContainer autoClose={2000}
+          <ToastContainer autoClose={2500}
                           hideProgressBar={true}
                           pauseOnHover={false}
-                          position="bottom-left"
+                          position="bottom-center"
                           closeOnClick={true}
                           theme={"colored"}
                           transition={Bounce}

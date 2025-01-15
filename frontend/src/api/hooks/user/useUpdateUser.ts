@@ -5,7 +5,6 @@ import * as api from "../../user.ts";
 import {queryClient} from "../../../main.tsx";
 import {GET_USERS} from "./useGetUsers.ts";
 import {GET_USER} from "./useGetUser.ts";
-import {GET_PAINT} from "../../../components/PaintList/PaintList.tsx";
 
 const useUpdateUser = () => {
     const navigate = useNavigate();
@@ -28,7 +27,7 @@ const useUpdateUser = () => {
             if (!error){
                 await queryClient.invalidateQueries({queryKey: [GET_USERS]})
                 await queryClient.invalidateQueries({ queryKey: [GET_USER] });
-                await queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
+                //await queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
             }
         }
     })
