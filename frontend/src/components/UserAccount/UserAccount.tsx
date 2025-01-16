@@ -43,15 +43,15 @@ const UserAccount = () => {
             <Typography variant="h5" mb={4}>Account</Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box>
-                    <InputText label="username" name="username" defaultValue={user.username} control={control} />
+                    <InputText label="username" name="username" defaultValue={user?.username || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.username?.message}</Typography>
                 </Box>
                 <Box>
-                    <InputText label="email" name="email" defaultValue={user.email} control={control} />
+                    <InputText label="email" name="email" defaultValue={user?.email || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.email?.message}</Typography>
                 </Box>
                 <Box>
-                    <Textarea label="about" name="about" defaultValue={user.about || ''} control={control} />
+                    <Textarea label="about" name="about" defaultValue={user?.about || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.about?.message}</Typography>
                 </Box>
                 <Button variant="outlined" fullWidth type="submit" disabled={isPending}>

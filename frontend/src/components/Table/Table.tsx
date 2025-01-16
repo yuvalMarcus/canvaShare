@@ -161,7 +161,7 @@ interface EnhancedTableProps {
     tableHeader: HeadCell[];
     tableTitle: string;
     handleDelete: (id: number) => void
-    handleUpdate?: (id: number, payload: any) => void
+    handleUpdate?: (id: number) => void
     handleBlock?: (id: number) => void
     handleUnBlock?: (id: number) => void
     uniqueProperty: string;
@@ -329,7 +329,7 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                 </Tooltip>
                                             )}
                                             {handleUpdate && (
-                                            <IconButton>
+                                            <IconButton onClick={() => handleUpdate(row[uniqueProperty])}>
                                                 <EditIcon />
                                             </IconButton>)}
                                             <DeleteDialog id={row[uniqueProperty]} name={row[nameProperty]} handleDelete={handleDelete}/>
