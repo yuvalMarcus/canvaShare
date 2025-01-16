@@ -24,5 +24,7 @@ export interface UserPayload {
     isBlocked?: boolean;
     tags?: string[];
     about?: string;
+    profilePhoto?: string;
+    coverPhoto?: string;
     roles?: string[];
 }

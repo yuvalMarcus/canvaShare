@@ -6,7 +6,7 @@ from .utils import connect_to_db, commit_and_close_db
 
 __all__ = ['insert_user', 'get_user', 'get_users', 'get_user_id', 'get_user_email', 'get_hashed_password',
            'get_disabled_status', 'connect_user', 'disconnect_user', 'get_username_by_email', 'get_prev_photos',
-           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'is_photo_exist', 'get_popular_users']
+           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'get_popular_users']
 
 def insert_user(username: str, hashed_password: str, email: str, is_blocked: bool, disabled: bool) -> int:
     con, cur = connect_to_db()
@@ -156,14 +156,6 @@ def is_user_exist(user_id: Optional[int] = None, username: Optional[str] = None)
         cur.execute("SELECT * FROM users WHERE username = %s", (username,))
     else:
         cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-    if cur.fetchone() is None:
-        return False
-    con.close()
-    return True
-
-def is_photo_exist(photo_link: str) -> bool:
-    con, cur = connect_to_db()
-    cur.execute("SELECT * FROM users WHERE profile_photo = %s OR cover_photo = %s", (photo_link, photo_link))
     if cur.fetchone() is None:
         return False
     con.close()

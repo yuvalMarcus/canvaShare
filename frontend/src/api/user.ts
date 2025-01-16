@@ -3,8 +3,8 @@ import instance from "../server/axios.ts";
 import {UserPayload} from "../types/user.ts";
 import Axios from "../server/axios.ts";
 
-export const getUsers = async (): Promise<axios.AxiosResponse> => {
-    const res = await instance.get('user');
+export const getUsers = async (params): Promise<axios.AxiosResponse> => {
+    const res = await instance.get('user', {params});
     return res.data;
 }
 

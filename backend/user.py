@@ -5,7 +5,7 @@ from db.tags import insert_favorite_tags, get_tags_id, get_favorite_tags, delete
 from db.utils import raise_error_if_guest, raise_error_if_blocked
 from db.admin import is_admin, is_super_admin
 from db.users import *
-from photo import delete_photo, is_valid_photo
+from photo import delete_photo
 from auth import *
 
 user_router = APIRouter(prefix="/user")
@@ -21,7 +21,7 @@ def register_endpoint(user: User) -> dict:
     user.id = insert_user(username=user.username, hashed_password=get_password_hash(user.password), email=user.email,
                           is_blocked=False, disabled=True)
     insert_favorite_tags(user.id, get_tags_id(user.tags))
-    return {}
+    return {"user_id": user.id}
 
 @access_router.post('/login', response_model=Tokens)
 def login_endpoint(user: User):
@@ -73,7 +73,8 @@ def get_users_endpoint(username: Optional[str] = None, order_by: Optional[str]=N
 @user_router.post("")
 def create_user_endpoint(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     if is_admin(jwt_user_id):
-        register_endpoint(user)
+        user_id = register_endpoint(user)['user_id']
+        update_user_endpoint(user_id, user, jwt_user_id)
         if user.roles:
             print('Username:', user.username, ', roles:', user.roles)
         # add_roles(user)
@@ -106,9 +107,7 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
     if user_id == jwt_user_id or (is_admin(jwt_user_id) and not is_admin(user_id)):
         _ = is_valid_username(user.username, user_id) if user.username else None
         _ = is_valid_email(user.email, user_id) if user.email else None
-        _ = is_valid_photo(user.profile_photo) if user.profile_photo else None
-        _ = is_valid_photo(user.cover_photo) if user.cover_photo else None
-        is_blocked = user.is_blocked if is_admin(jwt_user_id) else None
+        is_blocked = user.is_blocked if is_admin(jwt_user_id) and not is_admin(user_id) else None
         hashed_password = get_password_hash(user.password) if user.password else None
         if user.profile_photo or user.cover_photo:
             for prev_photo in get_prev_photos(user_id, user.profile_photo, user.cover_photo):

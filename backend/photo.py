@@ -9,7 +9,6 @@ from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 import requests
 from auth import check_guest_or_blocked
-from db.users import is_photo_exist
 
 router = APIRouter(prefix="/photo")
 load_dotenv()
@@ -82,13 +81,10 @@ def generate_photo_uuid() -> str:
             break
     return photo_id
 
-def is_valid_photo(photo_link: str) -> None:
-    # FIXME: high vulnerability here, it is possible to remove someone else photo.
-    #   It is possible to save photo link in db that already exists in the folder.
-    #   After that, it is possible to remove someone else photo by change to other photo (auto remove prev photo).
-    #   Some links can be with uppercase letters, some with lowercase, some with query params.
-    #   Some links can be with http, some with https and some with www, some without www, etc.
-    #   It is better to save in db only the photo name and check if it exists in the folder.
-
-    if is_photo_exist(photo_link):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Photo {photo_link} already exists")
+# FIXME: need to check if this already fixed.
+#  high vulnerability here, it is possible to remove someone else photo.
+#   It is possible to save photo link in db that already exists in the folder.
+#   After that, it is possible to remove someone else photo by change to other photo (auto remove prev photo).
+#   Some links can be with uppercase letters, some with lowercase, some with query params.
+#   Some links can be with http, some with https and some with www, some without www, etc.
+#   It is better to save in db only the photo name and check if it exists in the folder.
