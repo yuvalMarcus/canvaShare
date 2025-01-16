@@ -5,7 +5,7 @@ import useGetUsers from "../../api/hooks/user/useGetUsers.ts";
 
 const ArtistsList = () => {
 
-    const { data: users, isPending } = useGetUsers();
+    const { data: users, isPending } = useGetUsers(undefined, 'popular', 4);
 
     return (
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
