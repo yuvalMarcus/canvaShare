@@ -3,11 +3,12 @@ import * as userApi from "../../user.ts";
 
 export const GET_USERS = 'getUsers';
 
-const useGetUsers = () => {
+const useGetUsers = (params: { username?: string, orderBy?: 'popular', limit?: number }) => {
 
     const { data, isPending } = useQuery({
-        queryKey: [GET_USERS],
-        queryFn: () => userApi.getUsers(),
+        queryKey: [GET_USERS, params],
+        queryFn: () =>
+            userApi.getUsers(params),
     });
 
     return {

@@ -89,31 +89,26 @@ def get_canvases_endpoint(canvas: CanvasQueries = Depends(), order: Optional[str
                  jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Canvases:
     raise_error_if_blocked(jwt_user_id)
     tags_results, filters = [], []
-    filters_and_sort = ""
+
     page_num = int(page_num.split('&')[0]) if page_num and page_num.split('&')[0].isnumeric() else None
     page_num = 1 if page_num is None or page_num < 1 else page_num
     if canvas.user_id:
         filters.append(('user_id', canvas.user_id))
-        filters_and_sort += f'&user_id={canvas.user_id}'
     if canvas.canvas_name:
         canvas_name = canvas.canvas_name.lower()
         filters.append(('canvas_name', canvas_name))
-        filters_and_sort += f'&canvas_name={canvas_name}'
     if canvas.tags:
         for tag in canvas.tags.split(','):
             tags_results += get_canvases_by_tag(tag)
-        filters_and_sort += f'&tags={canvas.tags}'
         results = list(set(get_canvases_by_filters(filters)) & set(tags_results))
     else:
         results = get_canvases_by_filters(filters)
     if order == 'likes':
         # sort canvases by likes from high to low
         results.sort(key=lambda x: x[LIKES_COL_IN_CANVASES], reverse=True)
-        filters_and_sort += '&order=likes'
     else:
         # sort canvases by dates from low to high
         results.sort(key=lambda x: x[ID_COL_IN_CANVASES], reverse=True)
-        filters_and_sort += '&order=dates'
 
     prev_link = page_num - 1 if page_num > 1 else None
     next_link = page_num + 1 if len(results) > page_num * CANVASES_PER_PAGE else None
