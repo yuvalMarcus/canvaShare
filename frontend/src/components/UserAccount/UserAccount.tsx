@@ -7,10 +7,14 @@ import InputText from "../Form/InputText/InputText.tsx";
 import Button from "@mui/material/Button";
 import {z} from "zod";
 import {useAuth} from "../../context/auth.context.tsx";
-import useGetUser from "../../api/hooks/user/useGetUser.ts";
+import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import Textarea from "../Form/Textarea/Textarea.tsx";
-import updateUser from "../../api/hooks/user/useUpdateUser.ts";
 import {UserPayload} from "../../types/user.ts";
+import useUpdateUser2 from "../../api/hooks/user/useUpdateUser2.ts";
+import {toast} from "react-toastify";
+import {queryClient} from "../../main.tsx";
+import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
+import {useParams} from "react-router-dom";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'Required' }),
@@ -19,6 +23,9 @@ const schema = z.object({
 });
 
 const UserAccount = () => {
+
+    const { id: userIdParam } = useParams();
+
     const {
         handleSubmit,
         formState: { errors },
@@ -31,10 +38,20 @@ const UserAccount = () => {
 
     const { data: user } = useGetUser(userId);
 
-    const {mutateAsync, isPending} = updateUser();
+    const handleOnSuccess = () => {
+        toast.success('User uploaded successfully');
+        queryClient.invalidateQueries({queryKey: [GET_USER, userIdParam]});
+        queryClient.invalidateQueries({queryKey: [GET_USERS]});
+    }
+
+    const handleOnError = (erroe) => {
+        toast.error('User upload failed');
+    }
+
+    const { update, isPending } = useUpdateUser2({ onSuccess: handleOnSuccess, onError: handleOnError });
 
     const onSubmit = async (payload: UserPayload) => {
-        await mutateAsync({ id: Number(userId), payload })
+        update({ id: Number(userId), payload })
     }
 
     return (
@@ -42,15 +59,15 @@ const UserAccount = () => {
             <Typography variant="h5" mb={4}>Account</Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box>
-                    <InputText label="username" name="username" defaultValue={user.username} control={control} />
+                    <InputText label="username" name="username" defaultValue={user?.username || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.username?.message}</Typography>
                 </Box>
                 <Box>
-                    <InputText label="email" name="email" defaultValue={user.email} control={control} />
+                    <InputText label="email" name="email" defaultValue={user?.email || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.email?.message}</Typography>
                 </Box>
                 <Box>
-                    <Textarea label="about" name="about" defaultValue={user.about || ''} control={control} />
+                    <Textarea label="about" name="about" defaultValue={user?.about || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.about?.message}</Typography>
                 </Box>
                 <Button variant="outlined" fullWidth type="submit" disabled={isPending}>

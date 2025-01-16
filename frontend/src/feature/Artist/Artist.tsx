@@ -23,6 +23,7 @@ import {toast} from "react-toastify";
 import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 import InputTags from "../../components/Form/InputTags/InputTags.tsx";
+import {UserPayload} from "../../types/user.ts";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -48,10 +49,15 @@ const Artist = () => {
 
     const { data: user, isPending, isRefetching } = useGetUser(userIdParam);
 
-    const uploadProfilePhoto = async (photo) => {
+    const uploadProfilePhoto = async (photo: string) => {
         if(!userIdParam || !uploadType) return;
 
-        update(Number(userIdParam), { [`${uploadType}Photo`]: photo });
+        const key = `${uploadType}Photo` as keyof UserPayload;
+
+        update({
+            id: Number(userIdParam),
+            payload: { [key]: photo }
+        });
 
         setUploadType(null);
     }

@@ -28,9 +28,9 @@ const Like = ({ paintId, userId }: LikeProps) => {
         toast.error('Like upload failed');
     }
 
-    const { data: like, isPending: loadLikeIsPending } = useGetLikes(paintId, userAuthId ?? -1);
+    const { data: like, isPending: loadLikeIsPending } = useGetLikes({ paintId, userId: userAuthId || 1 });
 
-    const { data: likes, isPending: loadLikesIsPending } = useGetLikes(paintId, userId);
+    const { data: likes, isPending: loadLikesIsPending } = useGetLikes({ paintId, userId });
 
     const { create, isPending: createLikeIsPending } = useCreateLike({ onSuccess: handleOnSuccess, onError: handleOnError });
 

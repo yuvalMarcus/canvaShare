@@ -13,6 +13,7 @@ import useRemovePaint2 from "../../api/hooks/paint/useRemovePaint2.ts";
 import {GET_PAINT} from "../../api/hooks/paint/useGetPaint.ts";
 import Like from "./Like/Like.tsx";
 import {GET_PAINTS} from "../../api/hooks/paint/useGetPaints.ts";
+import {toast} from "react-toastify";
 
 interface PaintModalProps {
     isOpen: boolean;
@@ -32,12 +33,17 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
 
     const { userId: userAuthId } = useAuth();
 
-    const { remove: removePaint } = useRemovePaint2({});
+    const handleOnSuccess = () => {
+        toast.success('Paint remove successfully');
 
-    const handleDeletePaint = async () => {
-        if(id) await removePaint(id);
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
         queryClient.invalidateQueries({ queryKey: [GET_PAINTS] });
+    }
+
+    const { remove: removePaint } = useRemovePaint2({ onSuccess: handleOnSuccess });
+
+    const handleDeletePaint = async () => {
+        if(id) removePaint(id);
     }
     
     const isUserProfileOwner = userAuthId === userId;

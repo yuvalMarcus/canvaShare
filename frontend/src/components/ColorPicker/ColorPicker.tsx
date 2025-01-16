@@ -1,8 +1,6 @@
-import {Box, Popover, Stack} from "@mui/material";
-import Typography from "@mui/material/Typography";
-import {grey} from "@mui/material/colors";
+import { Box, Popover } from "@mui/material";
 import {HexColorPicker} from "react-colorful";
-import React, {FC, useState} from "react";
+import React, {FC} from "react";
 import Button from "@mui/material/Button";
 
 interface ColorPickerProps {

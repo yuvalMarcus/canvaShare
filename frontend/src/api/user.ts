@@ -22,7 +22,7 @@ export const createUser = async (payload: UserPayload): Promise<axios.AxiosRespo
     return await instance.post('user', payload);
 }
 
-export const updateUser = async ({ id, payload }: {id: number, payload: UserPayload}): Promise<axios.AxiosResponse> => {
+export const updateUser = async ({ id, payload }: { id: number, payload: UserPayload }): Promise<axios.AxiosResponse> => {
     const res = await instance.put(`user/${id}`, payload);
     return res.data;
 }

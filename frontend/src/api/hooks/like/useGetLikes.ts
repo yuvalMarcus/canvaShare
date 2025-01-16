@@ -1,13 +1,18 @@
 import {useQuery} from "@tanstack/react-query";
 import * as api from "../../like.ts";
 
+interface UseGetLikesParams {
+    paintId: number;
+    userId: number;
+}
+
 export const GET_LIKES = 'getLikes';
 
-const useGetLikes = (paintId: number, userId: number) => {
+const useGetLikes = (params : UseGetLikesParams) => {
 
     const { data, isPending } = useQuery({
-        queryKey: [GET_LIKES, paintId, userId],
-        queryFn: () => api.getLikes({ canvasId: paintId }),
+        queryKey: [GET_LIKES, params],
+        queryFn: () => api.getLikes({ canvasId: params.paintId, userId: params.userId }),
     });
 
     return {

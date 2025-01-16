@@ -56,13 +56,6 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
     const { update, isPending: updatePaintIsPending } = useUpdatePaint({ onSuccess: handleOnSuccess, onError: handleOnError })
 
-
-    const { mutateAsync: mutateAsyncu, isPending: isPendingx } = useMutation({
-        mutationFn: (payload) => api.updatePaint(Number(paintId), payload),
-        onSuccess: handleOnSuccess,
-        onError: handleOnError,
-    })
-
     const handlePublish = async () => {
 
         const photo = canvas.current?.toDataURL({
@@ -84,7 +77,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                 payload: {
                     name: dataToUpdate?.name || paint?.name,
                     description: dataToUpdate?.description || paint?.description,
-                    tags: dataToUpdate?.tags || paint?.tags,
+                    tags: dataToUpdate?.tags || paint?.tags || [],
                     isPublic: true,
                     photo: data.photo,
                     data: JSON.stringify(canvas.current?.toJSON())
@@ -95,6 +88,10 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
             create({
                 ...payloadItem,
+                name: payloadItem.name || "Untitled Paint",
+                tags: payloadItem.tags || [],
+                photo: data.photo,
+                data: JSON.stringify(canvas.current?.toJSON())
             });
 
         }

@@ -1,7 +1,7 @@
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../user.ts";
 
-const useUpdateUser2 = ({ onSuccess, onError, onSettled }: { onSuccess?: () => void, onError?: () => void, onSettled?: () => void }) => {
+const useUpdateUser2 = ({ onSuccess, onError, onSettled }: { onSuccess?: () => void, onError?: (error: Error) => void, onSettled?: () => void }) => {
 
     const { mutate } = useMutation({
         mutationFn: api.updateUser,
@@ -11,10 +11,7 @@ const useUpdateUser2 = ({ onSuccess, onError, onSettled }: { onSuccess?: () => v
     })
 
     return {
-        update: (id, payload) => mutate({
-            id,
-            payload
-        }),
+        update: mutate,
     }
 }
 

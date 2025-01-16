@@ -22,7 +22,7 @@ const useGetPaints2 = ({userId, tags, order, search}) => {
         initialPageParam: 1,
         queryKey: [GET_PAINTS, params],
         queryFn: ({ pageParam }) => api.getPaints({ pageNum: pageParam, ...params}),
-        getNextPageParam: (lastPage, allPages) => lastPage.next ? allPages.length + 1 : undefined,
+        getNextPageParam: (lastPage, allPages) => lastPage.next,
     })
 
     return {

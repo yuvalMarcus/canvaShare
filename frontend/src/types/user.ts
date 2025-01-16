@@ -19,6 +19,8 @@ export interface UserPayload {
     username?: string;
     email?: string;
     password?: string;
+    profilePhoto?: string;
+    coverPhoto?: string;
     isBlocked?: boolean;
     tags?: string[];
     about?: string;
