@@ -20,12 +20,11 @@ const Like = ({ paintId, userId }: LikeProps) => {
     const { userId: userAuthId } = useAuth();
 
     const handleOnSuccess = () => {
-        toast.success('Like update successful');
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
     }
 
     const handleOnError = () => {
-        toast.error('Like upload failed');
+        toast.error('Like failed');
     }
 
     const { data: like, isPending: loadLikeIsPending } = useGetLikes({ paintId, userId: userAuthId || 1 });

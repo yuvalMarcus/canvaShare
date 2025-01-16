@@ -13,7 +13,7 @@ interface ShapeProps {
 }
 
 const Shape: FC<ShapeProps> = ({ canvas, selectedId, onClose }) => {
-    const object = canvas.current?.getObjects().find(({data}) => data.id === selectedId);
+    const object = canvas.current?.getObjects().find(({data}) => data?.id === selectedId);
 
     const [size, setSize] = useState<number>(object?.strokeWidth);
     const [stroke, setStroke] = useState<string>(object?.stroke);
