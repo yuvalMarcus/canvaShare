@@ -22,7 +22,7 @@ const tableHeader: HeadCell[] = [
 const UsersTable = () => {
     const {mutate: deleteMutate, isPending: deleteIsPending} = deleteUser();
     const {mutate: updateMutate, isPending: updateIsPending} = updateUser();
-    const { data, isPending: getIsPending } = getUsers();
+    const { data, isPending: getIsPending } = getUsers({});
     const [userFrom, setUserForm] = useState(false);
     const [userIdEdit, setUserIdEdit] = useState(0)
 
