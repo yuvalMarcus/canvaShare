@@ -1,10 +1,8 @@
 import Button from "@mui/material/Button";
 import {
-    Autocomplete,
     CircularProgress,
     Popover,
     Stack,
-    TextField
 } from "@mui/material";
 import React, {useState} from "react";
 import {grey, red} from "@mui/material/colors";
@@ -15,21 +13,27 @@ import {TagPayload} from "../../../../../types/tags.ts";
 import InputText from "../../../../../components/Form/InputText/InputText.tsx";
 import {z} from "zod";
 import { usePaint } from '../../../../../context/paint.context.tsx';
-import useGetTags from "../../../../../api/hooks/tag/useGetTags.ts";
-import useCreateTag from "../../../../../api/hooks/tag/useCreateTag.ts"
+import {GET_TAGS} from "../../../../../api/hooks/tag/useGetTags.ts";
 import useGetPaint from "../../../../../api/hooks/paint/useGetPaint.ts";
 import {useParams} from "react-router-dom";
+import useCreateTag2 from "../../../../../api/hooks/tag/useCreateTag2.ts";
+import {queryClient} from "../../../../../main.tsx";
+import {toast} from "react-toastify";
+import InputTags from "../../../../../components/Form/InputTags/InputTags.tsx";
 
 const schema = z.object({
     name: z.string().min(1, { message: 'required' }),
 });
 
 const Tags = () => {
+
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
     const { id: paintId } = useParams();
+
     const { data } = useGetPaint(paintId ? Number(paintId) : undefined);
+
     const { payload, handleUpload } = usePaint();
-    const { data: tagsList, isPending: isPendingData } = useGetTags();
 
     const {
         getValues,
@@ -39,7 +43,24 @@ const Tags = () => {
         formState: { errors },
     } = useForm({resolver: zodResolver(schema),});
 
-    const { mutateAsync: createTag, isPending } = useCreateTag(handleUpload, payload, getValues, setValue);
+    const handleOnSuccess = () => {
+        handleUpload('tags', [...(payload?.tags || []), getValues('name')]);
+        setValue('name', '');
+
+        queryClient.invalidateQueries({ queryKey: [GET_TAGS] });
+    }
+
+    const handleOnError = (error) => {
+        let error_msg;
+        if (error?.status == 422)
+            error_msg = "Invalid tag";
+        else
+            error_msg = error?.response?.data?.detail;
+        toast.error(error_msg);
+    }
+
+    const { create, isPending } = useCreateTag2({ onSuccess: handleOnSuccess, onError: handleOnError })
+
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -52,9 +73,8 @@ const Tags = () => {
     const id = open ? 'simple-popover' : undefined;
 
 
-    const onSubmit = async ({ name }: TagPayload) => {
-        await createTag({name,})
-            .catch(e => {});
+    const onSubmit = async (payload: TagPayload) => {
+        create(payload)
     }
 
     return (
@@ -77,23 +97,7 @@ const Tags = () => {
                 <Stack width={600} p={2} gap={2}>
                     <Stack gap={1}>
                         <Typography textTransform="capitalize">select tags</Typography>
-                        {!isPendingData && (
-                            <Autocomplete
-                                multiple
-                                id="tags-outlined"
-                                value={payload.tags || data?.tags || []}
-                                options={tagsList?.tags.map(({ name }) => name) || []}
-                                onChange={(_, values) => handleUpload('tags', values)}
-                                filterSelectedOptions
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Tags List"
-                                        placeholder="Tags"
-                                    />
-                                )}
-                            />
-                        )}
+                        <InputTags tags={payload?.tags || data?.tags || []} onChange={(tags) => handleUpload('tags', tags)} />
                     </Stack>
                     <Stack gap={1}>
                         <Typography textTransform="capitalize">add tag</Typography>

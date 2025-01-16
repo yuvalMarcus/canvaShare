@@ -9,12 +9,12 @@ import Button from "@mui/material/Button";
 import Search from "../../../../../../components/Search/Search.tsx";
 
 interface SearchPhotosProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
     isOpen: boolean;
     onClose: () => void;
 }
 
-const SearchModal: FC<SearchPhotosProps> = ({ paint, isOpen, onClose }) => {
+const SearchModal: FC<SearchPhotosProps> = ({ canvas, isOpen, onClose }) => {
     const [search, setSearch] = useState<string>('');
     const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
     //const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
@@ -33,9 +33,9 @@ const SearchModal: FC<SearchPhotosProps> = ({ paint, isOpen, onClose }) => {
 
         img.scaleToWidth(400);
 
-        paint.current?.add(img);
-        paint.current?.centerObject(img);
-        paint.current?.renderAll();
+        canvas.current?.add(img);
+        canvas.current?.centerObject(img);
+        canvas.current?.renderAll();
 
         onClose();
     }

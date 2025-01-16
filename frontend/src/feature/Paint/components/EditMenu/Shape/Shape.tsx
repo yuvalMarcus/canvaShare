@@ -7,13 +7,13 @@ import {Canvas} from "fabric";
 import ColorPicker from "../../../../../components/ColorPicker/ColorPicker.tsx";
 
 interface ShapeProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
     selectedId: string | null;
     onClose: () => void;
 }
 
-const Shape: FC<ShapeProps> = ({ paint, selectedId, onClose }) => {
-    const object = paint.current?.getObjects().find(({data}) => data.id === selectedId);
+const Shape: FC<ShapeProps> = ({ canvas, selectedId, onClose }) => {
+    const object = canvas.current?.getObjects().find(({data}) => data.id === selectedId);
 
     const [size, setSize] = useState<number>(object?.strokeWidth);
     const [stroke, setStroke] = useState<string>(object?.stroke);
@@ -39,7 +39,7 @@ const Shape: FC<ShapeProps> = ({ paint, selectedId, onClose }) => {
             strokeWidth: value,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleUpdateStroke = (color: string) => {
@@ -51,7 +51,7 @@ const Shape: FC<ShapeProps> = ({ paint, selectedId, onClose }) => {
             stroke: color,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleUpdateFill = (color: string) => {
@@ -63,14 +63,14 @@ const Shape: FC<ShapeProps> = ({ paint, selectedId, onClose }) => {
             fill: color,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleRemoveShape = () => {
         if(!object) return;
 
-        paint.current?.remove(object);
-        paint.current?.renderAll();
+        canvas.current?.remove(object);
+        canvas.current?.renderAll();
     }
 
     return (

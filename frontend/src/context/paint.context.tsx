@@ -4,6 +4,8 @@ import {ACTION_TYPE} from "../feature/Paint/paint.config.ts";
 import {useParams} from "react-router-dom";
 import * as api from "../api/paint.ts";
 
+type PaintPayloadType = <T extends keyof PaintPayload>(key: T, value: PaintPayload[T]) => void;
+
 const defaultPaint: PaintPayload = {
     name: "",
     description: "",
@@ -19,7 +21,7 @@ const PaintContext = createContext<{
     selectedObjectId: string | null,
     setSelectedObjectId: (value: (((prevState: (string | null)) => (string | null)) | string | null)) => void,
     payload: PaintPayload,
-    handleUpload: any,
+    handleUpload: PaintPayloadType,
 }>({
     selectedAction: null,
     setSelectedAction: () => {},

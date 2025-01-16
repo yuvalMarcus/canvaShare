@@ -9,11 +9,11 @@ import {DEFAULT_COLOR, DEFAULT_SIZE, mapShapeToFabricObject, mapShapeToIcon, SHA
 import ColorPicker from "../../../../../components/ColorPicker/ColorPicker.tsx";
 
 interface ShapeProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
     onClose: () => void;
 }
 
-const Shape: FC<ShapeProps> = ({ paint, onClose }) => {
+const Shape: FC<ShapeProps> = ({ canvas, onClose }) => {
     const [selectedShape, setSelectedShape] = useState<SHAPE_TYPE>(SHAPE_TYPE.SQUARE);
     const [size, setSize] = useState<number>(DEFAULT_SIZE);
     const [stroke, setStroke] = useState<string>(DEFAULT_COLOR);
@@ -37,9 +37,9 @@ const Shape: FC<ShapeProps> = ({ paint, onClose }) => {
 
         const object = mapShapeToFabricObject[selectedShape](newId, fill, stroke, size);
 
-        paint.current?.add(object);
-        paint.current?.centerObject(object);
-        paint.current?.renderAll();
+        canvas.current?.add(object);
+        canvas.current?.centerObject(object);
+        canvas.current?.renderAll();
 
         onClose();
     }

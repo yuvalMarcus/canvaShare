@@ -11,13 +11,13 @@ import ColorPicker from "../../../../../components/ColorPicker/ColorPicker.tsx";
 import {FONT_STYLE, FONT_WEIGHT, TEXT_DECORATION} from "./text.config.ts";
 
 interface TextProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
     selectedId: string | null;
     onClose: () => void;
 }
 
-const Text: FC<TextProps> = ({ paint, selectedId, onClose }) => {
-    const object = paint.current?.getObjects().find(({data}) => data?.id === selectedId);
+const Text: FC<TextProps> = ({ canvas, selectedId, onClose }) => {
+    const object = canvas.current?.getObjects().find(({data}) => data?.id === selectedId);
 
     const [fontWeight, setFontWeight] = useState<FONT_WEIGHT>(object?.fontWeight);
     const [textDecoration, setTextDecoration] = useState<TEXT_DECORATION>(object?.underline ? TEXT_DECORATION.UNDERLINE : TEXT_DECORATION.NONE);
@@ -51,7 +51,7 @@ const Text: FC<TextProps> = ({ paint, selectedId, onClose }) => {
             fontWeight: fw,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleUpdateTextDecoration = () => {
@@ -65,7 +65,7 @@ const Text: FC<TextProps> = ({ paint, selectedId, onClose }) => {
             underline: !isUnderline,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleUpdateFontStyle = () => {
@@ -79,7 +79,7 @@ const Text: FC<TextProps> = ({ paint, selectedId, onClose }) => {
             fontStyle: fs,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleUpdateSize = (event: Event, newValue: number | number[]) => {
@@ -92,7 +92,7 @@ const Text: FC<TextProps> = ({ paint, selectedId, onClose }) => {
             fontSize: value,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleUpdateColor = (color: string) => {
@@ -104,14 +104,14 @@ const Text: FC<TextProps> = ({ paint, selectedId, onClose }) => {
             fill: color,
         });
         object?.setCoords();
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
     }
 
     const handleRemoveShape = () => {
         if(!object) return;
 
-        paint.current?.remove(object);
-        paint.current?.renderAll();
+        canvas.current?.remove(object);
+        canvas.current?.renderAll();
     }
 
     return (

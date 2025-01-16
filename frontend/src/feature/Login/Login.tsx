@@ -8,18 +8,40 @@ import {blueGrey, grey, red} from "@mui/material/colors";
 import LoginIcon from '@mui/icons-material/Login';
 import {LoginPayload} from "../../types/auth.ts";
 import InputText from "../../components/Form/InputText/InputText.tsx";
-import {FC} from "react";
 import {useAuth} from "../../context/auth.context.tsx";
 import useLogin from "../../api/hooks/auth/useLogin.ts"
+import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'required' }),
     password: z.string().min(4, { message: 'required' }),
 });
 
-const Login: FC = () => {
+const Login = () => {
+
     const { setCertificate, login } = useAuth();
-    const {mutateAsync: loginMutate, isPending} = useLogin();
+
+    const navigate = useNavigate();
+
+    const handleOnSuccess = () => {
+        toast.success('Successfully logged in');
+        navigate("/");
+    }
+
+    const handleOnError = (error) => {
+        let error_msg;
+        if (error?.status == 422){
+            const field = error?.response?.data?.detail[0].loc[1]
+            error_msg = `Invalid ${field}`;
+        }
+        else
+            error_msg = error?.response?.data?.detail;
+        toast.error(error_msg);
+    }
+
+    const { login: loginUser, isPending} = useLogin({ onSuccess: handleOnSuccess, onError: handleOnError });
+
     const {
         control,
         handleSubmit,
@@ -28,11 +50,10 @@ const Login: FC = () => {
         resolver: zodResolver(schema),
     });
 
-    const onSubmit = async ({ username, password }: LoginPayload) => {
-        const { data } = await loginMutate({
-            username,
-            password,
-        });
+    const onSubmit = async (payload: LoginPayload) => {
+
+        const { data } = await loginUser(payload);
+
         setCertificate(data.token, data.refreshToken, data.userId);
         login();
     }

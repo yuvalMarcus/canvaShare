@@ -6,10 +6,13 @@ import Button from "@mui/material/Button";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {grey, red} from "@mui/material/colors";
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
-import {UserPayload} from "../../types/user.ts";
-import {FC} from "react";
+import {RegisterPayload} from "../../types/user.ts";
 import InputText from "../../components/Form/InputText/InputText.tsx";
 import useRegister from "../../api/hooks/auth/useRegister.ts";
+import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
+import {queryClient} from "../../main.tsx";
+import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'Required' }),
@@ -17,8 +20,28 @@ const schema = z.object({
     password: z.string().min(4, { message: 'Required' }),
 });
 
-const Register: FC = () => {
-    const {mutateAsync: register, isPending} = useRegister();
+const Register = () => {
+
+    const navigate = useNavigate();
+
+    const handleOnSuccess = () => {
+        toast.success('Successfully logged in');
+        navigate("/login");
+    }
+
+    const handleOnError = (error) => {
+        let error_msg;
+        if (error?.status == 422){
+            const field = error?.response?.data?.detail[0].loc[1]
+            error_msg = `Invalid ${field}`;
+        }
+        else
+            error_msg = error?.response?.data?.detail;
+        toast.error(error_msg);
+    }
+
+    const { register, isPending} = useRegister({ onSuccess: handleOnSuccess, onError: handleOnError });
+
     const {
         handleSubmit,
         formState: { errors },
@@ -27,13 +50,10 @@ const Register: FC = () => {
         resolver: zodResolver(schema),
     });
 
-    const onSubmit = async ({ username, email, password, tags }: UserPayload) => {
-        await register({
-            username,
-            email,
-            password,
-            tags: tags || []
-        });
+    const onSubmit = async (payload: RegisterPayload) => {
+        register(payload);
+
+        queryClient.invalidateQueries({ queryKey: [GET_USERS] });
     }
 
     return (

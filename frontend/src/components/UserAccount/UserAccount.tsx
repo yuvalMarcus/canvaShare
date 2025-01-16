@@ -23,7 +23,6 @@ const UserAccount = () => {
         handleSubmit,
         formState: { errors },
         control,
-        setValue
     } = useForm({
         resolver: zodResolver(schema),
     });

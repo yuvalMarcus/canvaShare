@@ -11,10 +11,10 @@ import Shape from "./Shape/Shape.tsx";
 import Photo from "./Photo/Photo.tsx";
 
 interface ActionContentProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
 }
 
-const ActionContent: FC<ActionContentProps> = ({paint}) => {
+const ActionContent: FC<ActionContentProps> = ({canvas}) => {
 
     const { selectedAction, setSelectedAction } = usePaint();
 
@@ -27,10 +27,10 @@ const ActionContent: FC<ActionContentProps> = ({paint}) => {
                 <CloseIcon sx={{ color: grey[100] }} />
             </IconButton>
         </Stack>
-        {selectedAction === ACTION_TYPE.DRAW && <Draw paint={paint} />}
-        {selectedAction === ACTION_TYPE.TEXT && <Text paint={paint} onClose={handleOnClose} />}
-        {selectedAction === ACTION_TYPE.SHAPE && <Shape paint={paint} onClose={handleOnClose} />}
-        {selectedAction === ACTION_TYPE.PHOTO && <Photo paint={paint} />}
+        {selectedAction === ACTION_TYPE.DRAW && <Draw canvas={canvas} />}
+        {selectedAction === ACTION_TYPE.TEXT && <Text canvas={canvas} onClose={handleOnClose} />}
+        {selectedAction === ACTION_TYPE.SHAPE && <Shape canvas={canvas} onClose={handleOnClose} />}
+        {selectedAction === ACTION_TYPE.PHOTO && <Photo canvas={canvas} />}
     </Box>
     )
 }

@@ -1,13 +1,13 @@
 import {Autocomplete, TextField} from "@mui/material";
-import useGetTags from "../../api/hooks/tag/useGetTags.ts";
+import useGetTags from "../../../api/hooks/tag/useGetTags.ts";
 import {FC} from "react";
 
-interface TagsProps {
+interface InputTagsProps {
     tags: string[];
     onChange: (value: string[]) => void;
 }
 
-const Tags: FC<TagsProps> = ({ tags, onChange }) => {
+const InputTags: FC<InputTagsProps> = ({ tags, onChange }) => {
 
     const { data } = useGetTags();
 
@@ -17,7 +17,7 @@ const Tags: FC<TagsProps> = ({ tags, onChange }) => {
             multiple
             id="tags-outlined"
             options={data?.tags?.map(({ name }) => name) || []}
-            defaultValue={tags}
+            value={tags}
             filterSelectedOptions
             onChange={(_, tags) => onChange(tags || [])}
             renderInput={(params) => (
@@ -31,4 +31,4 @@ const Tags: FC<TagsProps> = ({ tags, onChange }) => {
     )
 }
 
-export default Tags;
+export default InputTags;

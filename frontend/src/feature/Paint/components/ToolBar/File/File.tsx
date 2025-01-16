@@ -14,18 +14,21 @@ import { usePaint } from '../../../../../context/paint.context.tsx';
 import {useAuth} from "../../../../../context/auth.context.tsx";
 import useGetPaint from "../../../../../api/hooks/paint/useGetPaint.ts";
 import SaveIcon from '@mui/icons-material/Save';
+import useCreatePaint from "../../../../../api/hooks/paint/useCreatePaint.ts";
+import useUpdatePaint from "../../../../../api/hooks/paint/useUpdatePaint.ts";
 
 interface FileProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
 }
 
-const FileO: FC<FileProps> = ({ paint }) => {
+const FileO: FC<FileProps> = ({ canvas }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
     const { payload: payloadItem } = usePaint();
 
     const { id: paintId } = useParams();
 
-    const { data: data22 } = useGetPaint(paintId ? Number(paintId) : undefined);
+    const { data: paint } = useGetPaint(paintId ? Number(paintId) : undefined);
 
     const { uploadFileCode } = useUpload();
 
@@ -38,22 +41,21 @@ const FileO: FC<FileProps> = ({ paint }) => {
         navigate(`/artist/${userId}`);
     }
 
-    const handleOnError = (e) => {
+    const handleOnError = (error) => {
         let error_msg;
-        if (e?.status == 422){
-            const field = e?.response?.data?.detail[0].loc[1]
+        if (error?.status == 422){
+            const field = error?.response?.data?.detail[0].loc[1]
             error_msg = `Invalid ${field}`;
         }
         else
-            error_msg = e?.response?.data?.detail;
+            error_msg = error?.response?.data?.detail;
         toast.error(error_msg);
     }
 
-    const { mutateAsync, isSuccess, isPending } = useMutation({
-        mutationFn: api.createPaint,
-        onSuccess: handleOnSuccess,
-        onError: handleOnError,
-    })
+    const { create, isPending: createPaintIsPending } = useCreatePaint({ onSuccess: handleOnSuccess, onError: handleOnError })
+
+    const { update, isPending: updatePaintIsPending } = useUpdatePaint({ onSuccess: handleOnSuccess, onError: handleOnError })
+
 
     const { mutateAsync: mutateAsyncu, isPending: isPendingx } = useMutation({
         mutationFn: (payload) => api.updatePaint(Number(paintId), payload),
@@ -63,7 +65,7 @@ const FileO: FC<FileProps> = ({ paint }) => {
 
     const handlePublish = async () => {
 
-        const photo = paint.current?.toDataURL({
+        const photo = canvas.current?.toDataURL({
             format: 'jpeg',
             quality: 0.8
         });
@@ -72,29 +74,28 @@ const FileO: FC<FileProps> = ({ paint }) => {
 
         if(paintId) {
 
-            const  dataToUpdate = Object.entries(payloadItem).filter(([_, value]) => Boolean(value)).reduce((prev, [key, value]) => {
+            const dataToUpdate = Object.entries(payloadItem).filter(([_, value]) => Boolean(value)).reduce((prev, [key, value]) => {
                 prev[key] = value;
                 return prev;
             }, {})
 
-            await mutateAsyncu({
-                name: dataToUpdate?.name || data22?.name,
-                description: dataToUpdate?.description || data22?.description,
-                tags: dataToUpdate?.tags || data22?.tags,
-                isPublic: true,
-                photo: data.photo,
-                data: JSON.stringify(paint.current?.toJSON())
-            }).catch(e => {});
+            update({
+                id: paintId,
+                payload: {
+                    name: dataToUpdate?.name || paint?.name,
+                    description: dataToUpdate?.description || paint?.description,
+                    tags: dataToUpdate?.tags || paint?.tags,
+                    isPublic: true,
+                    photo: data.photo,
+                    data: JSON.stringify(canvas.current?.toJSON())
+                }
+            });
 
         } else {
 
-            await mutateAsync({
+            create({
                 ...payloadItem,
-                name: payloadItem.name || "Untitled Paint",
-                tags: payloadItem.tags || [],
-                photo: data.photo,
-                data: JSON.stringify(paint.current?.toJSON())
-            }).catch(e => {});
+            });
 
         }
     }
@@ -131,7 +132,7 @@ const FileO: FC<FileProps> = ({ paint }) => {
                     <nav aria-label="main mailbox folders">
                         <List>
                             <ListItem disablePadding>
-                                {!isPending && (
+                                {!createPaintIsPending && !updatePaintIsPending && (
                                     <ListItemButton onClick={handlePublish}>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             {paintId ? <SaveIcon /> : <PublishIcon />}
@@ -139,7 +140,7 @@ const FileO: FC<FileProps> = ({ paint }) => {
                                         <ListItemText primary="Publish" />
                                     </ListItemButton>
                                 )}
-                                {isPending && (
+                                {createPaintIsPending || updatePaintIsPending && (
                                     <ListItemButton>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             {paintId ? <SaveIcon /> : <PublishIcon />}

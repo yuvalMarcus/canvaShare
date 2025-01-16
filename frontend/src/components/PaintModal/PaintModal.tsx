@@ -1,21 +1,18 @@
 import {Link} from "react-router-dom";
-import {Avatar, Box, CircularProgress, IconButton, Modal, Stack} from "@mui/material";
+import {Avatar, Box, IconButton, Modal, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import {grey} from "@mui/material/colors";
 import CloseIcon from '@mui/icons-material/Close';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import {queryClient} from "../../main.tsx";
 import {useAuth} from "../../context/auth.context.tsx";
 import ReportModal from "../ReportModal/ReportModal.tsx";
-import useCreateLike from "../../api/hooks/like/useCreateLike.ts";
-import useRemoveLike from "../../api/hooks/like/useRemoveLike.ts";
-import useGetLikes, {GET_LIKES} from "../../api/hooks/like/useGetLikes.ts";
 import useRemovePaint2 from "../../api/hooks/paint/useRemovePaint2.ts";
 import {GET_PAINT} from "../../api/hooks/paint/useGetPaint.ts";
+import Like from "./Like/Like.tsx";
+import {GET_PAINTS} from "../../api/hooks/paint/useGetPaints.ts";
 
 interface PaintModalProps {
     isOpen: boolean;
@@ -35,37 +32,13 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
 
     const { userId: userAuthId } = useAuth();
 
-    const { data: like, isPending: loadLikeIsPending } = useGetLikes(id, userAuthId ?? -1);
-
-    const { data: likes, isPending: loadLikesIsPending } = useGetLikes(id, userId);
-
-    const { create, isPending: createLikeIsPending } = useCreateLike({});
-
-    const { remove, isPending: deleteLikeIsPending } = useRemoveLike({});
-
     const { remove: removePaint } = useRemovePaint2({});
-
-    const handleLike = async () => {
-        if (!id || !userAuthId) return;
-
-        await create({ canvasId: id, userId: userAuthId });
-
-        queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
-    }
-
-    const handleUnLike = async () => {
-        const likeId = like?.results.at(0).id;
-        if(likeId) await remove(likeId);
-        queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
-    }
 
     const handleDeletePaint = async () => {
         if(id) await removePaint(id);
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
+        queryClient.invalidateQueries({ queryKey: [GET_PAINTS] });
     }
-
-    const isPending = loadLikeIsPending || loadLikesIsPending || createLikeIsPending || deleteLikeIsPending;
-    const hasLike = !!like?.results?.length;
     
     const isUserProfileOwner = userAuthId === userId;
 
@@ -119,26 +92,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
                             </Stack>
                         </Stack>
                         <Stack flexDirection="row" justifyContent='space-between'>
-                            <Stack flexDirection="row" alignItems="center">
-                                {isPending && (
-                                    <Box p={1}>
-                                        <CircularProgress size={24} />
-                                    </Box>
-                                )}
-                                {!isPending && hasLike && (
-                                    <IconButton onClick={handleUnLike} disabled={isPending}>
-                                        <FavoriteIcon color={"error"} fontSize="large" />
-                                    </IconButton>
-                                )}
-                                {!isPending && !hasLike && (
-                                    <IconButton onClick={handleLike} disabled={isPending}>
-                                        <FavoriteBorderIcon color={"error"} fontSize="large" />
-                                    </IconButton>
-                                )}
-                                <Typography color={grey[900]} fontWeight="bold">
-                                    {likes?.results?.length}
-                                </Typography>
-                            </Stack>
+                            <Like paintId={id} userId={userId} />
                             <Stack flexDirection="row-reverse">
                                 <ReportModal type='canvas' id={id} />
                             </Stack>

@@ -10,10 +10,10 @@ import {v4 as uuidv4} from "uuid";
 import UploadFileModal from "../../../../../components/UploadFileModal/UploadFileModal.tsx";
 
 interface PhotoProps {
-    paint: MutableRefObject<Canvas | null>
+    canvas: MutableRefObject<Canvas | null>
 }
 
-const Photo: FC<PhotoProps> = ({ paint }) => {
+const Photo: FC<PhotoProps> = ({ canvas }) => {
     const [methodType, setMethodType] = useState<METHOD_TYPE | null>(null);
     const [isUploadFileOpen, setIsUploadFileOpen] = useState<boolean>(false);
 
@@ -21,18 +21,15 @@ const Photo: FC<PhotoProps> = ({ paint }) => {
 
         const img = await Image.fromURL(photo, { crossOrigin: 'anonymous' });
 
-
-        //img.category = 'text';
-
         img.scaleToWidth(400);
         img.data = {
             id: uuidv4(),
             category: 'photo'
         }
 
-        paint.current?.add(img);
-        paint.current?.centerObject(img);
-        paint.current?.renderAll();
+        canvas.current?.add(img);
+        canvas.current?.centerObject(img);
+        canvas.current?.renderAll();
     }
 
     return (
@@ -51,7 +48,7 @@ const Photo: FC<PhotoProps> = ({ paint }) => {
                     </Button>
                 </Stack>
             </Box>
-            <SearchModal paint={paint} isOpen={methodType === METHOD_TYPE.SEARCH} onClose={() => setMethodType(null)} />
+            <SearchModal canvas={canvas} isOpen={methodType === METHOD_TYPE.SEARCH} onClose={() => setMethodType(null)} />
             <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     )

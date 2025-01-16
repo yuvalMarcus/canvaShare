@@ -12,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {useSearchParams} from "react-router-dom";
 import {useLayoutEffect, useState} from "react";
 import OrderBy from "../../components/OrderBy/OrderBy.tsx";
-import Tags from "../../components/Tags/Tags.tsx";
+import InputTags from "../../components/Form/InputTags/InputTags.tsx";
 
 const Search = () => {
     const [searchParams] = useSearchParams();
@@ -47,7 +47,7 @@ const Search = () => {
                     </Stack>
                     <Stack flexDirection="row" alignItems="center" gap={4} mb={4}>
                         <Stack flex={1}>
-                            <Tags tags={tags} onChange={setTags} />
+                            <InputTags tags={tags} onChange={setTags} />
                         </Stack>
                         <OrderBy value={orderBy} onChange={setOrderBy} />
                     </Stack>

@@ -11,20 +11,20 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 interface EditMenuProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
     selectedId: string | null;
 }
 
-const EditMenu: FC<EditMenuProps> = ({paint, selectedId}) => {
+const EditMenu: FC<EditMenuProps> = ({canvas, selectedId}) => {
     const [isOpen, setIsOpen] = useState<boolean>(true);
 
-    const object = paint.current?.getObjects().find(({data}) => data?.id === selectedId);
+    const object = canvas.current?.getObjects().find(({data}) => data?.id === selectedId);
 
     const category = object?.data.category;
 
     const onClose = () => {
-        paint.current?.discardActiveObject();
-        paint.current?.renderAll();
+        canvas.current?.discardActiveObject();
+        canvas.current?.renderAll();
     }
 
     return (
@@ -38,9 +38,9 @@ const EditMenu: FC<EditMenuProps> = ({paint, selectedId}) => {
                 </IconButton>
             </Stack>
             {isOpen && <Fragment>
-                {category === ACTION_TYPE.TEXT && <Text paint={paint} selectedId={selectedId} onClose={onClose} />}
-                {category === ACTION_TYPE.SHAPE && <Shape paint={paint} selectedId={selectedId} onClose={onClose} />}
-                {category === ACTION_TYPE.PHOTO && <Photo paint={paint} selectedId={selectedId} onClose={onClose} />}
+                {category === ACTION_TYPE.TEXT && <Text canvas={canvas} selectedId={selectedId} onClose={onClose} />}
+                {category === ACTION_TYPE.SHAPE && <Shape canvas={canvas} selectedId={selectedId} onClose={onClose} />}
+                {category === ACTION_TYPE.PHOTO && <Photo canvas={canvas} selectedId={selectedId} onClose={onClose} />}
             </Fragment>}
         </Stack>
     )

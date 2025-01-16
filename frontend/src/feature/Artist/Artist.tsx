@@ -18,11 +18,11 @@ import UploadFileModal from "../../components/UploadFileModal/UploadFileModal.ts
 import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import ReportModal from "../../components/ReportModal/ReportModal.tsx";
 import OrderBy from "../../components/OrderBy/OrderBy.tsx";
-import Tags from "../../components/Tags/Tags.tsx";
 import useUpdateUser2 from "../../api/hooks/user/useUpdateUser2.ts";
 import {toast} from "react-toastify";
 import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
+import InputTags from "../../components/Form/InputTags/InputTags.tsx";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -109,7 +109,7 @@ const Artist = () => {
             </Container>
             <Container>
                 <Box py={2}>
-                    <Tags tags={tags} onChange={setTags} />
+                    <InputTags tags={tags} onChange={setTags} />
                 </Box>
             </Container>
             <Container>

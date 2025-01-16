@@ -5,7 +5,7 @@ import {grey} from "@mui/material/colors";
 import ArtistsList from "../../components/ArtistsList/ArtistsList.tsx";
 import {useState} from "react";
 import OrderBy from "../../components/OrderBy/OrderBy.tsx";
-import Tags from "../../components/Tags/Tags.tsx";
+import InputTags from "../../components/Form/InputTags/InputTags.tsx";
 
 const Explore = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -26,7 +26,7 @@ const Explore = () => {
                     </Typography>
                     <Stack flexDirection="row" alignItems="center" gap={4} mb={4}>
                         <Stack flex={1}>
-                            <Tags tags={tags} onChange={setTags} />
+                            <InputTags tags={tags} onChange={setTags} />
                         </Stack>
                         <OrderBy value={orderBy} onChange={setOrderBy} />
                     </Stack>

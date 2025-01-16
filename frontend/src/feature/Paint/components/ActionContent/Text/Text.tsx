@@ -12,11 +12,11 @@ import {DEFAULT_COLOR, DEFAULT_SIZE, FONT_STYLE, FONT_WEIGHT, TEXT_DECORATION} f
 import ColorPicker from "../../../../../components/ColorPicker/ColorPicker.tsx";
 
 interface TextProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
     onClose: () => void;
 }
 
-const Text: FC<TextProps> = ({ paint, onClose }) => {
+const Text: FC<TextProps> = ({ canvas, onClose }) => {
     const [fontWeight, setFontWeight] = useState<FONT_WEIGHT>(FONT_WEIGHT.NORMAL);
     const [textDecoration, setTextDecoration] = useState<TEXT_DECORATION>(TEXT_DECORATION.NONE);
     const [fontStyle, setFontStyle] = useState<FONT_STYLE>(FONT_STYLE.NORMAL);
@@ -65,11 +65,11 @@ const Text: FC<TextProps> = ({ paint, onClose }) => {
             }
         });
 
-        paint.current?.add(newText);
+        canvas.current?.add(newText);
 
-        paint.current?.centerObject(newText);
+        canvas.current?.centerObject(newText);
 
-        paint.current?.renderAll();
+        canvas.current?.renderAll();
 
         onClose();
     }

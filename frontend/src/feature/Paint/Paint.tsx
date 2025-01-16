@@ -16,7 +16,7 @@ import EditMenu from "./components/EditMenu/EditMenu.tsx";
 export const TOOL_BAR_HEIGHT = 110;
 
 FabricObject.ownDefaults.objectCaching = false;
-FabricObject.customProperties = ['data'];
+FabricObject.customProperties = ['data', 'hasBorders', 'hasControls', 'hasRotatingPoint', 'lockMovementX', 'lockMovementY', 'selectable', 'hoverCursor'];
 
 const Paint = () => {
     const controller = useRef<HTMLDivElement | null>(null);
@@ -88,12 +88,12 @@ const Paint = () => {
     return (
         <PaintProvider>
             <Stack>
-                <ToolBar paint={canvas} />
+                <ToolBar canvas={canvas} />
                 <Stack flexDirection="row">
                     <Menu />
                     <Stack ref={controller} position="relative" flex={1} alignItems="center" justifyContent="center" height={`calc(100vh - ${TOOL_BAR_HEIGHT}px)`}>
-                        {selectedObjectId && <EditMenu paint={canvas} selectedId={selectedObjectId} />}
-                        <ActionContent paint={canvas} />
+                        {selectedObjectId && <EditMenu canvas={canvas} selectedId={selectedObjectId} />}
+                        <ActionContent canvas={canvas} />
                         <canvas id="paint" />
                     </Stack>
                 </Stack>

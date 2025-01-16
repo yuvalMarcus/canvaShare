@@ -13,10 +13,10 @@ import Name from "./Name/Name.tsx";
 import {Canvas} from "fabric";
 
 interface ToolBarProps {
-    paint: MutableRefObject<Canvas | null>;
+    canvas: MutableRefObject<Canvas | null>;
 }
 
-const ToolBar: FC<ToolBarProps> = ({ paint }) => {
+const ToolBar: FC<ToolBarProps> = ({ canvas }) => {
 
     const navigate = useNavigate();
 
@@ -34,7 +34,7 @@ const ToolBar: FC<ToolBarProps> = ({ paint }) => {
                 </Box>
             </Stack>
             <Stack flexDirection="row" gap={1}>
-                <File paint={paint} />
+                <File canvas={canvas} />
                 <Tags />
                 <Properties />
             </Stack>

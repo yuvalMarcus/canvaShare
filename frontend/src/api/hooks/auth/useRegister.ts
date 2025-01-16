@@ -1,27 +1,19 @@
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../auth.ts";
-import {toast} from "react-toastify";
-import {useNavigate} from "react-router-dom";
 
-const useRegister = () => {
-    const navigate = useNavigate();
-    return useMutation({
+const useRegister = ({ onSuccess, onError, onSettled }: { onSuccess?: () => void, onError?: (error: Error) => void, onSettled?: () => void }) => {
+
+    const { mutateAsync, isPending } = useMutation({
         mutationFn: api.register,
-        onSuccess: () => {
-            toast.success('Register successfully');
-            navigate("/login");
-            },
-        onError: (e) => {
-            let error_msg;
-            if (e?.status == 422){
-                const field = e?.response?.data?.detail[0].loc[1]
-                error_msg = `Invalid ${field}`;
-            }
-            else
-                error_msg = e?.response?.data?.detail;
-            toast.error(error_msg, {autoClose: 4000});
-        },
+        onSuccess,
+        onError,
+        onSettled
     })
+
+    return {
+        register: mutateAsync,
+        isPending,
+    }
 }
 
 export default useRegister;

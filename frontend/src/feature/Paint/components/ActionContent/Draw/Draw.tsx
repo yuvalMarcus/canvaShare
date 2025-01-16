@@ -13,36 +13,36 @@ export const DEFAULT_SIZE = 10;
 export const DEFAULT_COLOR = '#000000';
 
 interface DrawProps {
-    paint: MutableRefObject<Canvas | null>
+    canvas: MutableRefObject<Canvas | null>
 }
 
-const Draw: FC<DrawProps> = ({paint}) => {
+const Draw: FC<DrawProps> = ({canvas}) => {
     const [selectedType, setSelectedType] = useState<DRAW_TYPE>(DRAW_TYPE.PENCIL);
     const [size, setSize] = useState<number>(DEFAULT_SIZE);
     const [color, setColor] = useState<string>(DEFAULT_COLOR);
 
     useLayoutEffect(() => {
-        if(paint.current) drawingMode(paint.current, true);
+        if(canvas.current) drawingMode(canvas.current, true);
 
         return () => {
-            if(paint.current) drawingMode(paint.current, false);
+            if(canvas.current) drawingMode(canvas.current, false);
         }
     }, []);
 
     const handleUpdateType = (value: DRAW_TYPE) => {
         setSelectedType(value);
-        setActionType(paint.current, value);
+        setActionType(canvas.current, value);
     }
 
     const handleUpdateSize = (event: Event, newValue: number | number[]) => {
         const value = typeof newValue == "number" ? newValue : newValue[0];
         setSize(value);
-        setBrushSize(paint.current, value);
+        setBrushSize(canvas.current, value);
     }
 
     const handleUpdateColor = (color: string) => {
         setColor(color);
-        setBrushColor(paint.current, color);
+        setBrushColor(canvas.current, color);
     }
 
     return (

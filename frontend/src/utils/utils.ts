@@ -1,4 +1,5 @@
 import {camelCase, snakeCase} from 'lodash';
+
 export const objectToCamelCase = (data: Object) => {
     const isValue = typeof data !== 'object' && !Array.isArray(data) && data !== null;
 

@@ -8,6 +8,13 @@ export interface userTable {
     password: string;
 }
 
+export interface RegisterPayload {
+    username: string;
+    email: string;
+    password: string;
+    tags: string[];
+}
+
 export interface UserPayload {
     username?: string;
     email?: string;
