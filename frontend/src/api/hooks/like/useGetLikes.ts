@@ -3,7 +3,7 @@ import * as api from "../../like.ts";
 
 interface UseGetLikesParams {
     paintId: number;
-    userId: number;
+    userId?: number;
 }
 
 export const GET_LIKES = 'getLikes';

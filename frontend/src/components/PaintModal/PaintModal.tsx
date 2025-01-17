@@ -101,7 +101,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
                         </Stack>
                     </Stack>
                     <Stack flexDirection="row" justifyContent="space-between">
-                        <Like paintId={id} userId={userId} />
+                        <Like paintId={id} />
                         <ReportModal type={ReportType.PAINT} paintId={id} userId={userId} />
                     </Stack>
                 </Stack>

@@ -12,10 +12,9 @@ import {GET_USERS} from "../../../api/hooks/user/useGetUsers.ts";
 
 interface LikeProps {
     paintId: number;
-    userId: number;
 }
 
-const Like = ({ paintId, userId }: LikeProps) => {
+const Like = ({ paintId }: LikeProps) => {
 
     const { userId: userAuthId } = useAuth();
 
@@ -26,9 +25,9 @@ const Like = ({ paintId, userId }: LikeProps) => {
 
     const handleOnError = () => {}
 
-    const { data: like, isPending: loadLikeIsPending } = useGetLikes({ paintId, userId: userAuthId || 1 });
+    const { data: like, isPending: loadLikeIsPending } = useGetLikes({ paintId, userId: userAuthId || 0 });
 
-    const { data: likes, isPending: loadLikesIsPending } = useGetLikes({ paintId, userId });
+    const { data: likes, isPending: loadLikesIsPending } = useGetLikes({ paintId });
 
     const { create, isPending: createLikeIsPending } = useCreateLike({ onSuccess: handleOnSuccess, onError: handleOnError });
 
