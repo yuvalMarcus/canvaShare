@@ -10,7 +10,7 @@ interface TextareaProps {
     rows?: number;
 }
 
-const Textarea = ({ name, control, label, defaultValue, f_type, rows=2}: TextareaProps) => {
+const Textarea = ({ name, control, label, defaultValue, f_type, rows = 4 }: TextareaProps) => {
     f_type = f_type ? f_type : "text"
     return (
         <Controller

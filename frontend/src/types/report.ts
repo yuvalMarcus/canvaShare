@@ -1,8 +1,8 @@
+import {ReportType} from "../components/ReportModal/ReportModal.config.ts";
+
 export interface ReportPayload {
-    id?: number;
-    date?: number;
-    type: 'artist' | 'canvas';
-    userId?: number;
+    type: ReportType;
+    userId: number;
     canvasId?: number;
     description: string;
 }

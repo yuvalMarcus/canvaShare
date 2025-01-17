@@ -10,7 +10,7 @@ import {grey} from "@mui/material/colors";
 import PaintList from "../../components/PaintList/PaintList.tsx";
 import * as S from "../Home/Home.style.ts";
 import Button from "@mui/material/Button";
-import {Link, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import {useState} from "react";
 import {useAuth} from "../../context/auth.context.tsx";
 import EditIcon from '@mui/icons-material/Edit';
@@ -24,6 +24,7 @@ import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 import InputTags from "../../components/Form/InputTags/InputTags.tsx";
 import {UserPayload} from "../../types/user.ts";
+import {ReportType} from "../../components/ReportModal/ReportModal.config.ts";
 
 const Artist = () => {
     const [orderBy, setOrderBy] = useState<string>('date');
@@ -32,6 +33,8 @@ const Artist = () => {
     const [uploadType, setUploadType] = useState<'profile' | 'cover' | null>(null);
 
     const { id: userIdParam } = useParams();
+
+    const navigate = useNavigate();
 
     const handleOnSuccess = () => {
         toast.success('Image uploaded successfully');
@@ -107,8 +110,8 @@ const Artist = () => {
                 <Stack flexDirection="row" alignItems="center" justifyContent="space-between" gap={3} pl={20} py={1} mb={4}>
                     <Stack flexDirection="row" gap={2}>
                         <Typography color={user?.username ? grey[900] : grey[500]} fontWeight="bold" variant="h4" textTransform="capitalize">{user?.username ?? 'username'}</Typography>
+                        {userId && (<ReportModal type={ReportType.ARTIST} userId={userId} />)}
                         {isUserProfileOwner && <Button variant="contained"  to='/paint' component={Link}>add paint</Button>}
-                        {!isUserProfileOwner && userId && (<ReportModal type='artist' id={userId} />)}
                     </Stack>
                     <OrderBy value={orderBy} onChange={setOrderBy} />
                 </Stack>
