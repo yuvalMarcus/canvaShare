@@ -7,12 +7,10 @@ import {toast} from "react-toastify";
 const useDeleteUser = () => {
     return useMutation({
         mutationFn: (id: number) => api.deleteUser(id),
-        onSuccess: () => {},
-        onError: () => {toast.error("Delete failed");},
-        onSettled: async (_, error) => {
-            if (!error)
-                await queryClient.invalidateQueries({queryKey: [GET_USERS]})
-        }
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [GET_USERS]})
+        },
+        onError: () => {toast.error("Delete failed");}
     })
 }
 

@@ -3,7 +3,7 @@ import * as api from "../../like.ts";
 
 interface UseGetLikesParams {
     paintId: number;
-    userId: number;
+    userId?: number;
 }
 
 export const GET_LIKES = 'getLikes';
@@ -12,7 +12,7 @@ const useGetLikes = (params : UseGetLikesParams) => {
 
     const { data, isPending } = useQuery({
         queryKey: [GET_LIKES, params],
-        queryFn: () => api.getLikes({ canvasId: params.paintId, userId: params.userId }),
+        queryFn: () => api.getLikes({ paintId: params.paintId, userId: params.userId }),
     });
 
     return {

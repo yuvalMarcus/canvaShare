@@ -5,6 +5,6 @@ export const orderByList = [
     },
     {
         label: 'Like',
-        value: 'like'
+        value: 'likes'
     }
 ]

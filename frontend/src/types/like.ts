@@ -1,4 +1,4 @@
 export interface LikePayload {
-    canvasId: number;
+    paintId: number;
     userId: number;
 }

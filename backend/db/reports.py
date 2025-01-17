@@ -5,12 +5,12 @@ from .utils import connect_to_db, commit_and_close_db
 
 __all__ = ['insert_report', 'get_reports', 'delete_report']
 
-def insert_report(report_type: Literal['artist', 'artist'], canvas_id: int | None,
+def insert_report(report_type: Literal['artist', 'artist'], paint_id: int | None,
                         user_id: int | None, description: str) -> None:
     con, cur = connect_to_db()
     cur.execute(
-        f"INSERT INTO reports (date, type, canvas_id, user_id, description) VALUES ({int(time.time())},%s,%s,%s,%s)",
-        (report_type, canvas_id, user_id, description))
+        f"INSERT INTO reports (date, type, paint_id, user_id, description) VALUES ({int(time.time())},%s,%s,%s,%s)",
+        (report_type, paint_id, user_id, description))
     commit_and_close_db(con)
 
 def get_reports() -> List[Tuple[int, int, str, int | None, int | None, str]]:

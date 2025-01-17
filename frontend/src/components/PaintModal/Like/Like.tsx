@@ -8,28 +8,26 @@ import useGetLikes, {GET_LIKES} from "../../../api/hooks/like/useGetLikes.ts";
 import useCreateLike from "../../../api/hooks/like/useCreateLike.ts";
 import useRemoveLike from "../../../api/hooks/like/useRemoveLike.ts";
 import {useAuth} from "../../../context/auth.context.tsx";
-import {toast} from "react-toastify";
+import {GET_USERS} from "../../../api/hooks/user/useGetUsers.ts";
 
 interface LikeProps {
     paintId: number;
-    userId: number;
 }
 
-const Like = ({ paintId, userId }: LikeProps) => {
+const Like = ({ paintId }: LikeProps) => {
 
     const { userId: userAuthId } = useAuth();
 
     const handleOnSuccess = () => {
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
+        queryClient.invalidateQueries({ queryKey: [GET_USERS] });
     }
 
-    const handleOnError = () => {
-        toast.error('Like failed');
-    }
+    const handleOnError = () => {}
 
-    const { data: like, isPending: loadLikeIsPending } = useGetLikes({ paintId, userId: userAuthId || 1 });
+    const { data: like, isPending: loadLikeIsPending } = useGetLikes({ paintId, userId: userAuthId || 0 });
 
-    const { data: likes, isPending: loadLikesIsPending } = useGetLikes({ paintId, userId });
+    const { data: likes, isPending: loadLikesIsPending } = useGetLikes({ paintId });
 
     const { create, isPending: createLikeIsPending } = useCreateLike({ onSuccess: handleOnSuccess, onError: handleOnError });
 
@@ -37,7 +35,7 @@ const Like = ({ paintId, userId }: LikeProps) => {
 
     const handleLike = async () => {
         if (!paintId || !userAuthId) return;
-        create({ canvasId: paintId, userId: userAuthId });
+        create({ paintId: paintId, userId: userAuthId });
     }
 
     const handleUnLike = async () => {

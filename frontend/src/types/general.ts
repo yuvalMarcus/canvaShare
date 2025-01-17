@@ -1,5 +1,4 @@
 export interface UseMutationHook {
-    onSuccess: () => void;
-    onError: () => void;
-    onSettled: () => void;
+    onSuccess?: () => void,
+    onError?: (error: Error) => void
 }

@@ -1,13 +1,13 @@
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../auth.ts";
+import {UseMutationHook} from "../../../types/general.ts";
 
-const useLogin = ({ onSuccess, onError, onSettled }: { onSuccess?: () => void, onError?: (error: Error) => void, onSettled?: () => void }) => {
+const useLogin = ({ onSuccess, onError }: UseMutationHook) => {
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: api.login,
         onSuccess,
-        onError,
-        onSettled
+        onError
     });
 
     return {

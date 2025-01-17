@@ -1,12 +1,13 @@
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../tags.ts";
-const useCreateTag2 = ({ onSuccess, onError, onSettled }: { onSuccess?: () => void, onError?: (error: Error) => void, onSettled?: () => void }) => {
+import {UseMutationHook} from "../../../types/general.ts";
+
+const useCreateTag2 = ({ onSuccess, onError }: UseMutationHook) => {
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: api.createTag,
         onSuccess,
-        onError,
-        onSettled
+        onError
     });
 
     return {
