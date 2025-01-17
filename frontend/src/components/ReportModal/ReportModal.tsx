@@ -72,8 +72,8 @@ const ReportModal: FC<ReportModalProps> =({type, paintId, userId}) => {
                 onClose={() => setIsOpen(false)}
                 aria-labelledby="report-modal-title"
                 aria-describedby="report-modal-description">
-                <Stack height="100%" alignItems="center" justifyContent="center">
-                    <Box bgcolor={grey[200]} minWidth={400}>
+                <Stack height="100%" alignItems="center" justifyContent="center" onClick={() => setIsOpen(false)}>
+                    <Box bgcolor={grey[200]} minWidth={400} onClick={event => event.stopPropagation()}>
                         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" px={2} py={1} borderBottom={1} borderColor={grey[300]}>
                             <Typography variant="h5">Report</Typography>
                             <IconButton onClick={() => setIsOpen(false)}>
