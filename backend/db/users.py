@@ -42,8 +42,8 @@ def get_popular_users(limit: Optional[int]=None):
     filters = ' limit %s' if limit else ''
     params = [limit] if limit else []
     con, cur = connect_to_db()
-    cur.execute("""WITH canvas_likes AS (SELECT user_id, sum(likes) as likessum FROM canvases group by user_id)
-SELECT users.* FROM users, canvas_likes WHERE users.id=canvas_likes.user_id ORDER BY likessum DESC""" + filters, (*params,))
+    cur.execute("""WITH paint_likes AS (SELECT user_id, sum(likes) as likessum FROM paints group by user_id)
+SELECT users.* FROM users, paint_likes WHERE users.id=paint_likes.user_id ORDER BY likessum DESC""" + filters, (*params,))
     res = cur.fetchall()
     con.close()
     return res

@@ -11,25 +11,25 @@ export const searchPhotos = async (params: Record<string, string>): Promise<axio
 }
 
 export const getPaint = async (id?: number): Promise<axios.AxiosResponse> => {
-    const res = await instance.get(`canvas/${id}`);
+    const res = await instance.get(`paint/${id}`);
     return res.data;
 }
 
 export const getPaints = async (params): Promise<axios.AxiosResponse> => {
-    const res = await instance.get('canvas', {
+    const res = await instance.get('paint', {
         params
     });
     return res.data;
 }
 
 export const createPaint = async (payload: PaintPayload): Promise<axios.AxiosResponse> => {
-    return await instance.post('canvas', payload);
+    return await instance.post('paint', payload);
 }
 
 export const updatePaint = async (id: number, payload: PaintPayload): Promise<axios.AxiosResponse> => {
-    return await instance.put(`canvas/${id}`, payload);
+    return await instance.put(`paint/${id}`, payload);
 }
 
 export const deletePaint = async (id: number) => {
-     await instance.delete(`canvas/${id}`);
+     await instance.delete(`paint/${id}`);
 }

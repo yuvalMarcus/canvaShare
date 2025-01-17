@@ -14,6 +14,7 @@ import {GET_PAINT} from "../../api/hooks/paint/useGetPaint.ts";
 import Like from "./Like/Like.tsx";
 import {GET_PAINTS} from "../../api/hooks/paint/useGetPaints.ts";
 import {toast} from "react-toastify";
+import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 
 interface PaintModalProps {
     isOpen: boolean;
@@ -35,9 +36,9 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
 
     const handleOnSuccess = () => {
         toast.success('Paint remove successfully');
-
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
         queryClient.invalidateQueries({ queryKey: [GET_PAINTS] });
+        queryClient.invalidateQueries({ queryKey: [GET_USERS, {orderBy: 'popular', limit: 4}] });
     }
 
     const { remove: removePaint } = useRemovePaint2({ onSuccess: handleOnSuccess });
@@ -100,7 +101,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
                         <Stack flexDirection="row" justifyContent='space-between'>
                             <Like paintId={id} userId={userId} />
                             <Stack flexDirection="row-reverse">
-                                <ReportModal type='canvas' id={id} />
+                                <ReportModal type='paint' id={id} />
                             </Stack>
                         </Stack>
                     </Stack>

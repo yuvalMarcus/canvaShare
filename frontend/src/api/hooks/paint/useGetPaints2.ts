@@ -9,7 +9,7 @@ const useGetPaints2 = ({userId, tags, order, search}) => {
         userId,
         tags: tags.join(','),
         order,
-        canvasName: search || ''
+        paintName: search || ''
     }
 
     const {

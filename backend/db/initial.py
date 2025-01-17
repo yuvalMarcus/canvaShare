@@ -24,7 +24,7 @@ def create_tables_and_folders() -> None:
     for command in commands:
         cur.execute(command)
     commit_and_close_db(con)
-    for folder in ['canvases', UPLOAD_DIR]:
+    for folder in ['paints', UPLOAD_DIR]:
         Path(folder).mkdir(exist_ok=True, parents=True)
 
 def delete_tables_and_folders() -> None:
@@ -32,7 +32,7 @@ def delete_tables_and_folders() -> None:
     if ans.lower() not in ['yes', 'y']:
         print('Aborted')
         return
-    for folder in ['canvases', UPLOAD_DIR]:
+    for folder in ['paints', UPLOAD_DIR]:
         try:
             shutil.rmtree(f'{folder}/')
         except FileNotFoundError:

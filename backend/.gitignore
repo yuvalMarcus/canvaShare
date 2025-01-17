@@ -166,7 +166,7 @@ cython_debug/
 .DS_Store
 .idea/
 
-canvases/
+paints/
 myenv/
 test-env/
 test_main.py

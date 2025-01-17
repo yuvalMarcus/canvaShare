@@ -1,8 +1,8 @@
 export interface ReportPayload {
     id?: number;
     date?: number;
-    type: 'artist' | 'canvas';
+    type: 'artist' | 'paint';
     userId?: number;
-    canvasId?: number;
+    paintId?: number;
     description: string;
 }

@@ -179,15 +179,15 @@ const CreateUser: FC = () => {
                             <Box display="block" mb={0.5}>
                                 <FormControlLabel
                                     control={<Checkbox />}
-                                    label="Canvas view"
-                                    onChange={(e) => setValue("roles", [...(e.target.checked ? ["Canvas_view"] : []), ...roles])}
+                                    label="Paint view"
+                                    onChange={(e) => setValue("roles", [...(e.target.checked ? ["Paint_view"] : []), ...roles])}
                                 />
                             </Box>
                             <Box display="block" mb={0.5}>
                                 <FormControlLabel
                                     control={<Checkbox />}
-                                    label="Canvas management"
-                                    onChange={(e) => setValue("roles", [...(e.target.checked ? ["Canvas_management"] : []), ...roles])}
+                                    label="Paint management"
+                                    onChange={(e) => setValue("roles", [...(e.target.checked ? ["Paint_management"] : []), ...roles])}
                                 />
                             </Box>
                             <Box display="block" mb={0.5}>

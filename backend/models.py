@@ -10,7 +10,7 @@ class Tokens(BaseModel):
     token: str
     refresh_token: str
 
-class Canvas(BaseModel):
+class Paint(BaseModel):
     id: Optional[int] = None
     user_id: Optional[int] = None
     username: Optional[str] = None
@@ -25,19 +25,19 @@ class Canvas(BaseModel):
     description: Annotated[Optional[str], Query(max_length=250)] = None
     photo: Annotated[Optional[str], Query(max_length=100)] = None
 
-class Canvases(BaseModel):
+class Paints(BaseModel):
     next: Optional[int] = None
     prev: Optional[int] = None
-    results: List[Canvas]
+    results: List[Paint]
 
-class CanvasQueries(BaseModel):
+class PaintQueries(BaseModel):
     user_id: Optional[int] = None
-    canvas_name: Optional[str] = None
+    paint_name: Optional[str] = None
     tags: Optional[str] = None
 
 class Like(BaseModel):
     id: Optional[int] = None
-    canvas_id: int
+    paint_id: int
     user_id: Optional[int] = None
 
 class Likes(BaseModel):
@@ -46,8 +46,8 @@ class Likes(BaseModel):
 class Report(BaseModel):
     id: Optional[int] = None
     date: Optional[int] = None
-    type: Literal['canvas', 'artist']
-    canvas_id: Optional[int] = None
+    type: Literal['paint', 'artist']
+    paint_id: Optional[int] = None
     user_id: Optional[int] = None
     description: Annotated[str, Query(min_length=1, max_length=100)]
 

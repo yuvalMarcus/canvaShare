@@ -38,7 +38,7 @@ const reports = [
     "Counterfeits and intellectual property",
     "Other"]
 
-export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: number}) {
+export default function ReportModal({type, id}: {type: 'artist' | 'paint', id: number}) {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -54,7 +54,7 @@ export default function ReportModal({type, id}: {type: 'artist' | 'canvas', id: 
         const report: ReportPayload = {
             type: type,
             userId: id,
-            canvasId: id,
+            paintId: id,
             description: value
         };
         createMutate(report);
