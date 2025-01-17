@@ -8,14 +8,11 @@ import {toast} from "react-toastify";
 const useDeleteTag = () => {
     return useMutation({
         mutationFn: (id: number) => api.deleteTag(id),
-        onSuccess: () => {},
-        onError: () => {toast.error("Delete failed");},
-        onSettled: async (_, error) => {
-            if (!error){
-                await queryClient.invalidateQueries({queryKey: [GET_TAGS]})
-                await queryClient.invalidateQueries({queryKey: [GET_PAINTS]})
-            }
-        }
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: [GET_TAGS]})
+            queryClient.invalidateQueries({queryKey: [GET_PAINTS]})
+        },
+        onError: () => {toast.error("Delete failed");}
     })
 }
 

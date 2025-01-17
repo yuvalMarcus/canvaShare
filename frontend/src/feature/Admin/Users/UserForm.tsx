@@ -29,8 +29,8 @@ const UserForm = ({userId}: {userId?: number}) => {
     const roles = [
         ['User table view', 'user_view'],
         ['User table management', 'user_management'],
-        ['Paint table view', 'canvas_view'],
-        ['Paint table management', 'canvas_management'],
+        ['Paint table view', 'paint_view'],
+        ['Paint table management', 'paint_management'],
         ['Report table view', 'report_view'],
         ['Report table management', 'report_management'],
         ['Roles_view', 'roles_view'],

@@ -1,6 +1,6 @@
 from typing import List, Tuple
 from fastapi import HTTPException, status
-from backend.models import Canvas
+from backend.models import Paint
 from .utils import connect_to_db, commit_and_close_db
 
 def get_tags() -> List[dict]:
@@ -10,11 +10,11 @@ def get_tags() -> List[dict]:
     con.close()
     return tags
 
-def get_canvas_tags(canvas_id: int) -> List[str]:
+def get_paint_tags(paint_id: int) -> List[str]:
     con, cur = connect_to_db()
     cur.execute(
-        "SELECT tags.name FROM tags, tags_of_canvases WHERE canvas_id = %s AND tags.id=tags_of_canvases.tag_id",
-        (canvas_id,))
+        "SELECT tags.name FROM tags, tags_of_paints WHERE paint_id = %s AND tags.id=tags_of_paints.tag_id",
+        (paint_id,))
     tags_name = cur.fetchall()
     con.close()
     return [tag_name[0] for tag_name in tags_name]
@@ -50,10 +50,10 @@ def insert_tag(tag_name: str) -> None:
     con.commit()
     con.close()
 
-def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
+def insert_paint_tags(paint: Paint, paint_id: int) -> None:
     con, cur = connect_to_db()
-    for tag in canvas.tags:
-        # checks if tag exist in db. if not create new tag and then add this tag to canvas.
+    for tag in paint.tags:
+        # checks if tag exist in db. if not create new tag and then add this tag to paint.
         cur.execute("SELECT id FROM tags WHERE name = %s", (tag,))
         res = cur.fetchone()
         if res is None:
@@ -61,7 +61,7 @@ def insert_canvas_tags(canvas: Canvas, canvas_id: int) -> None:
             cur.execute("INSERT INTO tags(name) VALUES (%s) RETURNING id", (tag,))
             res = cur.fetchone()
         tag_id = res[0]
-        cur.execute("INSERT INTO tags_of_canvases VALUES (%s,%s)", (canvas_id, tag_id))
+        cur.execute("INSERT INTO tags_of_paints VALUES (%s,%s)", (paint_id, tag_id))
     commit_and_close_db(con)
 
 def delete_tag(tag_id: int) -> None:
@@ -69,9 +69,9 @@ def delete_tag(tag_id: int) -> None:
     cur.execute("DELETE FROM tags WHERE id = %s ", (tag_id,))
     commit_and_close_db(con)
 
-def remove_canvas_tags(canvas_id: int) -> None:
+def remove_paint_tags(paint_id: int) -> None:
     con, cur = connect_to_db()
-    cur.execute("DELETE FROM tags_of_canvases WHERE canvas_id = %s", (canvas_id,))
+    cur.execute("DELETE FROM tags_of_paints WHERE paint_id = %s", (paint_id,))
     commit_and_close_db(con)
 
 def delete_favorite_tags(user_id: int) -> None:

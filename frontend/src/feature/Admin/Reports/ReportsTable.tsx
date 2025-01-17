@@ -9,7 +9,7 @@ const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
     {id: 'date', align: 'left', disablePadding: false, label: 'Date', type: 'date'},
     {id: 'type', align: 'left', disablePadding: false, label: 'Type', type: 'text'},
-    {id: 'canvasId', align: 'left', disablePadding: false, label: 'Paint ID', type: 'text'},
+    {id: 'paintId', align: 'left', disablePadding: false, label: 'Paint ID', type: 'text'},
     {id: 'userId', align: 'left', disablePadding: false, label: 'User ID', type: 'text'},
     {id: 'description', align: 'left', disablePadding: false, label: 'Description', type: 'text'},
 ];
@@ -20,8 +20,8 @@ const ReportsTable = () => {
 
     const rows = !getIsPending
         && Array.isArray(data?.reports)
-        && data.reports.map(({id, date, type, canvasId, userId, description}: report) => {
-        return {id, date, type, canvasId, userId, description}}) || []
+        && data.reports.map(({id, date, type, paintId, userId, description}: report) => {
+        return {id, date, type, paintId, userId, description}}) || []
 
     const handleDelete = (id: number) => {
         deleteMutate(id);

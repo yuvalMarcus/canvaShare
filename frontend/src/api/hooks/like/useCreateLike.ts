@@ -1,13 +1,13 @@
 import {useMutation} from "@tanstack/react-query";
 import * as api from "../../like.ts";
+import {UseMutationHook} from "../../../types/general.ts";
 
-const useCreateLike = ({ onSuccess, onError, onSettled }: { onSuccess?: () => void, onError?: () => void, onSettled?: () => void }) => {
+const useCreateLike = ({ onSuccess, onError }: UseMutationHook) => {
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: api.createLike,
         onSuccess,
-        onError,
-        onSettled
+        onError
     });
 
     return {

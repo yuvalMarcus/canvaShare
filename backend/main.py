@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from user import access_router, user_router, register_endpoint
 from report import router as report_router
-from canvas import router as canvas_router
+from paint import router as paint_router
 from photo import router as photo_router
 from tag import router as tag_router
 from like import router as like_router
@@ -21,7 +21,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
 load_dotenv()
 app = FastAPI()
-for router in [canvas_router, user_router, report_router, photo_router, tag_router, access_router, like_router]:
+for router in [paint_router, user_router, report_router, photo_router, tag_router, access_router, like_router]:
     app.include_router(router)
 
 app.add_middleware(CORSMiddleware, allow_origins=[os.getenv('ORIGIN')], allow_credentials=True, allow_methods=["*"],
@@ -36,7 +36,7 @@ tags = ['Christmas', 'Animals', 'Art', 'Beauty', 'Design', 'DIY And Crafts', 'Fo
 insert_initial_values(tags, "tags")
 
 roles = ['admin_view']
-for obj in ['user', 'canvas', 'report', 'roles']:
+for obj in ['user', 'paint', 'report', 'roles']:
     roles.append(f'admin_{obj}_view')
     roles.append(f'admin_{obj}_management')
 

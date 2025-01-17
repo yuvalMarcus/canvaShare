@@ -8,5 +8,5 @@ export const reports = [
 ]
 export enum ReportType {
     ARTIST = 'artist',
-    PAINT = 'canvas'
+    PAINT = 'paint'
 }

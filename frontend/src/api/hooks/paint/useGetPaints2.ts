@@ -9,7 +9,7 @@ const useGetPaints2 = ({userId, tags, order, search}) => {
         userId,
         tags: tags.join(','),
         order,
-        canvasName: search || ''
+        paintName: search || ''
     }
 
     const {
@@ -22,7 +22,7 @@ const useGetPaints2 = ({userId, tags, order, search}) => {
         initialPageParam: 1,
         queryKey: [GET_PAINTS, params],
         queryFn: ({ pageParam }) => api.getPaints({ pageNum: pageParam, ...params}),
-        getNextPageParam: (lastPage, allPages) => lastPage.next,
+        getNextPageParam: (lastPage) => lastPage.next,
     })
 
     return {

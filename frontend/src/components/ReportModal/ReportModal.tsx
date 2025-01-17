@@ -55,7 +55,7 @@ const ReportModal: FC<ReportModalProps> =({type, paintId, userId}) => {
         create({
             type,
             userId,
-            canvasId: paintId,
+            paintId,
             description: option === "Other" ? description : option
         });
     }
