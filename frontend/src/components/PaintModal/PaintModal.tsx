@@ -38,7 +38,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
         toast.success('Paint remove successfully');
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
         queryClient.invalidateQueries({ queryKey: [GET_PAINTS] });
-        queryClient.invalidateQueries({ queryKey: [GET_USERS, {orderBy: 'popular', limit: 4}] });
+        queryClient.invalidateQueries({ queryKey: [GET_USERS] });
     }
 
     const { remove: removePaint } = useRemovePaint2({ onSuccess: handleOnSuccess });

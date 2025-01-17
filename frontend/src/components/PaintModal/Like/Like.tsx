@@ -21,7 +21,7 @@ const Like = ({ paintId, userId }: LikeProps) => {
 
     const handleOnSuccess = () => {
         queryClient.invalidateQueries({ queryKey: [GET_LIKES] });
-        queryClient.invalidateQueries({ queryKey: [GET_USERS, {orderBy: 'popular', limit: 4}] });
+        queryClient.invalidateQueries({ queryKey: [GET_USERS] });
     }
 
     const handleOnError = () => {}

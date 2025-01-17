@@ -1,12 +1,12 @@
 import {ReportPayload} from "../types/report.ts";
-import axios from "axios";
+import {AxiosResponse} from "axios";
 import instance from "../server/axios.ts";
 
-export const createReport = async (payload: ReportPayload): Promise<axios.AxiosResponse> => {
+export const createReport = async (payload: ReportPayload): Promise<AxiosResponse> => {
     return await instance.post('report', payload);
 }
 
-export const getReports = async (): Promise<axios.AxiosResponse> => {
+export const getReports = async (): Promise<AxiosResponse> => {
     const res = await instance.get('report');
     return res.data;
 }
