@@ -56,7 +56,7 @@ const Draw: FC<DrawProps> = ({canvas}) => {
                             const Icon = mapDrawTypeToIcon[value];
 
                             return (
-                                <Button onClick={() => handleUpdateType(value as DRAW_TYPE)}>
+                                <Button key={value} onClick={() => handleUpdateType(value as DRAW_TYPE)}>
                                     <Stack alignItems="center">
                                         <Icon sx={{ color: selectedType === value ? blue[300] : grey[100] }} />
                                         <Typography fontSize='medium' textTransform="capitalize" color={selectedType === value ? blue[300] : grey[100]}>{value}</Typography>

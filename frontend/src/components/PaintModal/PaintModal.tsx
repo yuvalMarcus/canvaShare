@@ -14,6 +14,7 @@ import {GET_PAINT} from "../../api/hooks/paint/useGetPaint.ts";
 import Like from "./Like/Like.tsx";
 import {GET_PAINTS} from "../../api/hooks/paint/useGetPaints.ts";
 import {toast} from "react-toastify";
+import {ReportType} from "../ReportModal/ReportModal.config.ts";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 
 interface PaintModalProps {
@@ -36,6 +37,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
 
     const handleOnSuccess = () => {
         toast.success('Paint remove successfully');
+
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
         queryClient.invalidateQueries({ queryKey: [GET_PAINTS] });
         queryClient.invalidateQueries({ queryKey: [GET_USERS] });
@@ -50,64 +52,62 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
     const isUserProfileOwner = userAuthId === userId;
 
     return (
-        <Modal
-            open={isOpen}
-            onClose={onClose}
-            aria-labelledby={name}
-            aria-describedby={description}
-        >
-            <Stack flexDirection="row">
-                <Stack flexDirection="row" position="absolute" top="50%" left="50%" border={2} borderColor={grey[900]} boxShadow={24} sx={{
-                    transform: 'translate(-50%, -50%)',
-                }}>
-                    <Box position="relative" width={1000} height={800} sx={{ backgroundImage: `url(${photo})`, backgroundSize: "100%", backgroundRepeat: 'no-repeat', backgroundColor: '#f5f5f5', backgroundPosition: 'center' }}>
-                        {isUserProfileOwner && (
-                            <Stack flexDirection="row" position="absolute" zIndex={10} sx={{ backgroundColor: grey[900] }}>
-                                <IconButton component={Link} to={`/paint/${id}`}>
-                                    <EditIcon sx={{ color: grey[100] }} />
-                                </IconButton>
-                                <IconButton onClick={handleDeletePaint}>
-                                    <DeleteIcon sx={{ color: grey[100] }} />
-                                </IconButton>
-                            </Stack>
-                        )}
-                    </Box>
-                    <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
-                        <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
-                            <Button component={Link} to={`/artist/${userId}`}>
-                                <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"}  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
-                                <Typography color={grey[900]} ml={2}>
-                                    {username}
-                                </Typography>
-                            </Button>
-                            <CloseIcon onClick={onClose} cursor="pointer" />
+    <Modal
+        open={isOpen}
+        onClose={onClose}
+        aria-labelledby={name}
+        aria-describedby={description}
+    >
+        <Stack flexDirection="row">
+            <Stack flexDirection="row" position="absolute" top="50%" left="50%" border={2} borderColor={grey[900]} boxShadow={24} sx={{
+                transform: 'translate(-50%, -50%)',
+            }}>
+                <Box position="relative" width={1000} height={800} sx={{ backgroundImage: `url(${photo})`, backgroundSize: "100%", backgroundRepeat: 'no-repeat', backgroundColor: '#f5f5f5', backgroundPosition: 'center' }}>
+                    {isUserProfileOwner && (
+                        <Stack flexDirection="row" position="absolute" zIndex={10} sx={{ backgroundColor: grey[900] }}>
+                            <IconButton component={Link} to={`/paint/${id}`}>
+                                <EditIcon sx={{ color: grey[100] }} />
+                            </IconButton>
+                            <IconButton onClick={handleDeletePaint}>
+                                <DeleteIcon sx={{ color: grey[100] }} />
+                            </IconButton>
                         </Stack>
-                        <Stack flex={1} gap={2} p={2}>
-                            <Stack flexDirection="row" gap={1} alignItems="center">
-                                <Typography color={grey[900]} variant="h5">
-                                    {name}
-                                </Typography>
-                            </Stack>
-                            <Typography color={grey[900]} component="p">
-                                {description}
+                    )}
+                </Box>
+                <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
+                    <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
+                        <Button component={Link} to={`/artist/${userId}`}>
+                            <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"}  sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
+                            <Typography color={grey[900]} ml={2}>
+                                {username}
+                            </Typography>
+                        </Button>
+                        <CloseIcon onClick={onClose} cursor="pointer" />
+                    </Stack>
+                    <Stack flex={1} gap={2} p={2}>
+                        <Stack flexDirection="row" gap={1} alignItems="center">
+                            <Typography color={grey[900]} variant="h5">
+                                {name}
                             </Typography>
                         </Stack>
-                        <Stack gap={1} p={2}>
-                            <Typography variant="h5">Tags</Typography>
-                            <Stack flexDirection="row" columnGap={1} flexWrap="wrap">
-                                {tags?.map(text => <Typography key={text} textTransform="capitalize" color="info">#{text}</Typography>)}
-                            </Stack>
+                        <Typography color={grey[900]} component="p">
+                            {description}
+                        </Typography>
+                    </Stack>
+                    <Stack gap={1} p={2}>
+                        <Typography variant="h5">Tags</Typography>
+                        <Stack flexDirection="row" columnGap={1} flexWrap="wrap">
+                            {tags?.map(text => <Typography key={text} textTransform="capitalize" color="info">#{text}</Typography>)}
                         </Stack>
-                        <Stack flexDirection="row" justifyContent='space-between'>
-                            <Like paintId={id} userId={userId} />
-                            <Stack flexDirection="row-reverse">
-                                <ReportModal type='paint' id={id} />
-                            </Stack>
-                        </Stack>
+                    </Stack>
+                    <Stack flexDirection="row" justifyContent="space-between">
+                        <Like paintId={id} userId={userId} />
+                        <ReportModal type={ReportType.PAINT} paintId={id} userId={userId} />
                     </Stack>
                 </Stack>
             </Stack>
-        </Modal>
+        </Stack>
+    </Modal>
     )
 }
 

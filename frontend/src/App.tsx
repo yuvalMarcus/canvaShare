@@ -92,7 +92,13 @@ const routers = createBrowserRouter([
     },
     {
         path: '*',
-        element: <Page404 />
+        element: <Layout />,
+        children: [
+            {
+                path: '*',
+                element: <Page404 />
+            }
+        ]
     }
 ]);
 

@@ -44,7 +44,7 @@ const UserAccount = () => {
         queryClient.invalidateQueries({queryKey: [GET_USERS]});
     }
 
-    const handleOnError = (erroe) => {
+    const handleOnError = () => {
         toast.error('User upload failed');
     }
 
