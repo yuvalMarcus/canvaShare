@@ -38,7 +38,7 @@ const UsersTable = () => {
     }
 
     const handleEdit = (id: number) => {
-        navigate(`/admin/users/create/${id}`);
+        navigate(`/admin/users/${id}`);
     }
 
     const handleCreate = () => {

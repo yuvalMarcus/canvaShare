@@ -80,7 +80,7 @@ const routers = createBrowserRouter([
                                 element: <UserForm />
                             },
                             {
-                                path: 'create/:id',
+                                path: ':id',
                                 element: <UserForm />
                             },
                         ]
