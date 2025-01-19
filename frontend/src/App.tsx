@@ -18,6 +18,7 @@ import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
 import ReportsTable from "./feature/Admin/Reports/ReportsTable.tsx";
 import Page404 from "./feature/Page404/Page404.tsx";
 import TagsTable from "./feature/Admin/Tags/TagsTable.tsx";
+import UserForm from "./feature/Admin/Users/UserForm.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -56,7 +57,7 @@ const routers = createBrowserRouter([
     },
     {
         path: "/admin",
-        element: <ProtectedRoute />,
+        element: <ProtectedRoute roles={['admin_view']} />,
         children: [
             {
                 path: '*',
@@ -68,7 +69,21 @@ const routers = createBrowserRouter([
                     },
                     {
                         path: 'users',
-                        element: <UsersTable />
+                        element: <ProtectedRoute roles={['admin_view']} />,
+                        children: [
+                            {
+                                index: true,
+                                element: <UsersTable />
+                            },
+                            {
+                                path: 'create',
+                                element: <UserForm />
+                            },
+                            {
+                                path: 'create/:id',
+                                element: <UserForm />
+                            },
+                        ]
                     },
                     {
                         path: 'paints',

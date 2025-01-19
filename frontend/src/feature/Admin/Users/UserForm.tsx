@@ -14,27 +14,31 @@ import useCreateUser from "../../../api/hooks/user/useCreateUser.ts";
 import Textarea from "../../../components/Form/Textarea/Textarea.tsx";
 import useGetUser from "../../../api/hooks/user/useGetUser.ts";
 import useUpdateUser from "../../../api/hooks/user/useUpdateUser.ts";
+import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
+import {useNavigate, useParams} from "react-router-dom";
+
+const roles = [
+    'admin_user_view',
+    'admin_user_management',
+    'admin_paint_view',
+    'admin_paint_management',
+    'admin_report_view',
+    'admin_report_management',
+    'admin_roles_view',
+    'admin_roles_management']
 
 const schema = z.object({
     username: z.string().min(4, { message: "Required" }),
     email: z.string().email({ message: "Email not valid" })
 });
 
-const UserForm = ({userId}: {userId?: number}) => {
+const UserForm = () => {
     const [isUploadFileOpen, setIsUploadFileOpen] = useState<boolean>(false);
     const {mutate: createUser, isPending: createIsPending} = useCreateUser();
     const {mutate: updateUser, isPending: updateIsPending} = useUpdateUser();
+    const { id: userId } = useParams();
     const { data: user, isPending: getIsPending } = useGetUser(userId ?? 0);
-
-    const roles = [
-        ['User table view', 'admin_user_view'],
-        ['User table management', 'admin_user_management'],
-        ['Paint table view', 'admin_paint_view'],
-        ['Paint table management', 'admin_paint_management'],
-        ['Report table view', 'admin_report_view'],
-        ['Report table management', 'admin_report_management'],
-        ['Roles_view', 'admin_roles_view'],
-        ['Roles management', 'admin_roles_management']]
+    const navigate = useNavigate();
 
     const {
         handleSubmit,
@@ -70,6 +74,10 @@ const UserForm = ({userId}: {userId?: number}) => {
             user.profilePhoto = profilePhoto;
     }
 
+    const handleReturn = () => {
+        navigate(-1);
+    }
+
     useEffect(() =>{
         if (userId){
             setValue('username', user?.username)
@@ -80,9 +88,13 @@ const UserForm = ({userId}: {userId?: number}) => {
             setValue('roles', user?.roles ?? [])
         }
     }, [setValue, user, userId, getValues])
-    console.log(getValues("roles")?.includes('admin_user_view'))
+
     return (
         <>
+            <Stack flexDirection="row" alignItems='center' onClick={handleReturn}>
+                <ArrowBackOutlinedIcon fontSize={'large'} />
+                <Box pl={1}>Return</Box>
+            </Stack>
             <Stack alignItems="center" justifyContent="center" flex={1}>
                 <Box
                     p={2}
@@ -146,7 +158,7 @@ const UserForm = ({userId}: {userId?: number}) => {
                                                 <Box display="block" key={role[1]}>
                                                     <FormControlLabel
                                                         control={<Checkbox defaultChecked={!!(getValues("roles")?.includes(role[1]))} />}
-                                                        label={role[0]}
+                                                        label={<Typography textTransform={"capitalize"}>{role.replaceAll('_', ' ')}</Typography>}
                                                         onChange={(e) => setValue("roles",
                                                             [
                                                                 ...(e.target.checked ? [role[1]] : []),
