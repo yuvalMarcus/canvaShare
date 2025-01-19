@@ -27,14 +27,14 @@ const UserForm = ({userId}: {userId?: number}) => {
     const { data: user, isPending: getIsPending } = useGetUser(userId ?? 0);
 
     const roles = [
-        ['User table view', 'user_view'],
-        ['User table management', 'user_management'],
-        ['Paint table view', 'paint_view'],
-        ['Paint table management', 'paint_management'],
-        ['Report table view', 'report_view'],
-        ['Report table management', 'report_management'],
-        ['Roles_view', 'roles_view'],
-        ['Roles management', 'roles_management']]
+        ['User table view', 'admin_user_view'],
+        ['User table management', 'admin_user_management'],
+        ['Paint table view', 'admin_paint_view'],
+        ['Paint table management', 'admin_paint_management'],
+        ['Report table view', 'admin_report_view'],
+        ['Report table management', 'admin_report_management'],
+        ['Roles_view', 'admin_roles_view'],
+        ['Roles management', 'admin_roles_management']]
 
     const {
         handleSubmit,
@@ -80,7 +80,7 @@ const UserForm = ({userId}: {userId?: number}) => {
             setValue('roles', user?.roles ?? [])
         }
     }, [setValue, user, userId, getValues])
-
+    console.log(getValues("roles")?.includes('admin_user_view'))
     return (
         <>
             <Stack alignItems="center" justifyContent="center" flex={1}>
@@ -138,28 +138,25 @@ const UserForm = ({userId}: {userId?: number}) => {
                                 Select user roles
                             </Typography>
                             <Stack flexDirection="row">
-                                <Stack flexDirection="column" pr={5} key={'col-1'}>
-                                    {roles.slice(0,4).map((role) => {
+                                {!getIsPending && getValues("roles") && [0, 1].map(i => {
                                     return (
-                                            <Box display="block" key={role[1]}>
-                                                <FormControlLabel
-                                                    control={<Checkbox />}
-                                                    label={role[0]}
-                                                    onChange={(e) => setValue("roles", [...(e.target.checked ? [role[1]] : []), ...(getValues("roles") ?? [])])}                                                />
-                                            </Box>
-                                    )})}
-                                </Stack>
-                                <Stack flexDirection="column" key={'col-2'}>
-                                    {roles.slice(4,8).map((role) => {
-                                        return (
-                                            <Box display="block" key={role[1]}>
-                                                <FormControlLabel
-                                                    control={<Checkbox />}
-                                                    label={role[0]}
-                                                    onChange={(e) => setValue("roles", [...(e.target.checked ? [role[1]] : []), ...(getValues("roles") ?? [])])}                                                />
-                                            </Box>
-                                        )})}
-                                </Stack>
+                                    <Stack flexDirection="column" pr={5} key={`col-${i}`}>
+                                        {roles.slice(i*4, 4 * (i+1)).map((role) => {
+                                            return (
+                                                <Box display="block" key={role[1]}>
+                                                    <FormControlLabel
+                                                        control={<Checkbox defaultChecked={!!(getValues("roles")?.includes(role[1]))} />}
+                                                        label={role[0]}
+                                                        onChange={(e) => setValue("roles",
+                                                            [
+                                                                ...(e.target.checked ? [role[1]] : []),
+                                                                ...(getValues("roles")?.filter((j: string) => j !== role[1]) ?? [])
+                                                            ])} />
+                                                </Box>
+                                            )})}
+                                    </Stack>
+                                    )
+                                })}
                             </Stack>
                         </Box>
                         <Stack alignItems="center" justifyContent="center">
