@@ -15,9 +15,6 @@ const ProtectedRoute = ({roles}: {roles: string[]}) => {
             </Stack>
         )
 
-    if (!user)
-        return <Navigate to="/" replace />;
-
     const authorized = roles.every(role => (user?.roles || []).includes(role));
 
     if ((isAuth !== null && !isAuth) || (user && !authorized)) {
