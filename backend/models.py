@@ -23,7 +23,7 @@ class Paint(BaseModel):
     data: Optional[str] | dict = None
     likes: Optional[int] = None
     description: Annotated[Optional[str], Query(max_length=250)] = None
-    photo: Annotated[Optional[str], Query(max_length=100)] = None
+    photo: Annotated[Optional[str], Query(max_length=250)] = None
 
 class Paints(BaseModel):
     next: Optional[int] = None
@@ -49,7 +49,7 @@ class Report(BaseModel):
     type: Literal['paint', 'artist']
     paint_id: Optional[int] = None
     user_id: Optional[int] = None
-    description: Annotated[str, Query(min_length=1, max_length=100)]
+    description: Annotated[str, Query(min_length=1, max_length=250)]
 
 class Reports(BaseModel):
     reports: List[Report]
@@ -68,8 +68,8 @@ class User(BaseModel):
     email: Annotated[Optional[str], Query(min_length=6, max_length=50, pattern=r"^\S+@\S+\.\S+$")] = None
     tags: Optional[List[Annotated[str, Query(min_length=1, max_length=50, pattern=r"^[^,]+$")]]] = None
     is_blocked: Optional[bool] = False
-    profile_photo: Annotated[Optional[str], Query(max_length=100)] = None
-    cover_photo: Annotated[Optional[str], Query(max_length=100)] = None
+    profile_photo: Annotated[Optional[str], Query(max_length=250)] = None
+    cover_photo: Annotated[Optional[str], Query(max_length=250)] = None
     about: Annotated[Optional[str], Query(max_length=250)] = None
     roles: Optional[List[str]] = None
 
