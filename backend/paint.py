@@ -8,8 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from models import Paints, Paint, PaintQueries
 from dotenv import load_dotenv
 from db.paints import *
-from db.users import get_user
-from db.admin import is_admin
+from db.users import get_user, has_role
 from db.tags import get_paint_tags, insert_paint_tags, remove_paint_tags
 from db.utils import raise_error_if_blocked
 
@@ -33,8 +32,10 @@ def get_paint_endpoint(paint_id: int, jwt_user_id: int | None = Depends(get_jwt_
     # If the creator of the paint is blocked, then their paint is also blocked from viewing.
     raise_error_if_blocked(paint["user_id"])
 
-    # If paint is private (draft), only creator, editors and admins should get it
-    if paint["is_public"] == False and is_paint_editor(paint_id, jwt_user_id) is False and is_admin(jwt_user_id) is False:
+    # If paint is private (draft), only creator and admins should get it
+    if (paint["is_public"] == False
+            and get_paint_user_id(paint["id"]) != jwt_user_id
+            and has_role('paint_view', jwt_user_id) is False):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     try:
         with open(f'paints/{paint["user_id"]}/{paint["id"]}.json', 'r', encoding='utf-8') as fd:
@@ -59,7 +60,7 @@ def create_paint_endpoint(paint: Paint, jwt_user_id: int = Depends(check_guest_o
 @router.put("/{paint_id}")
 def update_paint_endpoint(paint_id: int, paint: Paint, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     # need to edit this endpoint to change only the fields that are passed
-    if is_paint_editor(paint_id, jwt_user_id) is False:
+    if not paint["id"] or get_paint_user_id(paint["id"]) != jwt_user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     paint.user_id = get_paint_user_id(paint_id)
     raise_error_if_blocked(paint.user_id)  # Cannot edit a blocked creator's paint
@@ -73,7 +74,7 @@ def update_paint_endpoint(paint_id: int, paint: Paint, jwt_user_id: int = Depend
 def delete_paint_endpoint(paint_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     paint_user_id = get_paint_user_id(paint_id)
     # checks if the user is creator of paint or admin
-    if paint_user_id != jwt_user_id and is_admin(jwt_user_id) is False:
+    if paint_user_id != jwt_user_id and has_role('paint_management', jwt_user_id) is False:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     delete_paint(paint_id)
     json_path = f'paints/{paint_user_id}/{paint_id}.json'
@@ -115,7 +116,7 @@ def get_paints_endpoint(paint: PaintQueries = Depends(), order: Optional[str] = 
     return {"next": next_link,
             "prev": prev_link,
             "results": convert_results_to_paints(
-                results[page_num * PAINTS_PER_PAGE - PAINTS_PER_PAGE:page_num * PAINTS_PER_PAGE])}
+                results[page_num * PAINTS_PER_PAGE - PAINTS_PER_PAGE:page_num * PAINTS_PER_PAGE], jwt_user_id)}
 
 def save_json_data(user_id: int, paint_path: str, data: str) -> None:
     Path(f"paints/{user_id}").mkdir(parents=True, exist_ok=True) # maybe in windows needs to add '/' prefix
@@ -130,14 +131,21 @@ def save_json_data(user_id: int, paint_path: str, data: str) -> None:
             pass
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="JSON Decode Error") from e
 
-def convert_results_to_paints(results: list) -> List[Paint]:
+def convert_results_to_paints(results: list, jwt_user_id) -> List[Paint]:
     paints = []
+    is_admin = has_role('paint_view', jwt_user_id)
     for result in results:
         paint = {}
         (paint['id'], paint['user_id'], paint['name'], paint['is_public'], paint['create_date'],
          paint['edit_date'], paint['likes'], paint['description'], paint['photo']) = result
         paint['tags'] = get_paint_tags(paint['id'])
         paint["username"], _, _, _, paint["profile_photo"] = get_user(paint["user_id"])[USERNAME_COL_IN_USERS:COVER_COL_IN_USERS]
+
+        # Hide private paints from unauthorized users
+        if (paint["is_public"] == False
+                and get_paint_user_id(paint["id"]) != jwt_user_id
+                and is_admin is False):
+            continue
         try:
             with open(f"paints/{paint['user_id']}/{paint['id']}.json", 'r', encoding='utf-8') as fd:
                 paint['data'] = json.loads(fd.read())

@@ -68,8 +68,6 @@ class User(BaseModel):
     email: Annotated[Optional[str], Query(min_length=6, max_length=50, pattern=r"^\S+@\S+\.\S+$")] = None
     tags: Optional[List[Annotated[str, Query(min_length=1, max_length=50, pattern=r"^[^,]+$")]]] = None
     is_blocked: Optional[bool] = False
-    is_admin: Optional[bool] = False
-    is_super_admin: Optional[bool] = False
     profile_photo: Annotated[Optional[str], Query(max_length=100)] = None
     cover_photo: Annotated[Optional[str], Query(max_length=100)] = None
     about: Annotated[Optional[str], Query(max_length=250)] = None

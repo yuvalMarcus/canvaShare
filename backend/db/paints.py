@@ -5,7 +5,7 @@ from backend.models import Paint
 from .utils import connect_to_db, commit_and_close_db
 
 __all__ = ['insert_paint', 'update_paint', 'delete_paint', 'get_paint', 'get_paint_user_id', 'get_paints_by_filters',
-           'get_paints_by_tag', 'is_paint_editor']
+           'get_paints_by_tag']
 
 def insert_paint(paint: Paint) -> int:
     con, cur = connect_to_db()
@@ -66,19 +66,3 @@ def get_paints_by_tag(tag: str) -> List[Tuple[int, int, str, bool, int, int, int
     paints = cur.fetchall()
     con.close()
     return paints
-
-def is_paint_editor(paint_id: int, user_id: int) -> bool:
-    if user_id is None:
-        return False
-    con, cur = connect_to_db()
-    cur.execute("SELECT user_id FROM paints WHERE id = %s", (paint_id,))
-    res = cur.fetchone()
-    if res is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paint not found")
-    creator_id = res[0]
-    cur.execute("SELECT * FROM paint_editors WHERE paint_id = %s AND user_id = %s", (paint_id, user_id))
-    if creator_id == user_id or cur.fetchone() is not None:
-        con.close()
-        return True
-    con.close()
-    return False

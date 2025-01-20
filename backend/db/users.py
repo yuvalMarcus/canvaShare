@@ -6,7 +6,8 @@ from .utils import connect_to_db, commit_and_close_db
 
 __all__ = ['insert_user', 'get_user', 'get_users', 'get_user_id', 'get_user_email', 'get_hashed_password',
            'get_disabled_status', 'connect_user', 'disconnect_user', 'get_username_by_email', 'get_prev_photos',
-           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'get_popular_users']
+           'remove_user_photos', 'delete_user', 'update_user', 'is_user_exist', 'get_popular_users',
+           'insert_user_roles', 'has_role', 'get_user_roles']
 
 def insert_user(username: str, hashed_password: str, email: str, is_blocked: bool, disabled: bool) -> int:
     con, cur = connect_to_db()
@@ -27,11 +28,11 @@ def get_user(user_id: int) -> UserTuple:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return res
 
-def get_users(username: Optional[str] = None, admin_request=False) ->  List[UserTuple]:
+def get_users( jwt_user_id, username: Optional[str] = None) ->  List[UserTuple]:
     filters = "" if username is None else " AND SIMILARITY(username, %s) > 0.2 ORDER BY SIMILARITY(username, %s) DESC LIMIT 50"
     params = [] if username is None else [username.lower(), username.lower()]
     con, cur = connect_to_db()
-    blocked = "" if admin_request else " AND is_blocked=false"
+    blocked = "" if has_role('user_view', jwt_user_id) else " AND is_blocked=false"
     cur.execute("SELECT * FROM users WHERE 1=1" + blocked + filters, (*params,))
     res = cur.fetchall()
     con.close()
@@ -160,3 +161,42 @@ def is_user_exist(user_id: Optional[int] = None, username: Optional[str] = None)
         return False
     con.close()
     return True
+
+def insert_user_roles(roles: List[str], user_id: Optional[int]=None, username: Optional[str]=None) -> None:
+    if username and user_id or not (username or user_id):
+        raise HTTPException(status_code=status.HTTP_400_NOT_FOUND,
+                            detail="insert_user_roles accept only one argument: user_id or username, not both.")
+    if username:
+        user_id = get_user_id(username)
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    con, cur = connect_to_db()
+    cur.execute("DELETE FROM user_roles WHERE user_id = %s", (user_id,))
+    for role in roles:
+        cur.execute("SELECT id FROM roles WHERE name = %s", (role,))
+        res = cur.fetchone()
+        if res is not None:
+            cur.execute("SELECT * from user_roles WHERE role_id = %s AND user_id = %s", (res[0], user_id))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO user_roles(role_id, user_id) VALUES (%s,%s)", (res[0], user_id))
+    commit_and_close_db(con)
+
+def has_role(role: str, user_id: Optional[int]=None) -> bool:
+    if not user_id:
+        return False
+    con, cur = connect_to_db()
+    cur.execute("SELECT * FROM roles, user_roles WHERE roles.id = user_roles.role_id "
+                "AND user_roles.user_id = %s AND roles.name = %s", (user_id, role))
+    res = bool(cur.fetchone())
+    con.close()
+    return res
+
+def get_user_roles(user_id: Optional[int] = None) -> List[str]:
+    if not user_id:
+        return []
+    con, cur = connect_to_db()
+    cur.execute("SELECT roles.name FROM roles, user_roles WHERE roles.id = user_roles.role_id"
+                " AND user_roles.user_id = %s", (user_id,))
+    roles = [row[0] for row in cur.fetchall()]
+    con.close()
+    return roles
