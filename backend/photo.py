@@ -83,11 +83,3 @@ def generate_photo_uuid() -> str:
         if not any(photo_id in file.name for file in Path(UPLOAD_DIR).iterdir()):
             break
     return photo_id
-
-# FIXME: need to check if this already fixed.
-#  high vulnerability here, it is possible to remove someone else photo.
-#   It is possible to save photo link in db that already exists in the folder.
-#   After that, it is possible to remove someone else photo by change to other photo (auto remove prev photo).
-#   Some links can be with uppercase letters, some with lowercase, some with query params.
-#   Some links can be with http, some with https and some with www, some without www, etc.
-#   It is better to save in db only the photo name and check if it exists in the folder.
