@@ -60,7 +60,7 @@ def create_paint_endpoint(paint: Paint, jwt_user_id: int = Depends(check_guest_o
 @router.put("/{paint_id}")
 def update_paint_endpoint(paint_id: int, paint: Paint, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     # need to edit this endpoint to change only the fields that are passed
-    if not paint["id"] or get_paint_user_id(paint["id"]) != jwt_user_id:
+    if not paint.id or get_paint_user_id(paint.id) != jwt_user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     paint.user_id = get_paint_user_id(paint_id)
     raise_error_if_blocked(paint.user_id)  # Cannot edit a blocked creator's paint
