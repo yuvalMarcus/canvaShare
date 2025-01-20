@@ -19,14 +19,16 @@ import {useNavigate, useParams} from "react-router-dom";
 
 const roles = [
     'admin_view',
-    'admin_user_view',
-    'admin_user_management',
-    'admin_paint_view',
-    'admin_paint_management',
-    'admin_report_view',
-    'admin_report_management',
-    'admin_roles_view',
-    'admin_roles_management']
+    'user_view',
+    'user_management',
+    'paint_view',
+    'paint_management',
+    'report_view',
+    'report_management',
+    'tag_view',
+    'tag_management',
+    'roles_view',
+    'roles_management']
 
 const schema = z.object({
     username: z.string().min(4, { message: "Required" }),
@@ -157,7 +159,7 @@ const UserForm = () => {
                                 {((!getIsPending && !!user?.roles) || !userId) && [0, 1].map(i => {
                                     return (
                                     <Stack flexDirection="column" pr={5} key={`col-${i}`}>
-                                        {roles.slice(i*5, 5 * (i+1)).map((role) => {
+                                        {roles.slice(i*6, 6 * (i+1)).map((role) => {
                                             return (
                                                 <Box display="block" key={role}>
                                                     <FormControlLabel

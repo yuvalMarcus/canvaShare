@@ -2,8 +2,7 @@ from auth import check_guest_or_blocked
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Reports, Report
 from db.reports import *
-from db.admin import is_admin
-from db.users import is_user_exist
+from db.users import is_user_exist, has_role
 from db.paints import get_paint
 
 router = APIRouter(prefix="/report")
@@ -25,7 +24,7 @@ def create_report_endpoint(report: Report) -> dict:
 
 @router.get('', response_model=Reports)
 def get_reports_endpoint(jwt_user_id: int = Depends(check_guest_or_blocked)) -> Reports:
-    if is_admin(jwt_user_id):
+    if has_role('report_view', jwt_user_id):
         reports = []
         for db_report in get_reports():
             report = {}
@@ -37,7 +36,7 @@ def get_reports_endpoint(jwt_user_id: int = Depends(check_guest_or_blocked)) -> 
 
 @router.delete('/{report_id}')
 def delete_report_endpoint(report_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
-    if is_admin(jwt_user_id):
+    if has_role('report_management', jwt_user_id):
         delete_report(report_id)
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")

@@ -13,7 +13,7 @@ from tag import router as tag_router
 from like import router as like_router
 from models import User
 from db.initial import *
-from db.roles import insert_user_roles
+from db.users import insert_user_roles
 from dotenv import load_dotenv
 import uvicorn
 
@@ -36,9 +36,9 @@ tags = ['Christmas', 'Animals', 'Art', 'Beauty', 'Design', 'DIY And Crafts', 'Fo
 insert_initial_values(tags, "tags")
 
 roles = ['admin_view']
-for obj in ['user', 'paint', 'report', 'roles']:
-    roles.append(f'admin_{obj}_view')
-    roles.append(f'admin_{obj}_management')
+for obj in ['user', 'paint', 'report', 'tag', 'roles']:
+    roles.append(f'{obj}_view')
+    roles.append(f'{obj}_management')
 
 insert_initial_values(roles, "roles")
 
@@ -48,7 +48,6 @@ if super_admins:
         try:
             username, password, email = super_admin.split(':')
             register_endpoint(User(username=username, password=password, email=email))
-            add_super_admin(username) # TODO: Delete after roles done
             insert_user_roles(roles, username=username)
         except ValueError:
             print("Failed to add super admin\nThe scheme should be username:password:email\n")

@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from models import User, Token , Tokens, UpdateUser, UserTuple
 from db.tags import insert_favorite_tags, get_tags_id, get_favorite_tags, delete_favorite_tags
 from db.utils import raise_error_if_guest, raise_error_if_blocked
-from db.admin import is_admin, is_super_admin
 from db.users import *
 from photo import delete_photo
 from auth import *
@@ -67,47 +66,39 @@ def get_users_endpoint(username: Optional[str] = None, order_by: Optional[str]=N
     if order_by == 'popular':
         users = get_popular_users(limit)
     else:
-        users = get_users(username, admin_request=is_admin(jwt_user_id))
+        users = get_users(jwt_user_id, username)
     return [convert_db_user_to_user(user, jwt_user_id) for user in users]
 
 @user_router.post("")
 def create_user_endpoint(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
-    if is_admin(jwt_user_id):
+    if has_role('user_management', jwt_user_id):
         user_id = register_endpoint(user)['user_id']
         update_user_endpoint(user_id, user, jwt_user_id)
-        if user.roles:
-            print('Username:', user.username, ', roles:', user.roles)
-        # add_roles(user)
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 @user_router.delete('/{user_id}')
 def delete_user_endpoint(user_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
-    if not is_admin(jwt_user_id):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-
-    # Ensure the target user exists
-    if not is_user_exist(user_id=user_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    # Prevent regular admins from deleting other admins
-    if is_admin(user_id) and not is_super_admin(jwt_user_id):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admins cannot delete each other")
-    if is_super_admin(user_id):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Super admin cannot be deleted")
-    remove_user_photos(user_id) # Remove associated profile and cover photos
-    delete_user(user_id)
-    return {}
+    if has_role('user_management', jwt_user_id):
+        # Ensure the target user exists
+        if not is_user_exist(user_id=user_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        remove_user_photos(user_id) # Remove associated profile and cover photos
+        delete_user(user_id)
+        return {}
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 @user_router.put('/{user_id}')
-def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
+def update_user_endpoint(user_id: int, user: User
+                         , jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
     # Ensure the target user exists
     if not is_user_exist(user_id=user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if user_id == jwt_user_id or (is_admin(jwt_user_id) and not is_admin(user_id)):
+    if user_id == jwt_user_id or has_role('user_management', jwt_user_id):
         _ = is_valid_username(user.username, user_id) if user.username else None
         _ = is_valid_email(user.email, user_id) if user.email else None
-        is_blocked = user.is_blocked if is_admin(jwt_user_id) and not is_admin(user_id) else None
+        is_blocked = user.is_blocked if has_role('user_management', jwt_user_id) else None
+        roles = user.roles if has_role('roles_management', jwt_user_id) else None
         hashed_password = get_password_hash(user.password) if user.password else None
         if user.profile_photo or user.cover_photo:
             for prev_photo in get_prev_photos(user_id, user.profile_photo, user.cover_photo):
@@ -119,6 +110,8 @@ def update_user_endpoint(user_id: int, user: User, jwt_user_id: int = Depends(ch
         if user.tags:
             delete_favorite_tags(user_id)
             insert_favorite_tags(user_id, get_tags_id(user.tags))
+        if roles:
+            insert_user_roles(roles, user_id)
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
@@ -148,30 +141,9 @@ def convert_db_user_to_user(db_user: UserTuple, user_id: int) -> User:
     user = {}
     (user["id"], user["username"], _, _, user["is_blocked"], user["profile_photo"], user["cover_photo"],
      user["about"], _) = db_user
-    if user["id"] == user_id or is_admin(user_id):
+    if user["id"] == user_id or has_role('user_view', user_id):
         user["tags"] = get_favorite_tags(user["id"])
         user["email"] = get_user_email(user["id"])
+    if has_role('roles_view', user_id) or (user["id"] == user_id):
+        user["roles"] = get_user_roles(user["id"])
     return user
-
-# Only admin can update user status
-#     if is_admin(jwt_user_id):
-#         # Handle admin status updates
-#         if user.is_admin is not None:
-#             if is_super_admin(jwt_user_id) is True and is_super_admin(user.id) is False:
-#                 update_admin(user.id, user.is_admin)
-#                 return {}
-#             else:
-#                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-#
-#         # Handle block status updates
-#         if user.is_blocked is not None:
-#             # Super admin can block only admins and users. Regular admin can block only users.
-#             if is_super_admin(user.id) is False and (is_super_admin(jwt_user_id) is True or is_admin(user.id) is False):
-#                 update_user(user.id, is_blocked=user.is_blocked)
-#                 if user.is_blocked is True:
-#                     disconnect_user(user.id) # disconnect user after block
-#                 return {}
-#             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-#
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Must specify either admin_flag or blocked_flag query parameter")
