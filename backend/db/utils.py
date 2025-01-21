@@ -32,3 +32,16 @@ def raise_error_if_blocked(user_id: int | None) -> None:
         con.close()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is blocked")
     con.close()
+
+def is_safe_remove_photo(photo_name: str):
+    con, cur = connect_to_db()
+    photo_name = f'%{photo_name}'
+    results = []
+    cur.execute("SELECT * FROM users WHERE profile_photo LIKE %s OR cover_photo LIKE %s", (photo_name, photo_name))
+    results += cur.fetchall()
+    cur.execute("SELECT * FROM paints WHERE photo LIKE %s", (photo_name, ))
+    results += cur.fetchall()
+    con.close()
+    if len(results) < 2:
+        return True
+    return False

@@ -3,12 +3,10 @@ import updateUser from "../../../api/hooks/user/useUpdateUser.ts";
 import getUsers from '../../../api/hooks/user/useGetUsers.ts'
 import EnhancedTable from "../../../components/Table/Table.tsx"
 import AddBoxIcon from '@mui/icons-material/AddBox';
-import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import {userTable as user} from '../../../types/user.ts'
 import {HeadCell} from '../../../types/table.ts'
 import {Box, Stack} from "@mui/material";
-import {useState} from "react";
-import UserForm from "./UserForm.tsx";
+import {useNavigate} from "react-router-dom";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -23,8 +21,7 @@ const UsersTable = () => {
     const {mutate: deleteMutate, isPending: deleteIsPending} = deleteUser();
     const {mutate: updateMutate, isPending: updateIsPending} = updateUser();
     const { data, isPending: getIsPending } = getUsers({});
-    const [userFrom, setUserForm] = useState(false);
-    const [userIdEdit, setUserIdEdit] = useState(0)
+    const navigate = useNavigate();
 
     const rows =
         !getIsPending
@@ -41,8 +38,11 @@ const UsersTable = () => {
     }
 
     const handleEdit = (id: number) => {
-        setUserIdEdit(id)
-        setUserForm(true)
+        navigate(`/admin/users/${id}`);
+    }
+
+    const handleCreate = () => {
+        navigate('/admin/users/create')
     }
 
     return (
@@ -51,16 +51,8 @@ const UsersTable = () => {
                 && !deleteIsPending
                 && !updateIsPending
                 && !!data)
-                && (userFrom
-                    && (<>
-                        <Stack flexDirection="row" alignItems='center' onClick={() => {setUserForm(!userFrom); setUserIdEdit(0)}}>
-                            <ArrowBackOutlinedIcon fontSize={'large'} />
-                            <Box pl={1}>Return</Box>
-                        </Stack>
-                        <UserForm userId={userIdEdit}/>
-                        </>)
-                    ||(<>
-                        <Stack flexDirection="row" alignItems='center' pb={2} onClick={() => {setUserForm(!userFrom); setUserIdEdit(0)}}>
+                && (<>
+                        <Stack flexDirection="row" alignItems='center' pb={2} onClick={handleCreate}>
                             <AddBoxIcon fontSize={'large'} />
                             <Box pl={1}>Add new user</Box>
                         </Stack>
@@ -76,7 +68,7 @@ const UsersTable = () => {
                                        uniqueProperty='id'
                                        nameProperty='username'/>
                         </>)
-            )}
+            }
         </Box>
     )
 };

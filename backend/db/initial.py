@@ -3,12 +3,10 @@ from pathlib import Path
 import shutil
 from typing import List
 from dotenv import load_dotenv
-from fastapi import HTTPException, status
 import psycopg2
 from .utils import connect_to_db, commit_and_close_db
 
-__all__ = ['create_tables_and_folders', 'delete_tables_and_folders', 'insert_initial_values', 'add_pg_trgm_extension',
-           'add_super_admin']
+__all__ = ['create_tables_and_folders', 'delete_tables_and_folders', 'insert_initial_values', 'add_pg_trgm_extension']
 load_dotenv()
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 
@@ -58,17 +56,4 @@ def add_pg_trgm_extension() -> None:
     except psycopg2.Error:
         con.close()
         return
-    commit_and_close_db(con)
-
-def add_super_admin(username: str) -> None:
-    # TODO: Delele function after roles done
-    con, cur = connect_to_db()
-    cur.execute("SELECT id FROM users WHERE username = %s", (username,))
-    res = cur.fetchone()
-    if res is None:
-        con.close()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {username} not found")
-    user_id = res[0]
-    cur.execute("INSERT INTO admins(user_id) VALUES (%s)", (user_id,))
-    cur.execute("INSERT INTO super_admins(user_id) VALUES (%s)", (user_id,))
     commit_and_close_db(con)

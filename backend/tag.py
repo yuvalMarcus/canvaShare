@@ -1,8 +1,8 @@
 from auth import get_jwt_user_id,check_guest_or_blocked
 from fastapi import APIRouter, Depends, HTTPException, status
+from db.users import has_role
 from models import Tags, Tag
 from db.tags import get_tags, get_tag_by_id, insert_tag, delete_tag
-from db.admin import is_admin
 from db.utils import raise_error_if_blocked
 
 router = APIRouter(prefix="/tag")
@@ -29,7 +29,7 @@ def create_tag_endpoint(tag: Tag, _: int = Depends(check_guest_or_blocked)) -> d
 
 @router.delete('/{tag_id}')
 def delete_tag_endpoint(tag_id: int, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
-    if is_admin(jwt_user_id):
+    if has_role('tag_management', jwt_user_id):
         delete_tag(tag_id)
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
