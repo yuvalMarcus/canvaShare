@@ -20,7 +20,7 @@ const Artist = ({ id, username, profilePhoto }: PaintItemProps) => {
                 flexDirection="column"
                 justifyContent="flex-end"
                 height="auto"
-                photo={profilePhoto}
+                photo={profilePhoto || "/assets/default-user-simple.png"}
             >
                 <Stack py={1} px={2} gap={1} sx={{ backgroundColor: "rgb(0 0 0 / 80%)" }}>
                     <Stack flexDirection="row" alignItems="center" gap={1}>
