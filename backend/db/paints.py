@@ -27,6 +27,7 @@ def update_paint(paint: UpdatePaint):
             params.append(paint_model_dump[key])
 
     if updates:
+        updates.append(f"edit_date={int(time.time())}")
         query = f"UPDATE paints SET {', '.join(updates)} WHERE id = %s"
         params.append(paint_model_dump['paint_id'])
         cur.execute(query, tuple(params))
