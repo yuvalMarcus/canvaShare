@@ -74,7 +74,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
                         </Stack>
                     )}
                 </Box>
-                <Stack minWidth={250} sx={{ backgroundColor: grey[100] }}>
+                <Stack minWidth={250} maxWidth={300} sx={{ backgroundColor: grey[100] }}>
                     <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
                         <Button component={Link} to={`/artist/${userId}`}>
                             <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"} sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />

@@ -52,14 +52,14 @@ class Report(BaseModel):
     description: Annotated[str, Query(min_length=1, max_length=250)]
 
 class Reports(BaseModel):
-    reports: List[Report]
+    results: List[Report]
 
 class Tag(BaseModel):
     id: Optional[int] = None
     name: Annotated[str, Query(min_length=1, max_length=50, pattern=r"^[^,]+$")]
 
 class Tags(BaseModel):
-    tags: List[Tag]
+    results: List[Tag]
 
 class User(BaseModel):
     id: Optional[int] = None # no need to validate
@@ -82,5 +82,16 @@ class UpdateUser(BaseModel):
     profile_photo: Optional[str] = None
     cover_photo: Optional[str] = None
     about: Optional[str] = None
+
+class Users(BaseModel):
+    results: List[User]
+
+class UpdatePaint(BaseModel):
+    paint_id: int
+    name: Optional[str] = None
+    is_public: Optional[bool] = None
+    description: Optional[str] = None
+    photo: Optional[str] = None
+
 
 UserTuple = Tuple[int, str, str, str, bool, str, str, str, bool]

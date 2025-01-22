@@ -12,7 +12,7 @@ NAME_COL_IN_TAGS = 1
 @router.get("", response_model=Tags)
 def get_tags_endpoint(jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Tags:
     raise_error_if_blocked(jwt_user_id)
-    return {'tags': [{'id': tag[ID_COL_IN_TAGS], 'name': tag[NAME_COL_IN_TAGS]} for tag in get_tags()]}
+    return {'results': [{'id': tag[ID_COL_IN_TAGS], 'name': tag[NAME_COL_IN_TAGS]} for tag in get_tags()]}
 
 @router.get("/{tag_id}", response_model=Tag)
 def get_tag_endpoint(tag_id: int, jwt_user_id: int | None = Depends(get_jwt_user_id)) -> Tag:

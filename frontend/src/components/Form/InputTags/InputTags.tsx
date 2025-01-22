@@ -16,7 +16,7 @@ const InputTags: FC<InputTagsProps> = ({ tags, onChange }) => {
             <string[]>
             multiple
             id="tags-outlined"
-            options={data?.tags?.map(({ name }) => name) || []}
+            options={data?.results?.map(({ name }) => name) || []}
             value={tags}
             filterSelectedOptions
             onChange={(_, tags) => onChange(tags || [])}

@@ -10,7 +10,7 @@ const ArtistsList = () => {
         <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
             {!isPending && (
              <>
-                 {users?.map((user) => <Card key={user.id} {...user} />)}
+                 {users?.results?.map((user) => <Card key={user.id} {...user} />)}
              </>
             )}
             {isPending && (

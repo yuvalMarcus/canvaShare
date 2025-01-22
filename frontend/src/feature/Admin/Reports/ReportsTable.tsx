@@ -19,8 +19,8 @@ const ReportsTable = () => {
     const { data, isPending: getIsPending } = getReports();
 
     const rows = !getIsPending
-        && Array.isArray(data?.reports)
-        && data.reports.map(({id, date, type, paintId, userId, description}: report) => {
+        && Array.isArray(data?.results)
+        && data.results.map(({id, date, type, paintId, userId, description}: report) => {
         return {id, date, type, paintId, userId, description}}) || []
 
     const handleDelete = (id: number) => {

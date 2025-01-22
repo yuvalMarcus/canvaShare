@@ -5,7 +5,7 @@ import time
 from typing import Optional, List
 from auth import get_jwt_user_id, check_guest_or_blocked
 from fastapi import APIRouter, Depends, HTTPException, status
-from models import Paints, Paint, PaintQueries
+from models import Paints, Paint, PaintQueries, UpdatePaint
 from dotenv import load_dotenv
 from db.paints import *
 from db.users import get_user, has_role
@@ -64,10 +64,13 @@ def update_paint_endpoint(paint_id: int, paint: Paint, jwt_user_id: int = Depend
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     paint.user_id = get_paint_user_id(paint_id)
     raise_error_if_blocked(paint.user_id)  # Cannot edit a blocked creator's paint
-    save_json_data(paint.user_id, f'paints/{paint.user_id}/{paint_id}.json', paint.data)
-    update_paint(paint_id, paint.name, paint.is_public,paint.description, paint.photo)
-    remove_paint_tags(paint_id)
-    insert_paint_tags(paint, paint_id)
+    if paint.data:
+        save_json_data(paint.user_id, f'paints/{paint.user_id}/{paint_id}.json', paint.data)
+    update_paint(UpdatePaint(paint_id=paint_id, name=paint.name, is_public=paint.is_public,
+                             description=paint.description, photo=paint.photo))
+    if paint.tags:
+        remove_paint_tags(paint_id)
+        insert_paint_tags(paint, paint_id)
     return {}
 
 @router.delete("/{paint_id}")
