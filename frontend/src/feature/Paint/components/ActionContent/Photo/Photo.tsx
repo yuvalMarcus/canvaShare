@@ -7,7 +7,7 @@ import {METHOD_TYPE} from "./photo.config.ts";
 import SearchModal from "./SearchModal/SearchModal.tsx";
 import {Canvas, Image} from "fabric";
 import {v4 as uuidv4} from "uuid";
-import UploadFileModal from "../../../../../components/UploadFileModal/UploadFileModal.tsx";
+import UploadPhotoModal from "../../../../../components/UploadPhotoModal/UploadPhotoModal.tsx";
 
 interface PhotoProps {
     canvas: MutableRefObject<Canvas | null>
@@ -49,7 +49,7 @@ const Photo: FC<PhotoProps> = ({ canvas }) => {
                 </Stack>
             </Box>
             <SearchModal canvas={canvas} isOpen={methodType === METHOD_TYPE.SEARCH} onClose={() => setMethodType(null)} />
-            <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
+            <UploadPhotoModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     )
 }

@@ -9,7 +9,7 @@ import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
 import {useEffect, useState} from "react";
 import InputText from "../../../components/Form/InputText/InputText.tsx";
 import EditIcon from "@mui/icons-material/Edit";
-import UploadFileModal from "../../../components/UploadFileModal/UploadFileModal.tsx";
+import UploadPhotoModal from "../../../components/UploadPhotoModal/UploadPhotoModal.tsx";
 import useCreateUser from "../../../api/hooks/user/useCreateUser.ts";
 import Textarea from "../../../components/Form/Textarea/Textarea.tsx";
 import useGetUser from "../../../api/hooks/user/useGetUser.ts";
@@ -194,7 +194,7 @@ const UserForm = () => {
                     </form>
                 </Box>
             </Stack>
-            <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
+            <UploadPhotoModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     );
 };
