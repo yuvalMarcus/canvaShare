@@ -83,4 +83,12 @@ class UpdateUser(BaseModel):
     cover_photo: Optional[str] = None
     about: Optional[str] = None
 
+class UpdatePaint(BaseModel):
+    paint_id: int
+    name: Annotated[Optional[str], Query(max_length=100)] = None
+    is_public: Optional[bool] = None
+    description: Annotated[Optional[str], Query(max_length=250)] = None
+    photo: Annotated[Optional[str], Query(max_length=250)] = None
+
+
 UserTuple = Tuple[int, str, str, str, bool, str, str, str, bool]
