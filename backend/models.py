@@ -86,4 +86,12 @@ class UpdateUser(BaseModel):
 class Users(BaseModel):
     results: List[User]
 
+class UpdatePaint(BaseModel):
+    paint_id: int
+    name: Optional[str] = None
+    is_public: Optional[bool] = None
+    description: Optional[str] = None
+    photo: Optional[str] = None
+
+
 UserTuple = Tuple[int, str, str, str, bool, str, str, str, bool]
