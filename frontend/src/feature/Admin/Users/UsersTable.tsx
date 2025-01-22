@@ -25,8 +25,8 @@ const UsersTable = () => {
 
     const rows =
         !getIsPending
-        && Array.isArray(data)
-        && data?.map(({id, username, email, profilePhoto, coverPhoto, password, isBlocked}: user) =>
+        && Array.isArray(data?.results)
+        && data?.results?.map(({id, username, email, profilePhoto, coverPhoto, password, isBlocked}: user) =>
         {return {id, username, email, profilePhoto, coverPhoto, password, isBlocked}}) || []
 
     const handleBlock = (id: number) => {

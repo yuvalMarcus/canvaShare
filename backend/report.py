@@ -31,7 +31,7 @@ def get_reports_endpoint(jwt_user_id: int = Depends(check_guest_or_blocked)) -> 
             (report['id'], report['date'], report['type'], report['paint_id'], report['user_id'],
              report['description']) = db_report
             reports.append(report)
-        return {"reports": reports}
+        return {"results": reports}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 @router.delete('/{report_id}')

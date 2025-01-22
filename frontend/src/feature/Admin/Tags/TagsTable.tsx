@@ -15,8 +15,8 @@ const TagsTable = () => {
     const { data, isPending: getIsPending } = getTags();
 
     const rows = !getIsPending
-        && Array.isArray(data?.tags)
-        && data.tags.map(({id, name}: tag) => {
+        && Array.isArray(data?.results)
+        && data.results.map(({id, name}: tag) => {
         return {id, name}}) || []
 
     const handleDelete = (id: number) => {

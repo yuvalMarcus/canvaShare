@@ -1,6 +1,6 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
-from models import User, Token , Tokens, UpdateUser, UserTuple
+from models import User, Token , Tokens, UpdateUser, UserTuple, Users
 from db.tags import insert_favorite_tags, get_tags_id, get_favorite_tags, delete_favorite_tags
 from db.utils import raise_error_if_guest, raise_error_if_blocked
 from db.users import *
@@ -59,15 +59,15 @@ def get_user_endpoint(user_id: int, jwt_user_id: int = Depends(get_jwt_user_id))
     raise_error_if_blocked(jwt_user_id)
     return convert_db_user_to_user(get_user(user_id), jwt_user_id)
 
-@user_router.get("", response_model=List[User])
+@user_router.get("", response_model=Users)
 def get_users_endpoint(username: Optional[str] = None, order_by: Optional[str]=None, limit: Optional[int]=None,
-                       jwt_user_id: int = Depends(get_jwt_user_id)) -> List[User]:
+                       jwt_user_id: int = Depends(get_jwt_user_id)) -> Users:
     raise_error_if_blocked(jwt_user_id)
     if order_by == 'popular':
         users = get_popular_users(limit)
     else:
         users = get_users(jwt_user_id, username)
-    return [convert_db_user_to_user(user, jwt_user_id) for user in users]
+    return {"results": [convert_db_user_to_user(user, jwt_user_id) for user in users]}
 
 @user_router.post("")
 def create_user_endpoint(user: User, jwt_user_id: int = Depends(check_guest_or_blocked)) -> dict:
