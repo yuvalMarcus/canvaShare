@@ -1,6 +1,7 @@
 import {Box, Stack} from "@mui/material";
 import Button from "@mui/material/Button";
 import GroupIcon from '@mui/icons-material/Group';
+import FlagIcon from '@mui/icons-material/Flag';
 import PhotoSizeSelectActualIcon from '@mui/icons-material/PhotoSizeSelectActual';
 import DashboardCard from "./DashboardCard/DashboardCard.tsx";
 import TagIcon from "@mui/icons-material/Tag";
@@ -15,7 +16,7 @@ const Dashboard = () => {
 
     const navigate = useNavigate();
 
-    const { data: users, isPending } = useGetUsers({});
+    const { data: users } = useGetUsers({});
 
     const { data: paints } = useGetPaints();
 
@@ -51,14 +52,14 @@ const Dashboard = () => {
             <Stack flexDirection="row" gap={8}>
                 <Permissions roles={['report_view']}>
                     <Box width="50%">
-                        <DashboardCard title="reports" Icon={<GroupIcon fontSize="large" />} value={tags?.results.length}>
+                        <DashboardCard title="reports" Icon={<FlagIcon fontSize="large" />} value={reports?.results.length}>
                             <Stack flexDirection="row" gap={2}>
                                 <Button variant="contained" onClick={() => navigate('/admin/reports')}>view reports</Button>
                             </Stack>
                         </DashboardCard>
                     </Box>
                 </Permissions>
-                <Permissions roles={['tags_view']}>
+                <Permissions roles={['tag_view']}>
                     <Box width="50%">
                         <DashboardCard title="tags" Icon={<TagIcon fontSize="large" />} value={tags?.results.length}>
                             <Stack flexDirection="row" gap={2}>
