@@ -7,6 +7,8 @@ import {userTable as user} from '../../../types/user.ts'
 import {HeadCell} from '../../../types/table.ts'
 import {Box, Stack} from "@mui/material";
 import {useNavigate} from "react-router-dom";
+import Permissions from "../../../components/Permissions/Permissions.tsx";
+import {useAuth} from "../../../context/auth.context.tsx";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -14,7 +16,7 @@ const tableHeader: HeadCell[] = [
     {id: 'email', align: 'left', disablePadding: false, label: 'Email', type: 'text'},
     {id: 'profilePhoto', align: 'left', disablePadding: false, label: 'Profile Photo', type: 'image'},
     {id: 'coverPhoto', align: 'left', disablePadding: false, label: 'Cover Photo', type: 'image'},
-    {id: 'password', align: 'left', disablePadding: false, label: 'Password', type: 'password'},
+    {id: 'roles', align: 'left', disablePadding: false, label: 'Roles', type: 'long-text'},
 ];
 
 const UsersTable = () => {
@@ -22,15 +24,18 @@ const UsersTable = () => {
     const {mutate: updateMutate, isPending: updateIsPending} = updateUser();
     const { data, isPending: getIsPending } = getUsers({});
     const navigate = useNavigate();
+    const { logout, userId } = useAuth();
 
     const rows =
         !getIsPending
         && Array.isArray(data?.results)
-        && data?.results?.map(({id, username, email, profilePhoto, coverPhoto, password, isBlocked}: user) =>
-        {return {id, username, email, profilePhoto, coverPhoto, password, isBlocked}}) || []
+        && data?.results?.map(({id, username, email, profilePhoto, coverPhoto, roles, isBlocked}: user) =>
+        {return {id, username, email, profilePhoto, coverPhoto, roles, isBlocked}}) || []
 
     const handleBlock = (id: number) => {
         updateMutate({ id: id, payload: {isBlocked: true} })
+        if (id == userId)
+            logout();
     }
 
     const handleUnBlock = (id: number) => {
@@ -45,6 +50,12 @@ const UsersTable = () => {
         navigate('/admin/users/create')
     }
 
+    const handleDelete = (id: number) => {
+        deleteMutate(id);
+        if (id == userId)
+            logout();
+    }
+
     return (
         <Box>
             {(!getIsPending
@@ -52,19 +63,21 @@ const UsersTable = () => {
                 && !updateIsPending
                 && !!data)
                 && (<>
-                        <Stack flexDirection="row" alignItems='center' pb={2} onClick={handleCreate}>
-                            <AddBoxIcon fontSize={'large'} />
-                            <Box pl={1}>Add new user</Box>
-                        </Stack>
+                        <Permissions roles={['user_management']}>
+                            <Stack flexDirection="row" alignItems='center' pb={2} onClick={handleCreate}>
+                                <AddBoxIcon fontSize={'large'} />
+                                <Box pl={1}>Add new user</Box>
+                            </Stack>
+                        </Permissions>
                         <EnhancedTable rows={rows}
                                        orderByValue={'username'}
                                        tableHeader={tableHeader}
                                        tableTitle={'Users'}
-                                       handleDelete={(id: number) => {
-                                           deleteMutate(id);}}
+                                       handleDelete={handleDelete}
                                        handleUpdate={handleEdit}
                                        handleBlock={handleBlock}
                                        handleUnBlock={handleUnBlock}
+                                       role_management={'user_management'}
                                        uniqueProperty='id'
                                        nameProperty='username'/>
                         </>)

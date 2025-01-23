@@ -15,7 +15,6 @@ import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import TextField from '@mui/material/TextField';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteDialog from '../Table/DeleteDialog.tsx'
@@ -24,6 +23,7 @@ import ImageModal from '../ImageModal/ImageModal.tsx'
 import LockPersonIcon from '@mui/icons-material/LockPerson';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import {HeadCell} from '../../types/table.ts'
+import Permissions from "../Permissions/Permissions.tsx";
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
     if (b[orderBy] < a[orderBy]) {
@@ -54,10 +54,11 @@ interface EnhancedTableHeadProps {
     orderBy: string;
     rowCount: number;
     tableHeader: HeadCell[];
+    role_management: string;
 }
 
 function EnhancedTableHead(props: EnhancedTableHeadProps) {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, tableHeader } =
+    const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, tableHeader, role_management } =
         props;
     const createSortHandler =
         (property: string) => (event: React.MouseEvent<unknown>) => {
@@ -99,9 +100,9 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
                         </TableSortLabel>
                     </TableCell>
                 ))}
-                <TableCell
-                    key='header-management'
-                ></TableCell>
+                <Permissions roles={[role_management]}>
+                    <TableCell key='header-management'></TableCell>
+                </Permissions>
             </TableRow>
         </TableHead>
     );
@@ -166,11 +167,12 @@ interface EnhancedTableProps {
     handleUnBlock?: (id: number) => void
     uniqueProperty: string;
     nameProperty: string;
+    role_management: string;
 }
 
 const EnhancedTable = ({rows, orderByValue, tableHeader,
                            tableTitle, handleDelete, handleUpdate, handleBlock, handleUnBlock, uniqueProperty,
-                           nameProperty}: EnhancedTableProps) => {
+                           nameProperty, role_management}: EnhancedTableProps) => {
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<string>(orderByValue);
     const [selected, setSelected] = React.useState<readonly number[]>([]);
@@ -232,7 +234,7 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
             [...rows]
                 .sort(getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-        [order, orderBy, page, rowsPerPage],
+        [rows, order, orderBy, page, rowsPerPage],
     );
 
     return (
@@ -253,6 +255,7 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                             onRequestSort={handleRequestSort}
                             rowCount={rows.length}
                             tableHeader={tableHeader}
+                            role_management={role_management}
                         />
                         <TableBody>
                             {visibleRows.map((row, index) => {
@@ -285,17 +288,18 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                 return (<TableCell key={`row-${index}-col-${i+1}`} component="th" id={labelId} scope="row" padding="none">
                                                     {row[param]}
                                                 </TableCell>)
-                                            else if (tableHeader[i].type == 'password')
+                                            else if (tableHeader[i].type == 'long-text'){
+                                                const roles = row[param].map((role: string) => role+', ');
                                                 return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>
-                                                    <TextField
-                                                        disabled
-                                                        id="outlined-password-input"
-                                                        label="Password"
-                                                        type="password"
-                                                        defaultValue="************"
-                                                        size="small"
-                                                        sx={{ width: '15ch' }}
-                                                    /></TableCell>)
+                                                    <Tooltip title={roles}>
+                                                        <Typography  display="inline-block" width="180px" whiteSpace="nowrap"
+                                                                     overflow="hidden"
+                                                                     textOverflow="ellipsis">
+                                                            {roles}
+                                                        </Typography>
+                                                    </Tooltip>
+                                                </TableCell>)
+                                            }
                                             else if (tableHeader[i].type == 'image')
                                                 return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>
                                                             <ImageModal link={row[param]}/>
@@ -313,27 +317,29 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                 return (<TableCell key={`row-${index}-col-${i+1}`}
                                                     align={tableHeader[i].align}>{row[param]}</TableCell>)
                                         })}
-                                        <TableCell key={`row-${index}-col-management`} align='right'>
-                                            {!row['isBlocked'] && handleBlock && (
-                                                <Tooltip title='Block'>
-                                                    <IconButton onClick={() => handleBlock(row[uniqueProperty])}>
-                                                        <LockPersonIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                            {row['isBlocked'] && handleUnBlock && (
-                                                <Tooltip title='UnBlock'>
-                                                    <IconButton onClick={() => handleUnBlock(row[uniqueProperty])}>
-                                                        <LockOpenIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                            {handleUpdate && (
-                                            <IconButton onClick={() => handleUpdate(row[uniqueProperty])}>
-                                                <EditIcon />
-                                            </IconButton>)}
-                                            <DeleteDialog id={row[uniqueProperty]} name={row[nameProperty]} handleDelete={handleDelete}/>
-                                        </TableCell>
+                                        <Permissions roles={[role_management]}>
+                                            <TableCell key={`row-${index}-col-management`} align='right'>
+                                                {!row['isBlocked'] && handleBlock && (
+                                                    <Tooltip title='Block'>
+                                                        <IconButton onClick={() => handleBlock(row[uniqueProperty])}>
+                                                            <LockPersonIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+                                                {row['isBlocked'] && handleUnBlock && (
+                                                    <Tooltip title='UnBlock'>
+                                                        <IconButton onClick={() => handleUnBlock(row[uniqueProperty])}>
+                                                            <LockOpenIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+                                                {handleUpdate && (
+                                                <IconButton onClick={() => handleUpdate(row[uniqueProperty])}>
+                                                    <EditIcon />
+                                                </IconButton>)}
+                                                <DeleteDialog id={row[uniqueProperty]} name={row[nameProperty]} handleDelete={handleDelete}/>
+                                            </TableCell>
+                                        </Permissions>
                                     </TableRow>
                                 );
                             })}

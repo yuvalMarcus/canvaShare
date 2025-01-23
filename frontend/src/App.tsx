@@ -69,7 +69,7 @@ const routers = createBrowserRouter([
                     },
                     {
                         path: 'users',
-                        element: <ProtectedRoute roles={['admin_view']} />,
+                        element: <ProtectedRoute roles={['user_view']} />,
                         children: [
                             {
                                 index: true,
@@ -77,25 +77,55 @@ const routers = createBrowserRouter([
                             },
                             {
                                 path: 'create',
-                                element: <UserForm />
+                                element: <ProtectedRoute roles={['user_management']} />,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <UserForm />
+                                    },
+                                ]
                             },
                             {
                                 path: ':id',
-                                element: <UserForm />
+                                element: <ProtectedRoute roles={['user_management']} />,
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <UserForm />
+                                    },
+                                ]
                             },
                         ]
                     },
                     {
                         path: 'paints',
-                        element: <PaintsTable />
+                        element: <ProtectedRoute roles={['paint_view']} />,
+                        children: [
+                            {
+                                index: true,
+                                element: <PaintsTable />
+                            },
+                        ]
                     },
                     {
                         path: 'reports',
-                        element: <ReportsTable />
+                        element: <ProtectedRoute roles={['report_view']} />,
+                        children: [
+                            {
+                                index: true,
+                                element: <ReportsTable />
+                            },
+                        ]
                     },
                     {
                         path: 'tags',
-                        element: <TagsTable />
+                        element: <ProtectedRoute roles={['tag_view']} />,
+                        children: [
+                            {
+                                index: true,
+                                element: <TagsTable />
+                            },
+                        ]
                     },
                     {
                         path: '*',
