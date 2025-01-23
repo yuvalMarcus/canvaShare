@@ -40,6 +40,7 @@ const PaintsTable = () => {
                                    tableHeader={tableHeader}
                                    tableTitle={'Paints'}
                                    handleDelete={handleDelete}
+                                   role_management={'paint_management'}
                                    uniqueProperty='id'
                                    nameProperty='name' />
             )}

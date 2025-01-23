@@ -1,7 +1,7 @@
 from auth import check_guest_or_blocked
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Reports, Report
-from db.reports import *
+from db.reports import get_reports, insert_report, delete_report
 from db.users import is_user_exist, has_role
 from db.paints import get_paint
 

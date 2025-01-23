@@ -37,6 +37,7 @@ const ReportsTable = () => {
                                    tableHeader={tableHeader}
                                    tableTitle={'Reports'}
                                    handleDelete={handleDelete}
+                                   role_management={'report_management'}
                                    uniqueProperty='id'
                                    nameProperty='id' />
             )}

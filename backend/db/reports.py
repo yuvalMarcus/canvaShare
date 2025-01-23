@@ -3,8 +3,6 @@ from typing import List, Tuple, Literal
 from fastapi import HTTPException, status
 from .utils import connect_to_db, commit_and_close_db
 
-__all__ = ['insert_report', 'get_reports', 'delete_report']
-
 def insert_report(report_type: Literal['artist', 'artist'], paint_id: int | None,
                         user_id: int | None, description: str) -> None:
     con, cur = connect_to_db()

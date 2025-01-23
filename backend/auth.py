@@ -41,7 +41,7 @@ def get_jwt_user_id(token: str | None = Depends(oauth2_scheme)) -> int | None:
     except JWTError as e:
         raise credentials_exception from e
     # checks if the user exist and connected
-    if is_user_exist(user_id=user_id) and get_disabled_status(user_id) == False:
+    if is_user_exist(user_id=user_id) and not get_disabled_status(user_id):
         return user_id
     raise credentials_exception
 
