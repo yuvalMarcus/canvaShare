@@ -56,7 +56,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
     const { update, isPending: updatePaintIsPending } = useUpdatePaint({ onSuccess: handleOnSuccess, onError: handleOnError })
 
-    const handlePublish = async () => {
+    const handlePublish = async (draft: boolean = false) => {
 
         const photo = canvas.current?.toDataURL({
             format: 'jpeg',
@@ -78,7 +78,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                     name: dataToUpdate?.name || paint?.name,
                     description: dataToUpdate?.description || paint?.description,
                     tags: dataToUpdate?.tags || paint?.tags || [],
-                    isPublic: true,
+                    isPublic: !draft,
                     photo: data.photo,
                     data: JSON.stringify(canvas.current?.toJSON())
                 }
@@ -90,6 +90,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                 ...payloadItem,
                 name: payloadItem.name || "Untitled Paint",
                 tags: payloadItem.tags || [],
+                isPublic: !draft,
                 photo: data.photo,
                 data: JSON.stringify(canvas.current?.toJSON())
             });
@@ -129,14 +130,36 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                     <nav aria-label="main mailbox folders">
                         <List>
                             <ListItem disablePadding>
-                                {!createPaintIsPending && !updatePaintIsPending && (
-                                    <ListItemButton onClick={handlePublish}>
+                                {paint && !createPaintIsPending && !updatePaintIsPending && (
+                                    <ListItemButton onClick={() => handlePublish(!paint?.isPublic)}>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             {paintId ? <SaveIcon /> : <PublishIcon />}
                                         </ListItemIcon>
-                                        <ListItemText primary="Publish" />
+                                        <ListItemText primary="Save" />
                                     </ListItemButton>
                                 )}
+                            </ListItem>
+                            <ListItem disablePadding>
+                                {(!paint || (paint?.isPublic && !createPaintIsPending && !updatePaintIsPending)) && (
+                                    <ListItemButton onClick={() => handlePublish(true)}>
+                                        <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
+                                            <PublishIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary="Make Draft" />
+                                    </ListItemButton>
+                                )}
+                            </ListItem>
+                            <ListItem disablePadding>
+                                {(!paint || (!paint?.isPublic && !createPaintIsPending && !updatePaintIsPending)) && (
+                                    <ListItemButton onClick={() => handlePublish(false)}>
+                                        <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
+                                            <PublishIcon />
+                                        </ListItemIcon>
+                                        <ListItemText primary="Make Publish" />
+                                    </ListItemButton>
+                                )}
+                            </ListItem>
+                            <ListItem disablePadding>
                                 {createPaintIsPending || updatePaintIsPending && (
                                     <ListItemButton>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
