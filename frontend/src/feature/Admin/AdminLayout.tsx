@@ -4,16 +4,22 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import {Outlet, useNavigate} from "react-router-dom";
 import Admin from "../../components/Header/Admin/Admin.tsx";
-import NavByRole from "./adminlayout.config.tsx";
 import {useAuth} from "../../context/auth.context.tsx";
 import useGetUser from "../../api/hooks/user/useGetUser.ts";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import {navByRole} from "./adminlayout.config.tsx";
 
-const header: NavigationItem =
+const header: NavigationItem[] = [
     {
         kind: 'header',
         title: 'Main items',
-    };
-
+    },
+    {
+        segment: '',
+        title: 'Dashboard',
+        icon: <DashboardIcon />,
+    },
+]
 
 const demoTheme = extendTheme({
     colorSchemes: { light: true, dark: true },
@@ -37,9 +43,9 @@ const AdminLayout = () => {
 
     const { data: user, isPending } = useGetUser(userId);
 
-    const roleComponents = !isPending && user && NavByRole(user?.roles || []) || [];
+    const roleComponents = navByRole(user?.roles || []);
 
-    const combinedNavigation = [header, ...roleComponents];
+    const combinedNavigation = [...header, ...roleComponents];
 
     return (
         <AppProvider
@@ -57,7 +63,7 @@ const AdminLayout = () => {
             theme={demoTheme}
         >
             <DashboardLayout slots={{
-                toolbarAccount: () => <Admin />
+                toolbarAccount: Admin
             }}>
                 <PageContainer>
                     <Outlet />

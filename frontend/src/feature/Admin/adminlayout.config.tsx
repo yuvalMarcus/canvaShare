@@ -33,7 +33,7 @@ const roleComponents = {
     },
 };
 
-const NavByRole = (userRoles: string[]) => {
+export const navByRole = (userRoles: string[]) => {
     // Filter roleComponents based on user roles
     return Object.entries(roleComponents)
         .filter(([role]) => userRoles.includes(role))
@@ -43,6 +43,3 @@ const NavByRole = (userRoles: string[]) => {
             icon: component.icon,
         }))
 };
-
-
-export default NavByRole;
