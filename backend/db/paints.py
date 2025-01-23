@@ -4,9 +4,6 @@ from fastapi import HTTPException, status
 from backend.models import Paint, UpdatePaint
 from .utils import connect_to_db, commit_and_close_db
 
-__all__ = ['insert_paint', 'update_paint', 'delete_paint', 'get_paint', 'get_paint_user_id', 'get_paints_by_filters',
-           'get_paints_by_tag']
-
 def insert_paint(paint: Paint) -> int:
     con, cur = connect_to_db()
     cur.execute("INSERT INTO paints(user_id, name, is_public, create_date, edit_date, likes, description, photo)"

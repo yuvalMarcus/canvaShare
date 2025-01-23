@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import psycopg2
 from .utils import connect_to_db, commit_and_close_db
 
-__all__ = ['create_tables_and_folders', 'delete_tables_and_folders', 'insert_initial_values', 'add_pg_trgm_extension']
 load_dotenv()
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 

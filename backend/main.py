@@ -12,7 +12,8 @@ from photo import router as photo_router
 from tag import router as tag_router
 from like import router as like_router
 from models import User
-from db.initial import *
+from db.initial import (create_tables_and_folders, delete_tables_and_folders, add_pg_trgm_extension, # noqa
+                        insert_initial_values)
 from db.users import insert_user_roles
 from dotenv import load_dotenv
 import uvicorn

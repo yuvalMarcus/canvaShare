@@ -1,11 +1,15 @@
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import User, Token , Tokens, UpdateUser, UserTuple, Users
+from photo import delete_photo
 from db.tags import insert_favorite_tags, get_tags_id, get_favorite_tags, delete_favorite_tags
 from db.utils import raise_error_if_guest, raise_error_if_blocked
-from db.users import *
-from photo import delete_photo
-from auth import *
+from db.users import (insert_user, get_user_id, get_username_by_email, get_user_email, get_hashed_password,
+                      connect_user, disconnect_user, get_user, get_users, get_popular_users, is_user_exist,
+                      get_prev_photos, remove_user_photos, delete_user, update_user, insert_user_roles, has_role,
+                      get_user_roles)
+from auth import (get_jwt_user_id, generate_token, get_password_hash, verify_password, check_guest_or_blocked,
+                  ACCESS_TOKEN_EXPIRE_TIME, REFRESH_TOKEN_EXPIRE_TIME)
 
 user_router = APIRouter(prefix="/user")
 access_router = APIRouter()
