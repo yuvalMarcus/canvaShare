@@ -7,8 +7,21 @@ import Typography from "@mui/material/Typography";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import Button from "@mui/material/Button";
 import {useUpload} from "../../hooks/useUpload.ts";
+import {z} from "zod";
+import {zodResolver} from "@hookform/resolvers/zod";
 
-interface UploadFileModalProps {
+const schema = z.object({
+    file: z.instanceof(File)
+});
+
+const MAX_SIZE = 5000000;
+
+const defaultAccept = {
+    'image/jpeg': [],
+    'image/png': []
+}
+
+interface UploadPhotoModalProps {
     isOpen: boolean;
     label?: string;
     onUploadFile: (url: string | null) => Promise<void>;
@@ -16,17 +29,18 @@ interface UploadFileModalProps {
     onClose: () => void;
 }
 
-const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, label = 'file', onUploadFile, accept, onClose }) => {
+const UploadPhotoModal: FC<UploadPhotoModalProps> = ({ isOpen, label = 'photo', onUploadFile, accept = defaultAccept, onClose }) => {
 
-    const {acceptedFiles, getRootProps, getInputProps} = useDropzone({
+    const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
         multiple: false,
-        accept
+        accept,
+        maxSize: MAX_SIZE,
     });
 
     const { upload, isPending } = useUpload();
 
     const {  handleSubmit, setValue, watch, formState: {errors} } = useForm({
-        //resolver: yupResolver(schema),
+        resolver: zodResolver(schema),
     });
 
     useLayoutEffect(() => {
@@ -54,7 +68,10 @@ const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, label = 'file', onU
                 <Stack gap={1} position="absolute" top="50%" left="50%" minWidth={600} p={2} bgcolor={grey[200]} border={2} borderColor={grey[900]} boxShadow={24} sx={{
                     transform: 'translate(-50%, -50%)',
                 }}>
-                    <Typography textTransform="capitalize">{`upload ${label}:`}</Typography>
+                    <Stack flexDirection="row" justifyContent="space-between">
+                        <Typography textTransform="capitalize">{`upload ${label}:`}</Typography>
+                        <Typography textTransform="capitalize" fontWeight="bold">max size: {MAX_SIZE / 1000000}MB</Typography>
+                    </Stack>
                     <Box border="dotted" borderColor={hasFileError ? red[400] : grey[400]} bgcolor={grey[200]} textAlign="center" p={4} {...getRootProps({className: 'dropzone'})} sx={{cursor: "pointer"}}>
                         <input {...getInputProps()} />
                         <FileUploadIcon fontSize={"large"} sx={{
@@ -62,6 +79,7 @@ const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, label = 'file', onU
                         }} />
                         <Typography color={grey[700]}>{`Drag 'n' drop some ${label} here, or click to select ${label}`}</Typography>
                     </Box>
+                    {hasFileError && <Typography color={red[700]} height={30}>Photo is required</Typography>}
                     <Box>
                         {file && (
                             <Stack direction="row" gap={1}>
@@ -78,4 +96,4 @@ const UploadFileModal: FC<UploadFileModalProps> = ({ isOpen, label = 'file', onU
     )
 }
 
-export default UploadFileModal;
+export default UploadPhotoModal;

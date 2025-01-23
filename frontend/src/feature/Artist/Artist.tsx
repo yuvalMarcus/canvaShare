@@ -14,7 +14,7 @@ import {Link, useNavigate, useParams} from "react-router-dom";
 import {useState} from "react";
 import {useAuth} from "../../context/auth.context.tsx";
 import EditIcon from '@mui/icons-material/Edit';
-import UploadFileModal from "../../components/UploadFileModal/UploadFileModal.tsx";
+import UploadPhotoModal from "../../components/UploadPhotoModal/UploadPhotoModal.tsx";
 import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import ReportModal from "../../components/ReportModal/ReportModal.tsx";
 import OrderBy from "../../components/OrderBy/OrderBy.tsx";
@@ -126,7 +126,7 @@ const Artist = () => {
                     {userIdParam && <PaintList userId={Number(userIdParam)} tags={tags} order={orderBy} />}
                 </Box>
             </Container>
-            <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
+            <UploadPhotoModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     )
 }

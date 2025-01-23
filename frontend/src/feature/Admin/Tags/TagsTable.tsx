@@ -33,6 +33,7 @@ const TagsTable = () => {
                                    tableHeader={tableHeader}
                                    tableTitle={'Tags'}
                                    handleDelete={handleDelete}
+                                   role_management={'tag_management'}
                                    uniqueProperty='id'
                                    nameProperty='name' />
             )}

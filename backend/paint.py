@@ -7,7 +7,8 @@ from auth import get_jwt_user_id, check_guest_or_blocked
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import Paints, Paint, PaintQueries, UpdatePaint
 from dotenv import load_dotenv
-from db.paints import *
+from db.paints import (get_paint, get_paint_user_id, get_paints_by_tag, get_paints_by_filters, insert_paint,
+                       update_paint, delete_paint)
 from db.users import get_user, has_role
 from db.tags import get_paint_tags, insert_paint_tags, remove_paint_tags
 from db.utils import raise_error_if_blocked
@@ -33,7 +34,7 @@ def get_paint_endpoint(paint_id: int, jwt_user_id: int | None = Depends(get_jwt_
     raise_error_if_blocked(paint["user_id"])
 
     # If paint is private (draft), only creator and admins should get it
-    if (paint["is_public"] == False
+    if (not paint["is_public"]
             and get_paint_user_id(paint["id"]) != jwt_user_id
             and has_role('paint_view', jwt_user_id) is False):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -145,7 +146,7 @@ def convert_results_to_paints(results: list, jwt_user_id) -> List[Paint]:
         paint["username"], _, _, _, paint["profile_photo"] = get_user(paint["user_id"])[USERNAME_COL_IN_USERS:COVER_COL_IN_USERS]
 
         # Hide private paints from unauthorized users
-        if (paint["is_public"] == False
+        if (not paint["is_public"]
                 and get_paint_user_id(paint["id"]) != jwt_user_id
                 and is_admin is False):
             continue

@@ -9,13 +9,14 @@ import AppRegistrationIcon from "@mui/icons-material/AppRegistration";
 import {useEffect, useState} from "react";
 import InputText from "../../../components/Form/InputText/InputText.tsx";
 import EditIcon from "@mui/icons-material/Edit";
-import UploadFileModal from "../../../components/UploadFileModal/UploadFileModal.tsx";
+import UploadPhotoModal from "../../../components/UploadPhotoModal/UploadPhotoModal.tsx";
 import useCreateUser from "../../../api/hooks/user/useCreateUser.ts";
 import Textarea from "../../../components/Form/Textarea/Textarea.tsx";
 import useGetUser from "../../../api/hooks/user/useGetUser.ts";
 import useUpdateUser from "../../../api/hooks/user/useUpdateUser.ts";
 import ArrowBackOutlinedIcon from '@mui/icons-material/ArrowBackOutlined';
 import {useNavigate, useParams} from "react-router-dom";
+import Permissions from "../../../components/Permissions/Permissions.tsx";
 
 const roles = [
     'admin_view',
@@ -151,32 +152,34 @@ const UserForm = () => {
                                 <Textarea label="About" name="about" rows={4} control={control}/>
                             </Box>
                         </Stack>
-                        <Box mt={1} mb={2} ml={4}>
-                            <Typography variant="h6" color={grey[700]}>
-                                Select user roles
-                            </Typography>
-                            <Stack flexDirection="row">
-                                {((!getIsPending && !!user?.roles) || !userId) && [0, 1].map(i => {
-                                    return (
-                                    <Stack flexDirection="column" pr={5} key={`col-${i}`}>
-                                        {roles.slice(i*6, 6 * (i+1)).map((role) => {
-                                            return (
-                                                <Box display="block" key={role}>
-                                                    <FormControlLabel
-                                                        control={<Checkbox defaultChecked={user ? !!(user?.roles?.includes(role)): false} />}
-                                                        label={<Typography textTransform={"capitalize"}>{role.replaceAll('_', ' ')}</Typography>}
-                                                        onChange={(e) => setValue("roles",
-                                                            [
-                                                                ...(e.target.checked ? [role] : []),
-                                                                ...(getValues("roles")?.filter((j: string) => j !== role) ?? [])
-                                                            ])} />
-                                                </Box>
-                                            )})}
-                                    </Stack>
-                                    )
-                                })}
-                            </Stack>
-                        </Box>
+                        <Permissions roles={['roles_management']}>
+                            <Box mt={1} mb={2} ml={4}>
+                                <Typography variant="h6" color={grey[700]}>
+                                    Select user roles
+                                </Typography>
+                                <Stack flexDirection="row">
+                                    {((!getIsPending && !!user?.roles) || !userId) && [0, 1].map(i => {
+                                        return (
+                                        <Stack flexDirection="column" pr={5} key={`col-${i}`}>
+                                            {roles.slice(i*6, 6 * (i+1)).map((role) => {
+                                                return (
+                                                    <Box display="block" key={role}>
+                                                        <FormControlLabel
+                                                            control={<Checkbox defaultChecked={user ? !!(user?.roles?.includes(role)): false} />}
+                                                            label={<Typography textTransform={"capitalize"}>{role.replaceAll('_', ' ')}</Typography>}
+                                                            onChange={(e) => setValue("roles",
+                                                                [
+                                                                    ...(e.target.checked ? [role] : []),
+                                                                    ...(getValues("roles")?.filter((j: string) => j !== role) ?? [])
+                                                                ])} />
+                                                    </Box>
+                                                )})}
+                                        </Stack>
+                                        )
+                                    })}
+                                </Stack>
+                            </Box>
+                        </Permissions>
                         <Stack alignItems="center" justifyContent="center">
                                 <Button variant="outlined" type="submit" disabled={createIsPending || updateIsPending}>
                                     {(createIsPending || updateIsPending) && (
@@ -194,7 +197,7 @@ const UserForm = () => {
                     </form>
                 </Box>
             </Stack>
-            <UploadFileModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
+            <UploadPhotoModal label="photo" isOpen={isUploadFileOpen} onUploadFile={uploadProfilePhoto} onClose={() => setIsUploadFileOpen(false)} />
         </>
     );
 };

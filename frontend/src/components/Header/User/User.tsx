@@ -56,13 +56,12 @@ export const User  = () => {
     return (
         <>
             <IconButton
-                id="basic-button"
-                aria-controls={open ? 'basic-menu' : undefined}
+                 aria-controls={open ? 'basic-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}
                 onClick={handleClick}
             >
-                <Avatar alt="Remy Sharp" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ backgroundColor: grey[100] }} />
+                <Avatar src={user?.profilePhoto || "/assets/default-user.png"} sx={{ backgroundColor: grey[100] }} />
             </IconButton>
             <Menu
                 id="basic-menu"
