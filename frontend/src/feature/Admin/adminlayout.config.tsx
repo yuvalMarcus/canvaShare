@@ -1,12 +1,16 @@
-import {useAuth} from "../../context/auth.context.tsx";
-import useGetUser from "../../api/hooks/user/useGetUser.ts";
 import GroupIcon from '@mui/icons-material/Group';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
-import ReportIcon from '@mui/icons-material/Report';
+import FlagIcon from '@mui/icons-material/Flag';
 import TagIcon from '@mui/icons-material/Tag';
+import DashboardIcon from "@mui/icons-material/Dashboard";
 
 
 const roleComponents = {
+    ["admin_view"]: {
+        segment: '',
+        title: 'Dashboard',
+        icon: <DashboardIcon />,
+    },
     ["user_view"]: {
         segment: 'users',
         title: 'Users',
@@ -20,7 +24,7 @@ const roleComponents = {
     ["report_view"]: {
         segment: 'reports',
         title: 'Reports',
-        icon: <ReportIcon />,
+        icon: <FlagIcon />,
     },
     ["roles_view"]: {
         segment: 'tags',
@@ -29,25 +33,15 @@ const roleComponents = {
     },
 };
 
-const NavByRole = () => {
-
-    const { isAuth, userId } = useAuth();
-    const { data: user, isPending } = useGetUser(userId);
-
-    if (isPending || !user) return [];
-
-    const userRoles = user?.roles || [];
-
+const NavByRole = (userRoles: string[]) => {
     // Filter roleComponents based on user roles
-    const visibleComponents = Object.entries(roleComponents)
+    return Object.entries(roleComponents)
         .filter(([role]) => userRoles.includes(role))
         .map(([_, component]) => ({
             segment: component.segment,
             title: component.title,
             icon: component.icon,
-        }));
-
-    return visibleComponents
+        }))
 };
 
 

@@ -1,47 +1,18 @@
 import { extendTheme } from '@mui/material/styles';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import GroupIcon from '@mui/icons-material/Group';
-import ColorLensIcon from '@mui/icons-material/ColorLens';
-import FlagIcon from '@mui/icons-material/Flag';
-import TagIcon from '@mui/icons-material/Tag';
-import { AppProvider, Navigation } from '@toolpad/core/AppProvider';
+import { AppProvider, NavigationItem } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import {Outlet, useNavigate} from "react-router-dom";
 import Admin from "../../components/Header/Admin/Admin.tsx";
 import NavByRole from "./adminlayout.config.tsx";
+import {useAuth} from "../../context/auth.context.tsx";
+import useGetUser from "../../api/hooks/user/useGetUser.ts";
 
-const NAVIGATION: Navigation = [
+const header: NavigationItem =
     {
         kind: 'header',
         title: 'Main items',
-    },
-    {
-        segment: '',
-        title: 'Dashboard',
-        icon: <DashboardIcon />,
-    },
-    {
-        segment: 'users',
-        title: 'Users',
-        icon: <GroupIcon />,
-    },
-    {
-        segment: 'paints',
-        title: 'Paints',
-        icon: <ColorLensIcon />,
-    },
-    {
-        segment: 'reports',
-        title: 'Reports',
-        icon: <FlagIcon />,
-    },
-    {
-        segment: 'tags',
-        title: 'Tags',
-        icon: <TagIcon />,
-    },
-];
+    };
 
 
 const demoTheme = extendTheme({
@@ -62,9 +33,13 @@ const AdminLayout = () => {
 
     const navigate = useNavigate();
 
-    const roleComponents = NavByRole();
+    const { userId } = useAuth();
 
-    const combinedNavigation = [...NAVIGATION,...roleComponents];
+    const { data: user, isPending } = useGetUser(userId);
+
+    const roleComponents = !isPending && user && NavByRole(user?.roles || []) || [];
+
+    const combinedNavigation = [header, ...roleComponents];
 
     return (
         <AppProvider

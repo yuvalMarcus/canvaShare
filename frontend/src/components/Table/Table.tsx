@@ -286,13 +286,15 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                 return
                                             if (i === 0)
                                                 return (<TableCell key={`row-${index}-col-${i+1}`} component="th" id={labelId} scope="row" padding="none">
-                                                    {row[param]}
+                                                    {row[param] ?? ''}
                                                 </TableCell>)
                                             else if (tableHeader[i].type == 'long-text'){
-                                                const roles = row[param].map((role: string) => role+', ');
+                                                const roles = row[param]?.map((role: string) => role+', ');
                                                 return (<TableCell key={`row-${index}-col-${i+1}`} align='left'>
                                                     <Tooltip title={roles}>
-                                                        <Typography  display="inline-block" width="180px" whiteSpace="nowrap"
+                                                        <Typography  display="inline-block"
+                                                                     width="180px"
+                                                                     whiteSpace="nowrap"
                                                                      overflow="hidden"
                                                                      textOverflow="ellipsis">
                                                             {roles}
