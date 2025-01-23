@@ -9,6 +9,7 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import {Outlet, useNavigate} from "react-router-dom";
 import Admin from "../../components/Header/Admin/Admin.tsx";
+import NavByRole from "./adminlayout.config.tsx";
 
 const NAVIGATION: Navigation = [
     {
@@ -42,6 +43,7 @@ const NAVIGATION: Navigation = [
     },
 ];
 
+
 const demoTheme = extendTheme({
     colorSchemes: { light: true, dark: true },
     colorSchemeSelector: 'class',
@@ -55,13 +57,18 @@ const demoTheme = extendTheme({
         },
     },
 });
+
 const AdminLayout = () => {
 
     const navigate = useNavigate();
 
+    const roleComponents = NavByRole();
+
+    const combinedNavigation = [...NAVIGATION,...roleComponents];
+
     return (
         <AppProvider
-            navigation={NAVIGATION}
+            navigation={combinedNavigation}
             router={{
                 pathname: 'admin',
                 searchParams: new URLSearchParams(),
