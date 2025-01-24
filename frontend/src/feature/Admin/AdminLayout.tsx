@@ -6,18 +6,12 @@ import {Outlet, useNavigate} from "react-router-dom";
 import Admin from "../../components/Header/Admin/Admin.tsx";
 import {useAuth} from "../../context/auth.context.tsx";
 import useGetUser from "../../api/hooks/user/useGetUser.ts";
-import DashboardIcon from "@mui/icons-material/Dashboard";
 import {navByRole} from "./adminlayout.config.tsx";
 
 const header: NavigationItem[] = [
     {
         kind: 'header',
         title: 'Main items',
-    },
-    {
-        segment: '',
-        title: 'Dashboard',
-        icon: <DashboardIcon />,
     },
 ]
 
