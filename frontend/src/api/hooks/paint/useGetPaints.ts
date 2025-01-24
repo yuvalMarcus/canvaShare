@@ -8,6 +8,7 @@ const useGetPaints = () => {
     const { data, isPending } = useQuery({
         queryKey: [GET_PAINTS],
         queryFn: () => paintApi.getPaints({}),
+        retry: false,
     });
 
     return {

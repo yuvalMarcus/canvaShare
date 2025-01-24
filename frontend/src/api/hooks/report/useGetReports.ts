@@ -7,6 +7,7 @@ const useGetReports = () => {
     const { data, isPending } = useQuery({
         queryKey: [GET_REPORTS],
         queryFn: () => reportApi.getReports(),
+        retry: false,
     });
 
     return {

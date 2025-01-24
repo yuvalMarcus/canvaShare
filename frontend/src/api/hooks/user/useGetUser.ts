@@ -8,7 +8,8 @@ const useGetUser = (id?: string | number) => {
     const { data, isPending, isRefetching, isError } = useQuery({
         queryKey: [GET_USER, id],
         queryFn: () => api.getUser(id),
-        enabled: !!id
+        enabled: !!id,
+        retry: false,
     });
 
     return {

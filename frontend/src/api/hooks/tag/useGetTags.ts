@@ -8,6 +8,7 @@ const useGetTags = () => {
     const { data, isPending } = useQuery({
         queryKey: [GET_TAGS],
         queryFn: () => api.getTags(),
+        retry: false,
     });
 
     return {

@@ -8,7 +8,8 @@ const useGetPaint = (id?: number) => {
     const { data, isPending } = useQuery({
         queryKey: [GET_PAINT, id],
         queryFn: () => api.getPaint(id),
-        enabled: !!id
+        enabled: !!id,
+        retry: false,
     });
 
     return {

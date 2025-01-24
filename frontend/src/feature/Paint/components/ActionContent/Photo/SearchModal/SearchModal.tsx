@@ -22,6 +22,7 @@ const SearchModal: FC<SearchPhotosProps> = ({ canvas, isOpen, onClose }) => {
     const { data, isPending } = useQuery({
         queryKey: [search],
         queryFn: () => search && api.searchPhotos({ category: search }),
+        retry: false,
     })
 
     const click = async () => {

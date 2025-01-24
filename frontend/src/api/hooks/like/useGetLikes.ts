@@ -13,6 +13,7 @@ const useGetLikes = (params : UseGetLikesParams) => {
     const { data, isPending } = useQuery({
         queryKey: [GET_LIKES, params],
         queryFn: () => api.getLikes({ paintId: params.paintId, userId: params.userId }),
+        retry: false,
     });
 
     return {

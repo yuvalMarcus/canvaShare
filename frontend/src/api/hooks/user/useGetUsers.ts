@@ -9,6 +9,7 @@ const useGetUsers = (params: { username?: string, orderBy?: 'popular', limit?: n
         queryKey: [GET_USERS, params],
         queryFn: () =>
             userApi.getUsers(params),
+        retry: false,
     });
 
     return {
