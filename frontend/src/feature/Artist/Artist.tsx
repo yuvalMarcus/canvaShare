@@ -11,7 +11,7 @@ import PaintList from "../../components/PaintList/PaintList.tsx";
 import * as S from "../Home/Home.style.ts";
 import Button from "@mui/material/Button";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {useState} from "react";
+import {useLayoutEffect, useState} from "react";
 import {useAuth} from "../../context/auth.context.tsx";
 import EditIcon from '@mui/icons-material/Edit';
 import UploadPhotoModal from "../../components/UploadPhotoModal/UploadPhotoModal.tsx";
@@ -50,7 +50,7 @@ const Artist = () => {
 
     const { userId } = useAuth();
 
-    const { data: user, isPending, isRefetching } = useGetUser(userIdParam);
+    const { data: user, isPending, isRefetching, isError } = useGetUser(userIdParam);
 
     const uploadProfilePhoto = async (photo: string) => {
         if(!userIdParam || !uploadType) return;
@@ -67,6 +67,11 @@ const Artist = () => {
 
     const isUserProfileOwner = userId === Number(userIdParam);
 
+    useLayoutEffect(() => {
+        if(isPending && !isError) return;
+        if(!user) navigate('/404')
+    }, [user, isPending, isError])
+
     return (
         <>
             <S.TopController height={300} boxShadow={2}>
@@ -77,12 +82,12 @@ const Artist = () => {
                 </Box>
                 <Container sx={{ height: '100%', position: "relative", zIndex: 10 }}>
                     <Box position="absolute" bottom={-75}>
-                        {isPending || isRefetching && (
+                        {(isPending || isRefetching) && (
                             <Stack width={150} height={150} zIndex={10} bgcolor={grey[900]} borderRadius='100%' justifyContent="center" alignItems="center">
                                 <CircularProgress />
                             </Stack>
                         )}
-                        {!isRefetching && <Avatar alt="Remy Sharp" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ width: 150, height: 150, boxShadow: 4, backgroundColor: grey[100] }} />}
+                        {!isRefetching && !isPending && <Avatar alt="Remy Sharp" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ width: 150, height: 150, boxShadow: 4, backgroundColor: grey[100] }} />}
                         {isUserProfileOwner && (
                             <Box position="absolute" top={0} right={0} zIndex={10} bgcolor={grey[100]} borderRadius="100%" boxShadow={1}>
                                 <IconButton onClick={() => {
@@ -109,12 +114,16 @@ const Artist = () => {
             <Container>
                 <Stack flexDirection="row" alignItems="center" justifyContent="space-between" gap={3} pl={20} py={1} mb={4}>
                     <Stack flexDirection="row" gap={2}>
-                        <Typography color={user?.username ? grey[900] : grey[500]} fontWeight="bold" variant="h4" textTransform="capitalize">{user?.username ?? 'username'}</Typography>
+                        {(isPending || isRefetching) && <CircularProgress />}
+                        {!isRefetching && !isPending && <Typography color={user?.username ? grey[900] : grey[500]} fontWeight="bold" variant="h4" textTransform="capitalize">{user?.username ?? 'username'}</Typography>}
                         {userId && (<ReportModal type={ReportType.ARTIST} userId={userId} />)}
                         {isUserProfileOwner && <Button variant="contained"  to='/paint' component={Link}>add paint</Button>}
                     </Stack>
                     <OrderBy value={orderBy} onChange={setOrderBy} />
                 </Stack>
+            </Container>
+            <Container>
+                <Typography px={2} py={1} color={grey[800]}>{user?.about}</Typography>
             </Container>
             <Container>
                 <Box py={2}>
