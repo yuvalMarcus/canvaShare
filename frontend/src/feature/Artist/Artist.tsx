@@ -51,6 +51,7 @@ const Artist = () => {
     const { userId } = useAuth();
 
     const { data: user, isPending, isRefetching, isError } = useGetUser(userIdParam);
+    const { data: currentUser } = useGetUser(userId);
 
     const uploadProfilePhoto = async (photo: string) => {
         if(!userIdParam || !uploadType) return;
@@ -68,9 +69,9 @@ const Artist = () => {
     const isUserProfileOwner = userId === Number(userIdParam);
 
     useLayoutEffect(() => {
-        if(!user) return;
-        setTags(user?.tags || []);
-    }, [user]);
+        if(!currentUser) return;
+        setTags(currentUser?.tags || []);
+    }, [currentUser]);
 
     useLayoutEffect(() => {
         if(isPending && !isError) return;
