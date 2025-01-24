@@ -111,10 +111,10 @@ def update_user_endpoint(user_id: int, user: User
         update_user(UpdateUser(user_id=user_id, username=user.username, hashed_password=hashed_password,
                           email=user.email, profile_photo=user.profile_photo, cover_photo=user.cover_photo,
                           about=user.about, is_blocked=is_blocked))
-        if user.tags:
+        if user.tags is not None:
             delete_favorite_tags(user_id)
             insert_favorite_tags(user_id, get_tags_id(user.tags))
-        if roles:
+        if roles is not None:
             insert_user_roles(roles, user_id)
         return {}
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")

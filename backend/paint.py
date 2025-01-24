@@ -69,7 +69,7 @@ def update_paint_endpoint(paint_id: int, paint: Paint, jwt_user_id: int = Depend
         save_json_data(paint.user_id, f'paints/{paint.user_id}/{paint_id}.json', paint.data)
     update_paint(UpdatePaint(paint_id=paint_id, name=paint.name, is_public=paint.is_public,
                              description=paint.description, photo=paint.photo))
-    if paint.tags:
+    if paint.tags is not None:
         remove_paint_tags(paint_id)
         insert_paint_tags(paint, paint_id)
     return {}
