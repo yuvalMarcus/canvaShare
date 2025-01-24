@@ -63,7 +63,7 @@ class Tags(BaseModel):
 
 class User(BaseModel):
     id: Optional[int] = None # no need to validate
-    username: Annotated[Optional[str], Query(min_length=3, max_length=20, pattern=r"^[a-z0-9]*$")] = None
+    username: Annotated[Optional[str], Query(min_length=3, max_length=50, pattern=r"^[a-z0-9@\.]*$")] = None
     password: Annotated[Optional[str], Query(min_length=3, max_length=50)] = None
     email: Annotated[Optional[str], Query(min_length=6, max_length=50, pattern=r"^\S+@\S+\.\S+$")] = None
     tags: Optional[List[Annotated[str, Query(min_length=1, max_length=50, pattern=r"^[^,]+$")]]] = None
