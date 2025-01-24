@@ -15,6 +15,9 @@ import {toast} from "react-toastify";
 import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 import {useParams} from "react-router-dom";
+import Tags from "../../feature/Paint/components/ToolBar/Tags/Tags.tsx";
+import InputTags from "../Form/InputTags/InputTags.tsx";
+import {useLayoutEffect, useState} from "react";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'Required' }),
@@ -23,13 +26,15 @@ const schema = z.object({
 });
 
 const UserAccount = () => {
-
+    const [tags, setTags] = useState<string[]>([]);
     const { id: userIdParam } = useParams();
 
     const {
         handleSubmit,
         formState: { errors },
         control,
+        getValues,
+        setValue
     } = useForm({
         resolver: zodResolver(schema),
     });
@@ -51,11 +56,20 @@ const UserAccount = () => {
     const { update, isPending } = useUpdateUser2({ onSuccess: handleOnSuccess, onError: handleOnError });
 
     const onSubmit = async (payload: UserPayload) => {
-        update({ id: Number(userId), payload })
+
+        update({ id: Number(userId), payload: {
+            ...payload,
+                tags
+            } })
     }
 
+    useLayoutEffect(() => {
+        if(!user) return;
+        setTags(user?.tags || []);
+    }, [user]);
+
     return (
-        <Box p={4}>
+        <Box p={4} minWidth={300}>
             <Typography variant="h5" mb={4}>Account</Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box>
@@ -65,6 +79,9 @@ const UserAccount = () => {
                 <Box>
                     <InputText label="email" name="email" defaultValue={user?.email || ''} control={control} />
                     <Typography color={red[700]} height={30}>{errors.email?.message}</Typography>
+                </Box>
+                <Box mb={4}>
+                    <InputTags tags={tags} onChange={setTags} />
                 </Box>
                 <Box>
                     <Textarea label="about" name="about" defaultValue={user?.about || ''} control={control} />
