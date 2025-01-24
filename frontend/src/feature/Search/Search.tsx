@@ -13,6 +13,8 @@ import {useSearchParams} from "react-router-dom";
 import {useLayoutEffect, useState} from "react";
 import OrderBy from "../../components/OrderBy/OrderBy.tsx";
 import InputTags from "../../components/Form/InputTags/InputTags.tsx";
+import {useAuth} from "../../context/auth.context.tsx";
+import useGetUser from "../../api/hooks/user/useGetUser.ts";
 
 const Search = () => {
     const [searchParams] = useSearchParams();
@@ -20,6 +22,15 @@ const Search = () => {
     const [value, setValue] = useState<string>(searchParams.get('text') || '');
     const [orderBy, setOrderBy] = useState<string>('date');
     const [tags, setTags] = useState<string[]>([]);
+
+    const { userId } = useAuth();
+
+    const { data: user } = useGetUser(userId);
+
+    useLayoutEffect(() => {
+        if(!user) return;
+        setTags(user?.tags || []);
+    }, [user]);
 
     useLayoutEffect(() => {
         setValue(searchParams.get('text') || '');
