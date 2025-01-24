@@ -10,7 +10,7 @@ const ProtectedRoute = ({roles}: {roles: string[]}) => {
 
     if (isPending && !!userId)
         return (
-            <Stack flexDirection="row" justifyContent="center">
+            <Stack flexDirection="row" justifyContent="center" alignItems="center" height="100%">
                 <CircularProgress />
             </Stack>
         )
