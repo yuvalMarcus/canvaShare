@@ -15,7 +15,6 @@ import {toast} from "react-toastify";
 import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 import {useParams} from "react-router-dom";
-import Tags from "../../feature/Paint/components/ToolBar/Tags/Tags.tsx";
 import InputTags from "../Form/InputTags/InputTags.tsx";
 import {useLayoutEffect, useState} from "react";
 
@@ -33,8 +32,6 @@ const UserAccount = () => {
         handleSubmit,
         formState: { errors },
         control,
-        getValues,
-        setValue
     } = useForm({
         resolver: zodResolver(schema),
     });
@@ -46,6 +43,7 @@ const UserAccount = () => {
     const handleOnSuccess = () => {
         toast.success('User uploaded successfully');
         queryClient.invalidateQueries({queryKey: [GET_USER, userIdParam]});
+        queryClient.invalidateQueries({queryKey: [GET_USER, userId]});
         queryClient.invalidateQueries({queryKey: [GET_USERS]});
     }
 
