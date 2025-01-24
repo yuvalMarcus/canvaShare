@@ -68,6 +68,11 @@ const Artist = () => {
     const isUserProfileOwner = userId === Number(userIdParam);
 
     useLayoutEffect(() => {
+        if(!user) return;
+        setTags(user?.tags || []);
+    }, [user]);
+
+    useLayoutEffect(() => {
         if(isPending && !isError) return;
         if(!user) navigate('/404')
     }, [user, isPending, isError])
