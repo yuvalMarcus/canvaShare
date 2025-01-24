@@ -10,11 +10,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 interface deleteDialog {
     handleDelete: (id: number) => void;
-    id: number;
-    name: string;
+    selected: readonly number[];
+    name?: string;
 }
 
-export default function DeleteDialog({handleDelete, id, name}: deleteDialog) {
+export default function DeleteDialog({handleDelete, selected, name}: deleteDialog) {
     const [open, setOpen] = React.useState(false);
 
     const handleClickOpen = () => {
@@ -37,7 +37,7 @@ export default function DeleteDialog({handleDelete, id, name}: deleteDialog) {
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    Are you sure you want to delete {name}?
+                    Are you sure you want to delete {selected.length == 1 ? name : 'all'}?
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
@@ -45,7 +45,12 @@ export default function DeleteDialog({handleDelete, id, name}: deleteDialog) {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={()=> {handleDelete(id!); handleClose();}} color="error">Delete</Button>
+                    <Button onClick={()=> {
+                        for (const id of selected){
+                            handleDelete(id);
+                        }
+                        handleClose();
+                    }} color="error">Delete</Button>
                     <Button onClick={handleClose} autoFocus>
                         Cancel
                     </Button>

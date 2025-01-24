@@ -9,6 +9,7 @@ import {Box, Stack} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import Permissions from "../../../components/Permissions/Permissions.tsx";
 import {useAuth} from "../../../context/auth.context.tsx";
+import {toast} from "react-toastify";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -24,7 +25,7 @@ const UsersTable = () => {
     const {mutate: updateMutate, isPending: updateIsPending} = updateUser();
     const { data, isPending: getIsPending } = getUsers({});
     const navigate = useNavigate();
-    const { logout, userId } = useAuth();
+    const { userId } = useAuth();
 
     const rows =
         !getIsPending
@@ -33,9 +34,10 @@ const UsersTable = () => {
         {return {id, username, email, profilePhoto, coverPhoto, roles, isBlocked}}) || []
 
     const handleBlock = (id: number) => {
-        updateMutate({ id: id, payload: {isBlocked: true} })
-        if (id == userId)
-            logout();
+        if (id != userId)
+            updateMutate({ id: id, payload: {isBlocked: true} })
+        else
+            toast.error("You can't block yourself");
     }
 
     const handleUnBlock = (id: number) => {
@@ -51,9 +53,10 @@ const UsersTable = () => {
     }
 
     const handleDelete = (id: number) => {
-        deleteMutate(id);
-        if (id == userId)
-            logout();
+        if (id != userId)
+            deleteMutate(id);
+        else
+            toast.error("You can't delete yourself");
     }
 
     return (

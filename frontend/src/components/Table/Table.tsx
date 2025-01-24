@@ -15,7 +15,6 @@ import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteDialog from '../Table/DeleteDialog.tsx'
 import { visuallyHidden } from '@mui/utils';
@@ -110,9 +109,12 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
 interface EnhancedTableToolbarProps {
     numSelected: number;
     tableTitle: string;
+    handleDelete: (id: number) => void;
+    selected: readonly number[];
 }
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-    const { numSelected, tableTitle } = props;
+    const { numSelected, tableTitle, handleDelete, selected } = props;
+    console.log(selected);
     return (
         <Toolbar
             sx={[
@@ -146,11 +148,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
                 </Typography>
             )}
             {numSelected > 0 && (
-                <Tooltip title="Delete">
-                    <IconButton>
-                        <DeleteIcon />
-                    </IconButton>
-                </Tooltip>
+                <DeleteDialog selected={selected} handleDelete={handleDelete}/>
             )}
         </Toolbar>
     );
@@ -240,7 +238,11 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
     return (
         <Box sx={{ width: '100%' }}>
             <Paper sx={{ width: '100%', mb: 2 }}>
-                <EnhancedTableToolbar numSelected={selected.length} tableTitle={tableTitle} />
+                <EnhancedTableToolbar numSelected={selected.length}
+                                      tableTitle={tableTitle}
+                                      handleDelete={handleDelete}
+                                      selected={selected}
+                />
                 <TableContainer>
                     <Table
                         sx={{ minWidth: 750 }}
@@ -339,7 +341,7 @@ const EnhancedTable = ({rows, orderByValue, tableHeader,
                                                 <IconButton onClick={() => handleUpdate(row[uniqueProperty])}>
                                                     <EditIcon />
                                                 </IconButton>)}
-                                                <DeleteDialog id={row[uniqueProperty]} name={row[nameProperty]} handleDelete={handleDelete}/>
+                                                <DeleteDialog selected={[row[uniqueProperty]]} name={row[nameProperty]} handleDelete={handleDelete}/>
                                             </TableCell>
                                         </Permissions>
                                     </TableRow>
