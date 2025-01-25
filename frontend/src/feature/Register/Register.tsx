@@ -15,7 +15,7 @@ import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 
 const schema = z.object({
-    username: z.string().min(4, { message: 'Required' }),
+    username: z.string().min(4, { message: 'Required' }).toLowerCase(),
     email: z.string().email({ message: 'Email not valid' }),
     password: z.string().min(4, { message: 'Required' }),
 });

@@ -14,7 +14,7 @@ import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 
 const schema = z.object({
-    username: z.string().min(4, { message: 'required' }),
+    username: z.string().min(4, { message: 'required' }).toLowerCase(),
     password: z.string().min(4, { message: 'required' }),
 });
 
