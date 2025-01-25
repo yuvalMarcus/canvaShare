@@ -145,7 +145,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             <PublishIcon />
                                         </ListItemIcon>
-                                        <ListItemText primary="Make Draft" />
+                                        <ListItemText primary="Save as Draft" />
                                     </ListItemButton>
                                 )}
                             </ListItem>
@@ -155,7 +155,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             <PublishIcon />
                                         </ListItemIcon>
-                                        <ListItemText primary="Make Publish" />
+                                        <ListItemText primary="Publish" />
                                     </ListItemButton>
                                 )}
                             </ListItem>
