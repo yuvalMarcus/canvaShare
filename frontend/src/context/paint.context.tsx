@@ -7,8 +7,8 @@ import * as api from "../api/paint.ts";
 type PaintPayloadType = <T extends keyof PaintPayload>(key: T, value: PaintPayload[T]) => void;
 
 const defaultPaint: PaintPayload = {
-    name: "",
-    description: "",
+    name: null,
+    description: null,
     tags: null,
     isPublic: true,
     data: null,

@@ -4,8 +4,6 @@ import React, {FC, MutableRefObject, useState} from "react";
 import {grey} from "@mui/material/colors";
 import PublishIcon from '@mui/icons-material/Publish';
 import Typography from "@mui/material/Typography";
-import {useMutation} from "@tanstack/react-query";
-import * as api from "../../../../../api/paint.ts";
 import {Canvas} from "fabric";
 import {useNavigate, useParams} from "react-router-dom";
 import {toast} from "react-toastify";
@@ -16,6 +14,7 @@ import useGetPaint from "../../../../../api/hooks/paint/useGetPaint.ts";
 import SaveIcon from '@mui/icons-material/Save';
 import useCreatePaint from "../../../../../api/hooks/paint/useCreatePaint.ts";
 import useUpdatePaint from "../../../../../api/hooks/paint/useUpdatePaint.ts";
+import {isNull, isUndefined} from "lodash";
 
 interface FileProps {
     canvas: MutableRefObject<Canvas | null>;
@@ -67,7 +66,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
         if(paintId) {
 
-            const dataToUpdate = Object.entries(payloadItem).filter(([_, value]) => Boolean(value)).reduce((prev, [key, value]) => {
+            const dataToUpdate = Object.entries(payloadItem).filter(([_, value]) => !isNull(value) && !isUndefined(value)).reduce((prev, [key, value]) => {
                 prev[key] = value;
                 return prev;
             }, {})
@@ -75,8 +74,8 @@ const FileO: FC<FileProps> = ({ canvas }) => {
             update({
                 id: paintId,
                 payload: {
-                    name: dataToUpdate?.name || paint?.name,
-                    description: dataToUpdate?.description || paint?.description,
+                    name: dataToUpdate?.name === "" ? "Untitled Paint" : dataToUpdate?.name,
+                    description: dataToUpdate?.description ?? paint?.description,
                     tags: dataToUpdate?.tags || paint?.tags || [],
                     isPublic: !draft,
                     photo: data.photo,

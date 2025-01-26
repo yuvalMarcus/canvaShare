@@ -12,7 +12,7 @@ const Name = () => {
     const { payload, handleUpload } = usePaint();
 
     return (
-        <TextField id="outlined-basic" label="Name" variant="outlined" size="small" value={payload.name || data?.name || "Untitled Paint"} onChange={event => handleUpload('name', event.target.value)} />
+        <TextField id="outlined-basic" label="Name" variant="outlined" size="small" value={payload.name ?? data?.name ?? "Untitled Paint"} onChange={event => handleUpload('name', event.target.value)} />
     )
 }
 
