@@ -30,7 +30,7 @@ const PaintList: FC<PaintListProps> = ({cardDetails, userId, tags, order, search
 
     return (
         <Box>
-            {!!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
+            {!isFetching && !!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
                 {results?.map((paint) => <Card key={paint.id} {...paint} />)}
             </Stack>}
             {(isFetching || isFetchingNextPage) && (

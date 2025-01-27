@@ -10,7 +10,7 @@ import {useAuth} from "../../context/auth.context.tsx";
 import useGetUser from "../../api/hooks/user/useGetUser.ts";
 
 const Explore = () => {
-    const [orderBy, setOrderBy] = useState<string>('date');
+    const [orderBy, setOrderBy] = useState<string>('likes');
     const [tags, setTags] = useState<string[]>([]);
 
     const { userId } = useAuth();
