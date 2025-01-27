@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Avatar, Box, IconButton, Modal, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -35,6 +35,8 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
 
     const { userId: userAuthId } = useAuth();
 
+    const navigate = useNavigate();
+
     const handleOnSuccess = () => {
         toast.success('Paint remove successfully');
 
@@ -48,7 +50,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
     const handleDeletePaint = async () => {
         if(id) removePaint(id);
     }
-    
+
     const isUserProfileOwner = userAuthId === userId;
 
     return (
@@ -76,7 +78,10 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
                 </Box>
                 <Stack width={300} sx={{ backgroundColor: grey[100] }}>
                     <Stack flexDirection="row" alignItems="center" justifyContent="space-between" p={1}>
-                        <Button component={Link} to={`/artist/${userId}`}>
+                        <Button onClick={() => {
+                            navigate(`/artist/${userId}`);
+                            onClose();
+                        }}>
                             <Avatar alt="avatar" src={profilePhoto ?? "/assets/default-user.png"} sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
                             <Typography color={grey[900]} ml={2}>
                                 {username}
