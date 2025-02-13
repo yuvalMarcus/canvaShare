@@ -30,14 +30,11 @@ const PaintList: FC<PaintListProps> = ({cardDetails, userId, tags, order, search
 
     return (
         <Box>
-<<<<<<< Updated upstream
-            {!!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
-                {results?.map((paint) => <Card key={paint.id} {...paint} />)}
-=======
-            {!isFetching && !!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
-                {results?.map((paint) => <Card key={paint.id} {...paint} details={cardDetails} />)}
->>>>>>> Stashed changes
-            </Stack>}
+            {!isFetching && !!results?.length && (
+                <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
+                    {results?.map((paint) => <Card key={paint.id} {...paint} details={cardDetails} />)}
+                </Stack>
+            )}
             {(isFetching || isFetchingNextPage) && (
                 <Stack flexDirection="row" justifyContent="center" p={2}>
                     <CircularProgress />
