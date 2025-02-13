@@ -23,7 +23,7 @@ const AuthContext = createContext<{
 const AuthProvider = ({ children }) => {
     const [isAuth, setIsAuth] = useState<boolean>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    const {mutateAsync, isPending} = userRefreshToken();
+    const { refresh, isPending} = userRefreshToken({});
 
     const setCertificate = (token, refreshToken, userId) => {
         cookie.setCookie('userId', userId, 1);
@@ -50,7 +50,7 @@ const AuthProvider = ({ children }) => {
     const refreshToken = async () => {
         const refreshToken = cookie.getCookie('refreshToken');
         if (!refreshToken) return;
-        const { data } = await mutateAsync({ refreshToken });
+        const { data } = await refresh({ refreshToken });
         setCertificate(data.token, data.refreshToken, data.userId);
         login();
     }

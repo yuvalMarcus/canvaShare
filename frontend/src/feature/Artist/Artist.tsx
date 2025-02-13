@@ -1,14 +1,15 @@
 import Typography from "@mui/material/Typography";
 import {
     Avatar,
-    Box, CircularProgress,
+    Box,
+    CircularProgress,
     Container,
     IconButton,
     Stack,
 } from "@mui/material";
 import {grey} from "@mui/material/colors";
 import PaintList from "../../components/PaintList/PaintList.tsx";
-import * as S from "../Home/Home.style.ts";
+import * as S from "./Artist.style.ts";
 import Button from "@mui/material/Button";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import {useLayoutEffect, useState} from "react";
@@ -18,7 +19,7 @@ import UploadPhotoModal from "../../components/UploadPhotoModal/UploadPhotoModal
 import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import ReportModal from "../../components/ReportModal/ReportModal.tsx";
 import OrderBy from "../../components/OrderBy/OrderBy.tsx";
-import useUpdateUser2 from "../../api/hooks/user/useUpdateUser2.ts";
+import useUpdateUser from "../../api/hooks/user/useUpdateUser.ts";
 import {toast} from "react-toastify";
 import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
@@ -46,7 +47,7 @@ const Artist = () => {
         toast.error('Image upload failed');
     }
 
-    const { update } = useUpdateUser2({ onSuccess: handleOnSuccess, onError: handleOnError });
+    const { update } = useUpdateUser({ onSuccess: handleOnSuccess, onError: handleOnError });
 
     const { userId } = useAuth();
 

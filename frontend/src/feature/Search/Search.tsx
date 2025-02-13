@@ -36,7 +36,6 @@ const Search = () => {
         setValue(searchParams.get('text') || '');
     }, [searchParams.get('text')])
 
-
     return (
         <Container>
             <Stack gap={4} py={2}>

@@ -14,7 +14,7 @@ const header: NavigationItem =
         title: 'Main items',
     };
 
-const demoTheme = extendTheme({
+const theme = extendTheme({
     colorSchemes: { light: true, dark: true },
     colorSchemeSelector: 'class',
     breakpoints: {
@@ -53,7 +53,7 @@ const AdminLayout = () => {
                 title: 'Admin',
                 homeUrl: '/',
             }}
-            theme={demoTheme}
+            theme={theme}
         >
             <DashboardLayout slots={{
                 toolbarAccount: Admin

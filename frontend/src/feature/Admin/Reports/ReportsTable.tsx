@@ -1,9 +1,10 @@
-import deleteReport from "../../../api/hooks/report/useDeleteReport.ts";
 import getReports from '../../../api/hooks/report/useGetReports.ts'
-import EnhancedTable from "../../../components/Table/Table.tsx"
 import {ReportPayload as report} from '../../../types/report.ts'
 import {HeadCell} from '../../../types/table.ts'
-import {Box} from "@mui/material";
+import {Box, CircularProgress} from "@mui/material";
+import Table from "../../../components/Table/Table.tsx";
+import Management from "../Tags/Management/Management.tsx";
+import MultiSelect from "../Tags/MultiSelect/MultiSelect.tsx";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -15,31 +16,25 @@ const tableHeader: HeadCell[] = [
 ];
 
 const ReportsTable = () => {
-    const {mutate: deleteMutate, isPending: deleteIsPending} = deleteReport();
-    const { data, isPending: getIsPending } = getReports();
+    const { data, isPending } = getReports();
 
-    const rows = !getIsPending
-        && Array.isArray(data?.results)
-        && data.results.map(({id, date, type, paintId, userId, description}: report) => {
+    const rows = data.results.map(({id, date, type, paintId, userId, description}: report) => {
         return {id, date, type, paintId, userId, description}}) || []
-
-    const handleDelete = (id: number) => {
-        deleteMutate(id);
-    }
 
     return (
         <Box>
-            {(!getIsPending
-                && !deleteIsPending
-                && !!data)
-                && (<EnhancedTable rows={rows}
-                                   orderByValue={'id'}
-                                   tableHeader={tableHeader}
-                                   tableTitle={'Reports'}
-                                   handleDelete={handleDelete}
-                                   role_management={'report_management'}
-                                   uniqueProperty='id'
-                                   nameProperty='id' />
+            {!isPending &&
+                <Table
+                    <{ id: number, value: string }>
+                    rows={rows}
+                    orderByValue='id'
+                    tableHeader={tableHeader}
+                    tableTitle='Reports'
+                    Management={Management}
+                    MultiSelect={MultiSelect}
+                />}
+            {isPending && (
+                <CircularProgress size={24}/>
             )}
         </Box>
     )};

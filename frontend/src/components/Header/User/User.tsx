@@ -10,7 +10,7 @@ import {toast} from "react-toastify";
 import Permissions from "../../Permissions/Permissions.tsx";
 
 export const User  = () => {
-    const [openD, setOpenD] = useState(false);
+    const [accountIsOpen, setAccountIsOpen] = useState(false);
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -19,7 +19,7 @@ export const User  = () => {
 
     const navigate = useNavigate();
 
-    const { data: user } = useGetUser(userId ?? undefined);
+    const { data: user } = useGetUser(userId ?? null);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -36,7 +36,7 @@ export const User  = () => {
     }
 
     const handleAccount = async () => {
-        setOpenD(true);
+        setAccountIsOpen(true);
         handleClose();
     }
 
@@ -55,12 +55,7 @@ export const User  = () => {
 
     return (
         <>
-            <IconButton
-                 aria-controls={open ? 'basic-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
-            >
+            <IconButton onClick={handleClick}>
                 <Avatar src={user?.profilePhoto || "/assets/default-user.png"} sx={{ backgroundColor: grey[100] }} />
             </IconButton>
             <Menu
@@ -79,7 +74,7 @@ export const User  = () => {
                 </Permissions>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
-            <Drawer open={openD} anchor="right" onClose={() => setOpenD(false)}>
+            <Drawer open={accountIsOpen} anchor="right" onClose={() => setAccountIsOpen(false)}>
                 <UserAccount />
             </Drawer>
         </>

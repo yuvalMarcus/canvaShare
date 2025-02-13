@@ -18,7 +18,9 @@ import UsersTable from "./feature/Admin/Users/UsersTable.tsx";
 import ReportsTable from "./feature/Admin/Reports/ReportsTable.tsx";
 import Page404 from "./feature/Page404/Page404.tsx";
 import TagsTable from "./feature/Admin/Tags/TagsTable.tsx";
-import UserForm from "./feature/Admin/Users/UserForm.tsx";
+import CreateUser from "./feature/Admin/Users/CreateUser/CreateUser.tsx";
+import EditUser from "./feature/Admin/Users/EditUser/EditUser.tsx";
+import PaintProvider from "./context/paint.context.tsx";
 
 const routers = createBrowserRouter([
   {
@@ -49,7 +51,7 @@ const routers = createBrowserRouter([
   },
     {
         path: "/paint",
-        element: <Paint />,
+        element: <PaintProvider><Paint /></PaintProvider>,
     },
     {
         path: "/paint/:id",
@@ -81,7 +83,7 @@ const routers = createBrowserRouter([
                                 children: [
                                     {
                                         index: true,
-                                        element: <UserForm />
+                                        element: <CreateUser />
                                     },
                                 ]
                             },
@@ -91,7 +93,7 @@ const routers = createBrowserRouter([
                                 children: [
                                     {
                                         index: true,
-                                        element: <UserForm />
+                                        element: <EditUser />
                                     },
                                 ]
                             },

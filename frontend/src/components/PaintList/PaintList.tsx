@@ -3,7 +3,7 @@ import Card from "./PaintItem/PaintItem.tsx";
 import {useInView} from "react-intersection-observer";
 import ResultNotFound from "../ResultNotFound/ResultNotFound.tsx"
 import {FC} from "react";
-import useGetPaints2 from "../../api/hooks/paint/useGetPaints2.ts";
+import useGetInfinitePaints from "../../api/hooks/paint/useGetInfinitePaints.ts";
 
 interface PaintListProps {
     userId?: number;
@@ -15,7 +15,7 @@ interface PaintListProps {
 
 const PaintList: FC<PaintListProps> = ({cardDetails, userId, tags, order, search}) => {
 
-    const { data, hasNextPage, fetchNextPage, isFetching, isFetchingNextPage } = useGetPaints2({ userId, tags, order, search });
+    const { data, hasNextPage, fetchNextPage, isFetching, isFetchingNextPage } = useGetInfinitePaints({ userId, tags, order, search });
 
     const { ref } = useInView({
         onChange: (inView) => {
@@ -30,8 +30,13 @@ const PaintList: FC<PaintListProps> = ({cardDetails, userId, tags, order, search
 
     return (
         <Box>
+<<<<<<< Updated upstream
             {!!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
                 {results?.map((paint) => <Card key={paint.id} {...paint} />)}
+=======
+            {!isFetching && !!results?.length && <Stack flexDirection="row" gap={2} justifyContent="center" flexWrap="wrap">
+                {results?.map((paint) => <Card key={paint.id} {...paint} details={cardDetails} />)}
+>>>>>>> Stashed changes
             </Stack>}
             {(isFetching || isFetchingNextPage) && (
                 <Stack flexDirection="row" justifyContent="center" p={2}>

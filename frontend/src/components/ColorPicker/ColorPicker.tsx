@@ -20,7 +20,7 @@ const ColorPicker:FC<ColorPickerProps> = ({ color, onChange }) => {
     };
 
     const open = !!anchorEl;
-    const id = open ? 'simple-popover' : undefined;
+    const id = open ? 'id-popover' : undefined;
 
     return (
         <>

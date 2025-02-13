@@ -2,7 +2,7 @@ import {AxiosResponse} from "axios";
 import instance from "../server/axios.ts";
 import {TagPayload} from "../types/tags.ts";
 
-export const getTags = async (): Promise<AxiosResponse> => {
+export const getTags = async (): Promise<{ results: { id: number, value: string }[] }> => {
     const res = await instance.get('tag');
     return res.data;
 }

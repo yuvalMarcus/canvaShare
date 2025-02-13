@@ -40,7 +40,7 @@ const PaintItem = (props: PaintItemProps) => {
                     {details && (
                         <Stack flexDirection="row" py={1} px={2} gap={1} sx={{ backgroundColor: "rgb(0 0 0 / 80%)" }}>
                             <Avatar alt={`${username} avatar`} src={profilePhoto ?? "/assets/default-user.png"} sx={{ width: 30, height: 30, boxShadow: 4, backgroundColor: '#fff' }} />
-                            <Typography color={grey[100]} variant="h5">
+                            <Typography color={grey[100]} variant="h5" textOverflow="ellipsis" overflow="hidden" whiteSpace="nowrap">
                                 {name}
                             </Typography>
                         </Stack>

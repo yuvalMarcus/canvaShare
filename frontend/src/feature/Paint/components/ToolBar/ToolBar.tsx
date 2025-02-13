@@ -1,5 +1,5 @@
 import React, {FC, MutableRefObject} from "react";
-import {Box, Stack} from "@mui/material";
+import {Box, IconButton, Stack} from "@mui/material";
 import {grey} from "@mui/material/colors";
 import Button from "@mui/material/Button";
 import {useNavigate} from "react-router-dom";

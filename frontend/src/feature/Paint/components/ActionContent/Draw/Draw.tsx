@@ -1,6 +1,6 @@
 import {Canvas} from "fabric";
 import React, {FC, MutableRefObject, useLayoutEffect, useState} from "react";
-import {Box, FormControl, IconButton, MenuItem, Select, SelectChangeEvent, Slider, Stack} from "@mui/material";
+import {Box, FormControl, Slider, Stack} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {blue, green, grey} from "@mui/material/colors";
 import {drawingMode, setActionType, setBrushColor, setBrushSize} from "./draw.utils.ts";

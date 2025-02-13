@@ -1,38 +1,32 @@
-import {useState} from 'react';
+import {FC, useState} from 'react';
 import Box from '@mui/material/Box';
 import ImageIcon from '@mui/icons-material/Image';
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    p: 4,
-};
+interface ImageModalProps {
+    link: string;
+}
 
-export default function ImageModal({link}: {link: string | null}) {
+const ImageModal: FC<ImageModalProps> = ({ link }) => {
     const [open, setOpen] = useState(false);
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
-    return (<>
-            {link !== null &&
-                (<div>
-                <IconButton onClick={handleOpen}>
-                    <ImageIcon />
-                </IconButton>
-                <Modal
-                    open={open}
-                    onClose={handleClose}
-                    aria-labelledby="modal-modal-title"
-                    aria-describedby="modal-modal-description"
-                >
-                    <Box sx={style}>
-                        <img srcSet={link} style={{ height: 700 }} alt={link} />
-                    </Box>
-                </Modal>
-            </div>)}
+
+    return (
+        <>
+            <IconButton onClick={() => setOpen(true)}>
+                <ImageIcon />
+            </IconButton>
+            <Modal
+                open={open}
+                onClose={() => setOpen(false)}
+                aria-labelledby="image-modal-title"
+                aria-describedby="image-modal-description">
+                <Box position="absolute" top="50%" left="50%" transform="translate(-50%, -50%)" p={4}>
+                    <img srcSet={link} height={700} alt={link} />
+                </Box>
+            </Modal>
         </>
     );
 }
+
+export default ImageModal;

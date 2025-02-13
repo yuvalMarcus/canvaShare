@@ -5,13 +5,13 @@ import ToolBar from "./components/ToolBar/ToolBar.tsx";
 import ActionContent from "./components/ActionContent/ActionContent.tsx";
 import {initPaint} from "./paint.utils.ts";
 import Menu from "./components/Menu/Menu.tsx";
-import PaintProvider from "../../context/paint.context.tsx";
 import * as api from "../../api/paint.ts";
 import {useParams} from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import {grey} from "@mui/material/colors";
 import {handleDrawingPath} from "./components/ActionContent/Draw/draw.utils.ts";
 import EditMenu from "./components/EditMenu/EditMenu.tsx";
+import PaintProvider from "../../context/paint.context.tsx";
 
 export const TOOL_BAR_HEIGHT = 110;
 
@@ -23,8 +23,6 @@ const Paint = () => {
     const canvas = useRef<FabricCanvas | null>(null);
     const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
     const [paintLoading, setPaintLoading] = useState<boolean>(false);
-
-    //const { selectedObjectId, setSelectedObjectId } = usePaint();
 
     const { id: paintId } = useParams();
 
@@ -62,19 +60,6 @@ const Paint = () => {
             });
 
             canvas.current?.renderAll();
-
-            /*
-                    paint.current?.on('mouse:wheel', function(opt) {
-                        var delta = opt.e.deltaY;
-                        var zoom = paint.current?.getZoom() || 1;
-                        zoom *= 0.999 ** delta;
-                        if (zoom > 20) zoom = 20;
-                        if (zoom < 0.01) zoom = 0.01;
-                        paint.current?.setZoom(zoom);
-                        opt.e.preventDefault();
-                        opt.e.stopPropagation();
-                    });
-             */
 
         })()
 

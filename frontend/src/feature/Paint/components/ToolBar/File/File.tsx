@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 import {Canvas} from "fabric";
 import {useNavigate, useParams} from "react-router-dom";
 import {toast} from "react-toastify";
-import {useUpload} from "../../../../../hooks/useUpload.ts";
 import { usePaint } from '../../../../../context/paint.context.tsx';
 import {useAuth} from "../../../../../context/auth.context.tsx";
 import useGetPaint from "../../../../../api/hooks/paint/useGetPaint.ts";
@@ -15,6 +14,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import useCreatePaint from "../../../../../api/hooks/paint/useCreatePaint.ts";
 import useUpdatePaint from "../../../../../api/hooks/paint/useUpdatePaint.ts";
 import {isNull, isUndefined} from "lodash";
+import useUpload from "../../../../../api/hooks/upload/useUpload.ts";
 
 interface FileProps {
     canvas: MutableRefObject<Canvas | null>;
@@ -29,7 +29,16 @@ const FileO: FC<FileProps> = ({ canvas }) => {
 
     const { data: paint } = useGetPaint(paintId ? Number(paintId) : undefined);
 
-    const { uploadFileCode } = useUpload();
+    const handleUploadOnError = (event) => {
+        let error_msg;
+
+        if (event?.status == 422) error_msg = `Invalid file`;
+        else error_msg = event?.response?.data?.detail;
+
+        toast.error(error_msg);
+    }
+
+    const { uploadFileCode } = useUpload({ onError: handleUploadOnError });
 
     const { userId } = useAuth();
 
@@ -106,7 +115,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
     };
 
     const open = !!anchorEl;
-    const id = open ? 'simple-popover' : undefined;
+    const id = open ? 'id-popover' : undefined;
 
     return (
         <>
@@ -130,7 +139,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                         <List>
                             <ListItem disablePadding>
                                 {paint && !createPaintIsPending && !updatePaintIsPending && (
-                                    <ListItemButton onClick={() => handlePublish(!paint?.isPublic)}>
+                                    <ListItemButton onClick={() => handlePublish(!paint?.isPublic)} disabled={createPaintIsPending || updatePaintIsPending}>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             {paintId ? <SaveIcon /> : <PublishIcon />}
                                         </ListItemIcon>
@@ -140,7 +149,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                             </ListItem>
                             <ListItem disablePadding>
                                 {(!paint || (paint?.isPublic && !createPaintIsPending && !updatePaintIsPending)) && (
-                                    <ListItemButton onClick={() => handlePublish(true)}>
+                                    <ListItemButton onClick={() => handlePublish(true)} disabled={createPaintIsPending || updatePaintIsPending}>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             <PublishIcon />
                                         </ListItemIcon>
@@ -150,7 +159,7 @@ const FileO: FC<FileProps> = ({ canvas }) => {
                             </ListItem>
                             <ListItem disablePadding>
                                 {(!paint || (!paint?.isPublic && !createPaintIsPending && !updatePaintIsPending)) && (
-                                    <ListItemButton onClick={() => handlePublish(false)}>
+                                    <ListItemButton onClick={() => handlePublish(false)} disabled={createPaintIsPending || updatePaintIsPending}>
                                         <ListItemIcon sx={{ minWidth: 0, marginRight: 1  }}>
                                             <PublishIcon />
                                         </ListItemIcon>

@@ -28,7 +28,7 @@ const Properties = () => {
     };
 
     const open = !!anchorEl;
-    const id = open ? 'simple-popover' : undefined;
+    const id = open ? 'id-popover' : undefined;
 
     return (
         <>
@@ -55,7 +55,7 @@ const Properties = () => {
                         rows={3}
                         variant="outlined"
                         value={payload?.description ?? data?.description}
-                        onChange={event => handleUpload('description', event.target.value || "")}
+                        onChange={event => handleUpload('description', event.target.value)}
                     />
                 </Stack>
             </Popover>

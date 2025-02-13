@@ -1,20 +1,18 @@
 import {AxiosResponse} from "axios";
 import instance from "../server/axios.ts";
-import {UserPayload} from "../types/user.ts";
-import Axios from "../server/axios.ts";
+import {UserPayload, UserResponse} from "../types/user.ts";
 
 export const getUsers = async (params): Promise<AxiosResponse> => {
-    const res = await instance.get('user', {params});
-    return res.data;
+    const response = await instance.get('user', {params});
+    return response.data;
 }
 
-export const getUser = async (id?: number | string, onError?: () => void): Promise<AxiosResponse> => {
+export const getUser = async (id: number | null, onError?: () => void): Promise<UserResponse> => {
     try {
-        const res = await instance.get(`user/${id}`);
-        return res.data;
+        const response = await instance.get(`user/${id}`);
+        return response.data;
     } catch (e) {
         onError?.();
-        return new Promise(new Axios({}));
     }
 }
 
@@ -23,8 +21,8 @@ export const createUser = async (payload: UserPayload): Promise<AxiosResponse> =
 }
 
 export const updateUser = async ({ id, payload }: { id: number, payload: UserPayload }): Promise<AxiosResponse> => {
-    const res = await instance.put(`user/${id}`, payload);
-    return res.data;
+    const response = await instance.put(`user/${id}`, payload);
+    return response.data;
 }
 
 export const deleteUser = async (id: number) =>{

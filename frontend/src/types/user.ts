@@ -1,3 +1,16 @@
+export interface UserResponse {
+    about: string;
+    coverPhoto: string | null;
+    email: string;
+    id: number;
+    isBlocked: boolean;
+    password: string | null;
+    profilePhoto: string | null;
+    roles: string[];
+    tags: string[];
+    username: string;
+}
+
 export interface userTable {
     id: number;
     username: string;

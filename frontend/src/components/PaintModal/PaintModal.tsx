@@ -9,13 +9,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import {queryClient} from "../../main.tsx";
 import {useAuth} from "../../context/auth.context.tsx";
 import ReportModal from "../ReportModal/ReportModal.tsx";
-import useRemovePaint2 from "../../api/hooks/paint/useRemovePaint2.ts";
+import useRemovePaint from "../../api/hooks/paint/useRemovePaint.ts";
 import {GET_PAINT} from "../../api/hooks/paint/useGetPaint.ts";
 import Like from "./Like/Like.tsx";
 import {GET_PAINTS} from "../../api/hooks/paint/useGetPaints.ts";
 import {toast} from "react-toastify";
 import {ReportType} from "../ReportModal/ReportModal.config.ts";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
+import {GET_INFINITE_PAINTS} from "../../api/hooks/paint/useGetInfinitePaints.ts";
 
 interface PaintModalProps {
     isOpen: boolean;
@@ -42,10 +43,11 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
 
         queryClient.invalidateQueries({ queryKey: [GET_PAINT] });
         queryClient.invalidateQueries({ queryKey: [GET_PAINTS] });
+        queryClient.invalidateQueries({ queryKey: [GET_INFINITE_PAINTS] });
         queryClient.invalidateQueries({ queryKey: [GET_USERS] });
     }
 
-    const { remove: removePaint } = useRemovePaint2({ onSuccess: handleOnSuccess });
+    const { remove: removePaint } = useRemovePaint({ onSuccess: handleOnSuccess });
 
     const handleDeletePaint = async () => {
         if(id) removePaint(id);
@@ -91,7 +93,7 @@ const PaintModal = ({ id, userId, username, profilePhoto, name, description, tag
                     </Stack>
                     <Stack flex={1} gap={2} p={2}>
                         <Stack flexDirection="row" gap={1} alignItems="center">
-                            <Typography color={grey[900]} variant="h5">
+                            <Typography color={grey[900]} variant="h5" textOverflow="ellipsis" overflow="hidden" whiteSpace="nowrap">
                                 {name}
                             </Typography>
                         </Stack>

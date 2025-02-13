@@ -2,18 +2,24 @@ import {Navigate, Outlet} from "react-router-dom";
 import {useAuth} from "../context/auth.context.tsx";
 import useGetUser from "../api/hooks/user/useGetUser.ts";
 import {CircularProgress, Stack} from "@mui/material";
+import {FC} from "react";
 
-const ProtectedRoute = ({roles}: {roles: string[]}) => {
+interface ProtectedRouteProps {
+    roles: string[]
+}
+
+const ProtectedRoute: FC<ProtectedRouteProps> = ({ roles }) => {
 
     const { isAuth, userId } = useAuth();
     const { data: user, isPending } = useGetUser(userId);
 
-    if (isPending && !!userId)
+    if (isPending && !!userId) {
         return (
             <Stack flexDirection="row" justifyContent="center" alignItems="center" height="100%">
                 <CircularProgress />
             </Stack>
         )
+    }
 
     const authorized = roles.every(role => (user?.roles || []).includes(role));
 

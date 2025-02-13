@@ -10,7 +10,7 @@ import {useAuth} from "../../context/auth.context.tsx";
 import useGetUser, {GET_USER} from "../../api/hooks/user/useGetUser.ts";
 import Textarea from "../Form/Textarea/Textarea.tsx";
 import {UserPayload} from "../../types/user.ts";
-import useUpdateUser2 from "../../api/hooks/user/useUpdateUser2.ts";
+import useUpdateUser from "../../api/hooks/user/useUpdateUser.ts";
 import {toast} from "react-toastify";
 import {queryClient} from "../../main.tsx";
 import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
@@ -51,7 +51,7 @@ const UserAccount = () => {
         toast.error('User upload failed');
     }
 
-    const { update, isPending } = useUpdateUser2({ onSuccess: handleOnSuccess, onError: handleOnError });
+    const { update, isPending } = useUpdateUser({ onSuccess: handleOnSuccess, onError: handleOnError });
 
     const onSubmit = async (payload: UserPayload) => {
 
@@ -67,7 +67,7 @@ const UserAccount = () => {
     }, [user]);
 
     return (
-        <Box p={4} minWidth={300}>
+        <Box p={4} minWidth={300} maxWidth={400}>
             <Typography variant="h5" mb={4}>Account</Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box>

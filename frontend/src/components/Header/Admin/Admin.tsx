@@ -5,6 +5,7 @@ import {useNavigate} from "react-router-dom";
 
 const Admin = () => {
     const navigate = useNavigate();
+
     return (
         <Box>
             <IconButton onClick={() => navigate('/')}>

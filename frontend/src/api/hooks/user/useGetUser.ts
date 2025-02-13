@@ -3,7 +3,7 @@ import * as api from "../../user.ts";
 
 export const GET_USER = 'getUser';
 
-const useGetUser = (id?: string | number) => {
+const useGetUser = (id: number | null) => {
 
     const { data, isPending, isRefetching, isError } = useQuery({
         queryKey: [GET_USER, id],

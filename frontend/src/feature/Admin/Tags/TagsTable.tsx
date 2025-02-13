@@ -1,9 +1,9 @@
-import deleteTag from "../../../api/hooks/tag/useDeleteTag.ts";
 import getTags from '../../../api/hooks/tag/useGetTags.ts';
-import EnhancedTable from "../../../components/Table/Table.tsx";
-import {TagPayload as tag} from '../../../types/tags.ts';
 import {HeadCell} from '../../../types/table.ts';
-import {Box} from "@mui/material";
+import {Box, CircularProgress} from "@mui/material";
+import Table from "../../../components/Table/Table.tsx";
+import Management from "./Management/Management.tsx";
+import MultiSelect from "./MultiSelect/MultiSelect.tsx";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -11,31 +11,22 @@ const tableHeader: HeadCell[] = [
 ];
 
 const TagsTable = () => {
-    const {mutate: deleteMutate, isPending: deleteIsPending} = deleteTag();
-    const { data, isPending: getIsPending } = getTags();
-
-    const rows = !getIsPending
-        && Array.isArray(data?.results)
-        && data.results.map(({id, name}: tag) => {
-        return {id, name}}) || []
-
-    const handleDelete = (id: number) => {
-        deleteMutate(id);
-    }
+    const { data, isPending } = getTags();
 
     return (
         <Box>
-            {(!getIsPending
-                && !deleteIsPending
-                && !!data)
-                && (<EnhancedTable rows={rows}
-                                   orderByValue={'id'}
-                                   tableHeader={tableHeader}
-                                   tableTitle={'Tags'}
-                                   handleDelete={handleDelete}
-                                   role_management={'tag_management'}
-                                   uniqueProperty='id'
-                                   nameProperty='name' />
+            {!isPending &&
+                <Table
+                    <{ id: number, value: string }>
+                    rows={data?.results ?? []}
+                    orderByValue='id'
+                    tableHeader={tableHeader}
+                    tableTitle='Tags'
+                    Management={Management}
+                    MultiSelect={MultiSelect}
+                />}
+            {isPending && (
+                <CircularProgress size={24}/>
             )}
         </Box>
     )};

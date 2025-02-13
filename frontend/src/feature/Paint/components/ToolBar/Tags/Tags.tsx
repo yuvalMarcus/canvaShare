@@ -16,7 +16,7 @@ import { usePaint } from '../../../../../context/paint.context.tsx';
 import {GET_TAGS} from "../../../../../api/hooks/tag/useGetTags.ts";
 import useGetPaint from "../../../../../api/hooks/paint/useGetPaint.ts";
 import {useParams} from "react-router-dom";
-import useCreateTag2 from "../../../../../api/hooks/tag/useCreateTag2.ts";
+import useCreateTag from "../../../../../api/hooks/tag/useCreateTag.ts";
 import {queryClient} from "../../../../../main.tsx";
 import {toast} from "react-toastify";
 import InputTags from "../../../../../components/Form/InputTags/InputTags.tsx";
@@ -59,7 +59,7 @@ const Tags = () => {
         toast.error(error_msg);
     }
 
-    const { create, isPending } = useCreateTag2({ onSuccess: handleOnSuccess, onError: handleOnError })
+    const { create, isPending } = useCreateTag({ onSuccess: handleOnSuccess, onError: handleOnError })
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -70,7 +70,7 @@ const Tags = () => {
     };
 
     const open = !!anchorEl;
-    const id = open ? 'simple-popover' : undefined;
+    const id = open ? 'id-popover' : undefined;
 
 
     const onSubmit = async (payload: TagPayload) => {

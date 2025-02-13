@@ -1,8 +1,6 @@
-import {createContext, useContext, useLayoutEffect, useState} from 'react';
+import {createContext, useContext, useState} from 'react';
 import {PaintPayload} from "../types/paint.ts";
 import {ACTION_TYPE} from "../feature/Paint/paint.config.ts";
-import {useParams} from "react-router-dom";
-import * as api from "../api/paint.ts";
 
 type PaintPayloadType = <T extends keyof PaintPayload>(key: T, value: PaintPayload[T]) => void;
 
@@ -36,24 +34,12 @@ const PaintProvider = ({ children }) => {
     const [selectedAction, setSelectedAction] = useState<ACTION_TYPE | null>(null);
     const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
 
-    const { id: paintId } = useParams();
-
     const handleUpload = <T extends keyof PaintPayload>(key: T, value: PaintPayload[T]) => {
         setPayload(prev => ({
             ...prev,
             [key]: value
         }))
     }
-
-    useLayoutEffect(() => {
-        (async () => {
-            if(!paintId) return;
-
-            const { data } = await api.getPaint(Number(paintId));
-
-
-        })()
-    }, []);
 
     return (
         <PaintContext.Provider value={{
@@ -62,7 +48,7 @@ const PaintProvider = ({ children }) => {
             selectedObjectId,
             setSelectedObjectId,
             payload,
-            handleUpload
+            handleUpload,
         }}>
             {children}
         </PaintContext.Provider>

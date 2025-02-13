@@ -6,9 +6,10 @@ import {useForm} from "react-hook-form";
 import Typography from "@mui/material/Typography";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import Button from "@mui/material/Button";
-import {useUpload} from "../../hooks/useUpload.ts";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {toast} from "react-toastify";
+import useUpload from "../../api/hooks/upload/useUpload.ts";
 
 const schema = z.object({
     file: z.instanceof(File)
@@ -37,7 +38,16 @@ const UploadPhotoModal: FC<UploadPhotoModalProps> = ({ isOpen, label = 'photo', 
         maxSize: MAX_SIZE,
     });
 
-    const { upload, isPending } = useUpload();
+    const handleOnError = (event) => {
+        let error_msg;
+
+        if (event?.status == 422) error_msg = `Invalid file`;
+        else error_msg = event?.response?.data?.detail;
+
+        toast.error(error_msg);
+    }
+
+    const { upload, isPending } = useUpload({ onError: handleOnError });
 
     const {  handleSubmit, setValue, watch, formState: {errors} } = useForm({
         resolver: zodResolver(schema),

@@ -22,7 +22,7 @@ const SearchModal: FC<SearchPhotosProps> = ({ canvas, isOpen, onClose }) => {
     const { data, isPending } = useQuery({
         queryKey: [search],
         queryFn: () => search && api.searchPhotos({ category: search }),
-        retry: false,
+        retry: false
     })
 
     const click = async () => {
@@ -47,8 +47,6 @@ const SearchModal: FC<SearchPhotosProps> = ({ canvas, isOpen, onClose }) => {
         <Modal
             open={isOpen}
             onClose={onClose}
-            //aria-labelledby={name}
-            //aria-describedby={description}
         >
             <Stack gap={1} position="absolute" top="50%" left="50%" minWidth={600} p={1} bgcolor={grey[200]} border={2} borderColor={grey[900]} boxShadow={24} sx={{
                 transform: 'translate(-50%, -50%)',
