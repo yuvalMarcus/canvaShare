@@ -6,7 +6,7 @@
 3. Install modules with the command: `npm i`
 
 ## Python - installation and running:
-1. Install python
+1. Install python (less than or equal to python 3.12)
 2. Open terminal and navigate to backend folder with `cd` command
 3. Create a new environment with the command: `python -m venv myenv`
 4. Activate the environment with the command:  
