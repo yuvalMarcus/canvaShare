@@ -4,7 +4,7 @@ import TableContainer from "@mui/material/TableContainer";
 import {Table as MUITable} from "@mui/material";
 import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
-import {ChangeEvent, ReactNode, useMemo, useState} from "react";
+import {ChangeEvent, ReactNode, useLayoutEffect, useMemo, useState} from "react";
 import TableHead from "./components/TableHead/TableHead.tsx";
 import {HeadCell} from "../../types/table.ts";
 import {getComparator, Order} from "./table.utils.ts";
@@ -72,6 +72,11 @@ const Table = <T extends unknown>({
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
+
+    useLayoutEffect(() => {
+        const ids = rows.map(({id}) => id);
+        setSelected(selected.filter((id) => ids.includes(id)));
+    }, [rows]);
 
     return (
         <Box>

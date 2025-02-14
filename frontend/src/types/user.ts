@@ -11,16 +11,6 @@ export interface UserResponse {
     username: string;
 }
 
-export interface userTable {
-    id: number;
-    username: string;
-    email: string;
-    isBlocked: boolean;
-    profilePhoto: string;
-    coverPhoto: string;
-    roles?: string[];
-}
-
 export interface RegisterPayload {
     username: string;
     email: string;

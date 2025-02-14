@@ -1,5 +1,4 @@
 import getPaints from '../../../api/hooks/paint/useGetPaints.ts'
-import {paintTable as paint} from '../../../types/paint.ts'
 import {HeadCell} from '../../../types/table.ts'
 import {Box, CircularProgress} from "@mui/material";
 import Table from "../../../components/Table/Table.tsx";
@@ -21,7 +20,7 @@ const tableHeader: HeadCell[] = [
 const PaintsTable = () => {
     const { data, isPending } = getPaints();
 
-    const rows = data?.results?.map(({id, username, photo, name, isPublic, likes, createDate, editDate, description}: paint) => (
+    const rows = data?.results?.map(({id, username, photo, name, isPublic, likes, createDate, editDate, description}) => (
             {id, username, photo, name, draft: !isPublic, likes, createDate, editDate, description}
         )) || [];
 

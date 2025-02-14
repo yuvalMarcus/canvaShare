@@ -1,6 +1,5 @@
 import getUsers from '../../../api/hooks/user/useGetUsers.ts'
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import {userTable as user} from '../../../types/user.ts'
 import {HeadCell} from '../../../types/table.ts'
 import {Box, CircularProgress, Stack} from "@mui/material";
 import {useNavigate} from "react-router-dom";
@@ -26,7 +25,7 @@ const UsersTable = () => {
 
     const navigate = useNavigate();
 
-    const rows = data?.results?.map(({id, username, email, isBlocked, profilePhoto, coverPhoto, roles}: user) => ({id, username, email, isBlocked, profilePhoto, coverPhoto, roles})) ?? [];
+    const rows = data?.results?.map(({id, username, email, isBlocked, profilePhoto, coverPhoto, roles}) => ({id, username, email, isBlocked, profilePhoto, coverPhoto, roles})) ?? [];
 
     return (
         <Stack gap={4}>
