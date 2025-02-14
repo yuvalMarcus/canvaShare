@@ -15,9 +15,10 @@ const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
     {id: 'username', align: 'left', disablePadding: true, label: 'Username', type: 'text'},
     {id: 'email', align: 'left', disablePadding: false, label: 'Email', type: 'text'},
+    {id: 'isBlocked', align: 'left', disablePadding: false, label: 'Block', type: 'bool'},
     {id: 'profilePhoto', align: 'left', disablePadding: false, label: 'Profile Photo', type: 'image'},
     {id: 'coverPhoto', align: 'left', disablePadding: false, label: 'Cover Photo', type: 'image'},
-    {id: 'roles', align: 'left', disablePadding: false, label: 'Roles', type: 'long-text'},
+    {id: 'roles', align: 'left', disablePadding: false, label: 'Roles', type: 'roles'},
 ];
 
 const UsersTable = () => {
@@ -25,7 +26,7 @@ const UsersTable = () => {
 
     const navigate = useNavigate();
 
-    const rows = data?.results?.map(({id, username, email, profilePhoto, coverPhoto, roles}: user) => ({id, username, email, profilePhoto, coverPhoto, roles})) ?? [];
+    const rows = data?.results?.map(({id, username, email, isBlocked, profilePhoto, coverPhoto, roles}: user) => ({id, username, email, isBlocked, profilePhoto, coverPhoto, roles})) ?? [];
 
     return (
         <Stack gap={4}>

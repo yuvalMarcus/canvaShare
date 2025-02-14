@@ -16,7 +16,7 @@ interface RowProps<T> {
 
 const TableRow = <T extends unknown>({ row, index, isItemSelected, handleClick, tableHeader, children }: RowProps<T>) => {
 
-    const labelId = `enhanced-table-checkbox-${index}`;
+    const labelId = `table-checkbox-${index}`;
 
     return (
         <MUITableRow
