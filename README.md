@@ -4,7 +4,6 @@
 1. Install npm
 2. Open terminal and navigate to frontend folder with `cd` command
 3. Install modules with the command: `npm i`
-4. Run the app with the command: `npm run dev`
 
 ## Python - installation and running:
 1. Install python
@@ -16,6 +15,13 @@ Mac / Ubuntu:
 Windows:  
     `myenv\Scripts\activate`
 5. Install dependencies with the command: `python -m pip install -r requirements.txt`
-6. Run the server with the command: `uvicorn main:app --port=8000 --reload`
+
+## Database - installation and running:
+1. Create a database using postgresql called canvaShare.
+
+## Run Project - installation and running:
+1. Update the env file according to the database and environment details on your computer (DB_NAME, DB_PASS, DB_PORT, SUPER_ADMINS).
+2. Run the server with the command or run main file (Python): `uvicorn main:app --port=8000 --reload`
+3. Run the app with the command (React): `npm run dev`
 
 Endpoints documentation: http://127.0.0.1:8000/docs
