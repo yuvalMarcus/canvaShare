@@ -1,7 +1,6 @@
 import getPaints from '../../../api/hooks/paint/useGetPaints.ts'
-import {paintTable as paint} from '../../../types/paint.ts'
 import {HeadCell} from '../../../types/table.ts'
-import {Box, CircularProgress} from "@mui/material";
+import {Box, CircularProgress, Stack} from "@mui/material";
 import Table from "../../../components/Table/Table.tsx";
 import Management from "../Tags/Management/Management.tsx";
 import MultiSelect from "../Users/MultiSelect/MultiSelect.tsx";
@@ -21,7 +20,7 @@ const tableHeader: HeadCell[] = [
 const PaintsTable = () => {
     const { data, isPending } = getPaints();
 
-    const rows = data?.results?.map(({id, username, photo, name, isPublic, likes, createDate, editDate, description}: paint) => (
+    const rows = data?.results?.map(({id, username, photo, name, isPublic, likes, createDate, editDate, description}) => (
             {id, username, photo, name, draft: !isPublic, likes, createDate, editDate, description}
         )) || [];
 
@@ -39,7 +38,9 @@ const PaintsTable = () => {
                 />
             }
             {isPending && (
-                <CircularProgress size={24}/>
+                <Stack alignItems="center" justifyContent="center" minHeight={200}>
+                    <CircularProgress size={36}/>
+                </Stack>
             )}
         </Box>
     )

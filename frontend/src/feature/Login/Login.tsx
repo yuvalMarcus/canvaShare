@@ -15,7 +15,10 @@ import {useNavigate} from "react-router-dom";
 
 const schema = z.object({
     username: z.string().min(4, { message: 'required' }).toLowerCase(),
-    password: z.string().min(4, { message: 'required' }),
+    password: z.string()
+        .min(6, { message: 'min length 6' })
+        .regex(new RegExp(".*[a-zA-Z].*"), "One character")
+        .regex(new RegExp(".*\\d.*"), "One number"),
 });
 
 const Login = () => {

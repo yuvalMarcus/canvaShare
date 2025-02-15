@@ -5,6 +5,7 @@ import {queryClient} from "../../../../main.tsx";
 import {toast} from "react-toastify";
 import useRemoveReport from "../../../../api/hooks/report/useRemoveReport.ts";
 import {GET_REPORTS} from "../../../../api/hooks/report/useGetReports.ts";
+import Permissions from "../../../../components/Permissions/Permissions.tsx";
 
 const MultiSelect = ({ ids }) => {
 

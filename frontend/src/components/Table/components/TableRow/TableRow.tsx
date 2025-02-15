@@ -1,7 +1,7 @@
 import { TableRow as MUITableRow } from "@mui/material";
 import TableCell from "@mui/material/TableCell";
 import Checkbox from "@mui/material/Checkbox";
-import {FC, ReactNode} from "react";
+import {ReactNode} from "react";
 import {HeadCell} from "../../../../types/table.ts";
 import {tableCellByType} from "./tableRow.config.tsx";
 
@@ -16,7 +16,7 @@ interface RowProps<T> {
 
 const TableRow = <T extends unknown>({ row, index, isItemSelected, handleClick, tableHeader, children }: RowProps<T>) => {
 
-    const labelId = `enhanced-table-checkbox-${index}`;
+    const labelId = `table-checkbox-${index}`;
 
     return (
         <MUITableRow
@@ -48,7 +48,7 @@ const TableRow = <T extends unknown>({ row, index, isItemSelected, handleClick, 
                     </TableCell>
                 )
             })}
-            <TableCell key={`row-${index}-col-${row.length+1}`}  id={labelId}>
+            <TableCell key={`row-${index}-col-${row.length+1}`} id={labelId}>
                 {children}
             </TableCell>
         </MUITableRow>

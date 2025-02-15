@@ -7,6 +7,7 @@ import useRemoveTag from "../../../../api/hooks/tag/useRemoveTag.ts";
 import {GET_TAGS} from "../../../../api/hooks/tag/useGetTags.ts";
 import {GET_PAINTS} from "../../../../api/hooks/paint/useGetPaints.ts";
 import {GET_INFINITE_PAINTS} from "../../../../api/hooks/paint/useGetInfinitePaints.ts";
+import Permissions from "../../../../components/Permissions/Permissions.tsx";
 
 const MultiSelect = ({ ids }) => {
 

@@ -1,10 +1,9 @@
 import getReports from '../../../api/hooks/report/useGetReports.ts'
-import {ReportPayload as report} from '../../../types/report.ts'
 import {HeadCell} from '../../../types/table.ts'
-import {Box, CircularProgress} from "@mui/material";
+import {Box, CircularProgress, Stack} from "@mui/material";
 import Table from "../../../components/Table/Table.tsx";
-import Management from "../Tags/Management/Management.tsx";
-import MultiSelect from "../Tags/MultiSelect/MultiSelect.tsx";
+import Management from "../Reports/Management/Management.tsx";
+import MultiSelect from "../Reports/MultiSelect/MultiSelect.tsx";
 
 const tableHeader: HeadCell[] = [
     {id: 'id', align: 'left', disablePadding: true, label: 'ID', type: 'text'},
@@ -18,7 +17,7 @@ const tableHeader: HeadCell[] = [
 const ReportsTable = () => {
     const { data, isPending } = getReports();
 
-    const rows = data.results.map(({id, date, type, paintId, userId, description}: report) => {
+    const rows = data?.results?.map(({id, date, type, paintId, userId, description}) => {
         return {id, date, type, paintId, userId, description}}) || []
 
     return (
@@ -34,7 +33,9 @@ const ReportsTable = () => {
                     MultiSelect={MultiSelect}
                 />}
             {isPending && (
-                <CircularProgress size={24}/>
+                <Stack alignItems="center" justifyContent="center" minHeight={200}>
+                    <CircularProgress size={36}/>
+                </Stack>
             )}
         </Box>
     )};

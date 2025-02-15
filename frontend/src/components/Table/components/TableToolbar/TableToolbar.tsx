@@ -2,18 +2,15 @@ import {FC, ReactNode} from "react";
 import Toolbar from "@mui/material/Toolbar";
 import {alpha} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import Tooltip from "@mui/material/Tooltip";
-import IconButton from "@mui/material/IconButton";
-import DeleteIcon from "@mui/icons-material/Delete";
 import {Stack} from "@mui/material";
 
-interface EnhancedTableToolbarProps {
+interface TableToolbarProps {
     selected: number[];
     tableTitle: string;
     MultiSelect?: ({ ids }: {ids: number[]}) => ReactNode;
 }
 
-const EnhancedTableToolbar: FC<EnhancedTableToolbarProps> = ({ selected, tableTitle, MultiSelect }) => {
+const TableToolbar: FC<TableToolbarProps> = ({ selected, tableTitle, MultiSelect }) => {
 
     const numSelected = selected.length;
 
@@ -54,4 +51,4 @@ const EnhancedTableToolbar: FC<EnhancedTableToolbarProps> = ({ selected, tableTi
     );
 }
 
-export default EnhancedTableToolbar;
+export default TableToolbar;

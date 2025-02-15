@@ -1,6 +1,6 @@
 import getTags from '../../../api/hooks/tag/useGetTags.ts';
 import {HeadCell} from '../../../types/table.ts';
-import {Box, CircularProgress} from "@mui/material";
+import {Box, CircularProgress, Stack} from "@mui/material";
 import Table from "../../../components/Table/Table.tsx";
 import Management from "./Management/Management.tsx";
 import MultiSelect from "./MultiSelect/MultiSelect.tsx";
@@ -26,7 +26,9 @@ const TagsTable = () => {
                     MultiSelect={MultiSelect}
                 />}
             {isPending && (
-                <CircularProgress size={24}/>
+                <Stack alignItems="center" justifyContent="center" minHeight={200}>
+                    <CircularProgress size={36}/>
+                </Stack>
             )}
         </Box>
     )};

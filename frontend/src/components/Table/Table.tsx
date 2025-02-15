@@ -4,15 +4,16 @@ import TableContainer from "@mui/material/TableContainer";
 import {Table as MUITable} from "@mui/material";
 import TableBody from "@mui/material/TableBody";
 import TablePagination from "@mui/material/TablePagination";
-import {ChangeEvent, ReactNode, useMemo, useState} from "react";
-import EnhancedTableHead from "./components/EnhancedTableHead/EnhancedTableHead.tsx";
+import {ChangeEvent, ReactNode, useLayoutEffect, useMemo, useState} from "react";
+import TableHead from "./components/TableHead/TableHead.tsx";
 import {HeadCell} from "../../types/table.ts";
 import {getComparator, Order} from "./table.utils.ts";
-import EnhancedTableToolbar from "./components/EnhancedTableToolbar/EnhancedTableToolbar.tsx";
+import TableToolbar from "./components/TableToolbar/TableToolbar.tsx";
 import TableRow from "./components/TableRow/TableRow.tsx";
 import Management from "../../feature/Admin/Tags/Management/Management.tsx";
+import EmptyData from "./components/EmptyData/EmptyData.tsx";
 
-interface EnhancedTableProps<T> {
+interface TableProps<T> {
     rows: T[];
     orderByValue: string;
     tableHeader: HeadCell[];
@@ -27,7 +28,7 @@ const Table = <T extends unknown>({
                                       tableHeader,
                                       tableTitle,
                                       Management,
-                                      MultiSelect}: EnhancedTableProps<T>) => {
+                                      MultiSelect}: TableProps<T>) => {
     const [order, setOrder] = useState<Order>('asc');
     const [orderBy, setOrderBy] = useState<string>(orderByValue);
     const [selected, setSelected] = useState<number[]>([]);
@@ -73,13 +74,18 @@ const Table = <T extends unknown>({
         setPage(0);
     };
 
+    useLayoutEffect(() => {
+        const ids = rows.map(({id}) => id);
+        setSelected(selected.filter((id) => ids.includes(id)));
+    }, [rows]);
+
     return (
         <Box>
             <Paper>
-                <EnhancedTableToolbar selected={selected} tableTitle={tableTitle} MultiSelect={MultiSelect} />
+                <TableToolbar selected={selected} tableTitle={tableTitle} MultiSelect={MultiSelect} />
                 <TableContainer>
                     <MUITable>
-                        <EnhancedTableHead
+                        <TableHead
                             numSelected={selected.length}
                             order={order}
                             orderBy={orderBy}
@@ -91,6 +97,7 @@ const Table = <T extends unknown>({
                         <TableBody>
                             {visibleRows.map((row, index) => <TableRow
                                 <T>
+                                key={row.id}
                                 row={row}
                                 index={index}
                                 isItemSelected={selected.includes(row.id)}
@@ -98,6 +105,7 @@ const Table = <T extends unknown>({
                                 handleClick={handleClick}>
                                 <Management row={row} index={index} />
                             </TableRow>)}
+                            {!rows.length && <EmptyData />}
                         </TableBody>
                     </MUITable>
                 </TableContainer>

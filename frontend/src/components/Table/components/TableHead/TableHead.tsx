@@ -1,4 +1,4 @@
-import TableHead from "@mui/material/TableHead";
+import {TableHead as MUITableHead} from "@mui/material";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import Checkbox from "@mui/material/Checkbox";
@@ -9,7 +9,7 @@ import {ChangeEvent, FC} from "react";
 import {HeadCell} from "../../../../types/table.ts";
 import {Order} from "../../table.utils.ts";
 
-interface EnhancedTableHeadProps {
+interface TableHeadProps {
     numSelected: number;
     onRequestSort: (event: MouseEvent, property: string) => void;
     onSelectAllClick: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -19,14 +19,10 @@ interface EnhancedTableHeadProps {
     tableHeader: HeadCell[];
 }
 
-const EnhancedTableHead: FC<EnhancedTableHeadProps> = ({ onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, tableHeader }) => {
-
-    const createSortHandler = (property: string) => (event: MouseEvent) => {
-        onRequestSort(event, property);
-    };
+const TableHead: FC<TableHeadProps> = ({ onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, tableHeader }) => {
 
     return (
-        <TableHead>
+        <MUITableHead>
             <TableRow>
                 <TableCell padding="checkbox">
                     <Checkbox
@@ -49,7 +45,7 @@ const EnhancedTableHead: FC<EnhancedTableHeadProps> = ({ onSelectAllClick, order
                         <TableSortLabel
                             active={orderBy === headCell.id}
                             direction={orderBy === headCell.id ? order : 'asc'}
-                            onClick={createSortHandler(headCell.id)}
+                            onClick={(event) => onRequestSort(event, headCell.id)}
                         >
                             {headCell.label}
                             {orderBy === headCell.id ? (
@@ -62,8 +58,8 @@ const EnhancedTableHead: FC<EnhancedTableHeadProps> = ({ onSelectAllClick, order
                 ))}
                 <TableCell key='header-management' />
             </TableRow>
-        </TableHead>
+        </MUITableHead>
     );
 }
 
-export default EnhancedTableHead;
+export default TableHead;

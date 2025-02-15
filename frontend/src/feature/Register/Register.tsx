@@ -17,7 +17,10 @@ import {GET_USERS} from "../../api/hooks/user/useGetUsers.ts";
 const schema = z.object({
     username: z.string().min(4, { message: 'Required' }).toLowerCase(),
     email: z.string().email({ message: 'Email not valid' }),
-    password: z.string().min(4, { message: 'Required' }),
+    password: z.string()
+        .min(6, { message: 'min length 6' })
+        .regex(new RegExp(".*[a-zA-Z].*"), "One character")
+        .regex(new RegExp(".*\\d.*"), "One number"),
 });
 
 const Register = () => {
