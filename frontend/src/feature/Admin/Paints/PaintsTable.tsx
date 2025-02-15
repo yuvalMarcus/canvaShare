@@ -1,6 +1,6 @@
 import getPaints from '../../../api/hooks/paint/useGetPaints.ts'
 import {HeadCell} from '../../../types/table.ts'
-import {Box, CircularProgress} from "@mui/material";
+import {Box, CircularProgress, Stack} from "@mui/material";
 import Table from "../../../components/Table/Table.tsx";
 import Management from "../Tags/Management/Management.tsx";
 import MultiSelect from "../Users/MultiSelect/MultiSelect.tsx";
@@ -38,7 +38,9 @@ const PaintsTable = () => {
                 />
             }
             {isPending && (
-                <CircularProgress size={24}/>
+                <Stack alignItems="center" justifyContent="center" minHeight={200}>
+                    <CircularProgress size={36}/>
+                </Stack>
             )}
         </Box>
     )

@@ -4,7 +4,7 @@ import {UseMutationHook} from "../../../types/general.ts";
 
 const useUpdateUser = ({ onSuccess, onError }: UseMutationHook) => {
 
-    const { mutateAsync } = useMutation({
+    const { mutateAsync, isPending } = useMutation({
         mutationFn: api.updateUser,
         onSuccess,
         onError
@@ -12,6 +12,7 @@ const useUpdateUser = ({ onSuccess, onError }: UseMutationHook) => {
 
     return {
         update: mutateAsync,
+        isPending
     }
 }
 

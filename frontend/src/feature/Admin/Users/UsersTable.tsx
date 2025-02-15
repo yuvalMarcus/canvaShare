@@ -48,7 +48,9 @@ const UsersTable = () => {
                     MultiSelect={MultiSelect}
                 />}
             {isPending && (
-                <CircularProgress size={24}/>
+                <Stack alignItems="center" justifyContent="center" minHeight={200}>
+                    <CircularProgress size={36}/>
+                </Stack>
             )}
         </Stack>
     )

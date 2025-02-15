@@ -11,6 +11,7 @@ import {getComparator, Order} from "./table.utils.ts";
 import TableToolbar from "./components/TableToolbar/TableToolbar.tsx";
 import TableRow from "./components/TableRow/TableRow.tsx";
 import Management from "../../feature/Admin/Tags/Management/Management.tsx";
+import EmptyData from "./components/EmptyData/EmptyData.tsx";
 
 interface TableProps<T> {
     rows: T[];
@@ -104,6 +105,7 @@ const Table = <T extends unknown>({
                                 handleClick={handleClick}>
                                 <Management row={row} index={index} />
                             </TableRow>)}
+                            {!rows.length && <EmptyData />}
                         </TableBody>
                     </MUITable>
                 </TableContainer>

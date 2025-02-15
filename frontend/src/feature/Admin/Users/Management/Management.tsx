@@ -63,6 +63,8 @@ const Management  = ({ row }) => {
 
     const isBlock = row.isBlocked;
 
+    console.log('isPending', isPending)
+
     return (
         <Permissions roles={["user_management"]}>
             <Stack flexDirection="row" alignItems="center" justifyContent="center">
