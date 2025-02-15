@@ -88,7 +88,7 @@ const Artist = () => {
                                 <CircularProgress />
                             </Stack>
                         )}
-                        {!isRefetching && !isPending && <Avatar alt="Remy Sharp" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ width: 150, height: 150, boxShadow: 4, backgroundColor: grey[100] }} />}
+                        {!isRefetching && !isPending && <Avatar alt="avatar" src={user?.profilePhoto ?? "/assets/default-user.png"} sx={{ width: 150, height: 150, boxShadow: 4, backgroundColor: grey[100] }} />}
                         {isUserProfileOwner && (
                             <Box position="absolute" top={0} right={0} zIndex={10} bgcolor={grey[100]} borderRadius="100%" boxShadow={1}>
                                 <IconButton onClick={() => {

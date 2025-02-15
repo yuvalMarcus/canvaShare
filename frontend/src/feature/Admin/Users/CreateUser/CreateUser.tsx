@@ -24,6 +24,7 @@ import Permissions from "../../../../components/Permissions/Permissions.tsx";
 import {toast} from "react-toastify";
 import {queryClient} from "../../../../main.tsx";
 import {GET_USERS} from "../../../../api/hooks/user/useGetUsers.ts";
+import {useNavigate} from "react-router-dom";
 
 const roles = [
     'admin_view',
@@ -54,6 +55,8 @@ const schema = z.object({
 
 const CreateUser = () => {
     const [isUploadFileOpen, setIsUploadFileOpen] = useState<boolean>(false);
+
+    const navigate  = useNavigate();
 
     const {
         handleSubmit,
@@ -118,7 +121,7 @@ const CreateUser = () => {
                         </Stack>
                         <Stack alignItems="center" justifyContent="center" flexDirection='row' pb={2}>
                             <Box position='relative' left={20}>
-                                <Avatar alt="Remy Sharp" sx={{ width: 100, height: 100, boxShadow: 4}} src={photo} />
+                                <Avatar alt="avatar" sx={{ width: 100, height: 100, boxShadow: 4}} src={photo} />
                             </Box>
                             <Box position="relative" width={40} bottom={30} right={10} zIndex={10} bgcolor={grey[100]} borderRadius={'100%'} boxShadow={1}>
                                 <IconButton onClick={() => setIsUploadFileOpen(true)}>
@@ -172,18 +175,25 @@ const CreateUser = () => {
                                     </Stack>
                                 </Box>
                             </Permissions>
-                            <Button variant="outlined" type="submit" disabled={isPending}>
-                                {isPending && (
-                                    <Stack alignItems="center" justifyContent="center">
-                                        <CircularProgress size={24} />
-                                    </Stack>
-                                )}
-                                {!isPending && (
+                            <Stack flexDirection="row" gap={2}>
+                                <Button variant="outlined" type="submit" color="inherit" onClick={() => navigate(-1)}>
                                     <Typography textAlign="center">
-                                        submit
+                                        cancel
                                     </Typography>
-                                )}
-                            </Button>
+                                </Button>
+                                <Button variant="outlined" type="submit" disabled={isPending}>
+                                    {isPending && (
+                                        <Stack alignItems="center" justifyContent="center">
+                                            <CircularProgress size={24} />
+                                        </Stack>
+                                    )}
+                                    {!isPending && (
+                                        <Typography textAlign="center">
+                                            submit
+                                        </Typography>
+                                    )}
+                                </Button>
+                            </Stack>
                         </Stack>
                     </form>
                 </Box>

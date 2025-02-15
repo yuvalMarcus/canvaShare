@@ -42,10 +42,7 @@ const roles = [
 
 const schema = z.object({
     username: z.string().min(4, { message: "Required" }),
-    password: z.string()
-        .min(6, { message: 'min length 6' })
-        .regex(new RegExp(".*[a-zA-Z].*"), "One character")
-        .regex(new RegExp(".*\\d.*"), "One number"),
+    password: z.string(),
     email: z.string().email({ message: "Email not valid" }),
     about: z.string().max(80, { message: 'Description value is to mach' }).optional(),
     ...roles.reduce((prev, role) => {
@@ -64,6 +61,7 @@ const EditUser = () => {
     const {
         handleSubmit,
         control,
+        setValue,
         formState: { errors },
         watch
     } = useForm({
@@ -109,9 +107,9 @@ const EditUser = () => {
         })
     };
 
-    const uploadProfilePhoto = async (profilePhoto: string|null) => {
-        //setValue("profilePhoto", profilePhoto);
-        //if (user) user.profilePhoto = profilePhoto;
+    const uploadProfilePhoto = async (profilePhoto: string | null) => {
+        setValue("profilePhoto", profilePhoto);
+        if (user) user.profilePhoto = profilePhoto;
     }
 
     const userRoles = roles.reduce((prev, role) => {
@@ -137,7 +135,7 @@ const EditUser = () => {
                         </Stack>
                         <Stack alignItems="center" justifyContent="center" flexDirection='row' pb={2}>
                             <Box position='relative' left={20}>
-                                <Avatar alt="Remy Sharp"
+                                <Avatar alt="avatarv"
                                         sx={{ width: 100, height: 100, boxShadow: 4}}
                                         src={profilePhoto ?? user?.profilePhoto} />
                             </Box>
@@ -193,18 +191,25 @@ const EditUser = () => {
                                     </Stack>
                                 </Box>
                             </Permissions>
-                            <Button variant="outlined" type="submit" disabled={isPending}>
-                                {isPending && (
-                                    <Stack alignItems="center" justifyContent="center">
-                                        <CircularProgress size={24} />
-                                    </Stack>
-                                )}
-                                {!isPending && (
+                            <Stack flexDirection="row" gap={2}>
+                                <Button variant="outlined" type="submit" color="inherit" onClick={() => navigate(-1)}>
                                     <Typography textAlign="center">
-                                        submit
+                                        cancel
                                     </Typography>
-                                )}
-                            </Button>
+                                </Button>
+                                <Button variant="outlined" type="submit" disabled={isPending}>
+                                    {isPending && (
+                                        <Stack alignItems="center" justifyContent="center">
+                                            <CircularProgress size={24} />
+                                        </Stack>
+                                    )}
+                                    {!isPending && (
+                                        <Typography textAlign="center">
+                                            submit
+                                        </Typography>
+                                    )}
+                                </Button>
+                            </Stack>
                         </Stack>
                     </form>
                 </Box>
