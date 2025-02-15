@@ -140,6 +140,8 @@ def is_valid_email(email: str | None, user_id: int=None) -> None:
 def is_valid_password(password: str | None) -> None:
     if password is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password cannot be empty")
+    if not (any(c.isdigit() for c in password) and any(c.isalpha() for c in password)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The password must contain at least one number and one letter")
 
 def convert_db_user_to_user(db_user: UserTuple, user_id: int) -> User:
     user = {}
